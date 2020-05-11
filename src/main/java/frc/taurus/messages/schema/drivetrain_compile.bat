@@ -1,0 +1,1 @@
+"../../../../../../../tools/flatc" --java --gen-mutable -o ".." drivetrain.fbs
