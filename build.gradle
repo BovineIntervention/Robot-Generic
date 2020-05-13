@@ -3,12 +3,12 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2020.3.2"
 }
 
-repositories { 
-    jcenter() 
-    maven { 
-        url "https://jitpack.io" 
-    }
-}
+// repositories { 
+//     jcenter() 
+//     maven { 
+//         url "https://jitpack.io" 
+//     }
+// }
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
@@ -69,10 +69,18 @@ dependencies {
     // upon debugging
     simulation wpi.deps.sim.gui(wpi.platforms.desktop, false)
 
-    implementation 'com.github.davidmoten.flatbuffers-compiler:flatbuffers-compiler:1.12.0.1'
+    // implementation 'com.github.davidmoten.flatbuffers-compiler:flatbuffers-compiler:1.12.0.1'
     implementation 'com.google.flatbuffers:flatbuffers-java:1.12.0'
 }
 
+
+// Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
+// in order to make them all available at runtime. Also adding the manifest so WPILib
+// knows where to look for our Robot Class.
+jar {
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
+}
 
 
 // tools\flatc.exe --java --gen-mutable -o "src/main/java" src/main/java/frc/taurus/messages/schema/drivetrain.fbs
@@ -82,20 +90,10 @@ task compileFlatbuffers {
     FileTree files = fileTree(fbs_folder).matching{ include "**/*.fbs"}
     
     files.each{ File file ->
-            println "*** $file.name ***"
+            println "Compiling: $file.name"
             exec {
                 executable = "tools/flatc.exe"
                 args = ["--java", "--gen-mutable", "-o", "src/main/java", file.absolutePath]
             }
     }
-}
-
-
-// Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
-// in order to make them all available at runtime. Also adding the manifest so WPILib
-// knows where to look for our Robot Class.
-jar {
-    dependsOn compileFlatbuffers
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
 }

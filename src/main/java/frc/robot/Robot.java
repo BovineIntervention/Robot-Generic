@@ -11,8 +11,8 @@ package frc.robot;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.usercontrols.IUserDriveControls;
-import frc.robot.usercontrols.UserDriveControls;
+import frc.robot.usercontrols.IDriveControls;
+import frc.robot.usercontrols.User1DriveControls;
 import frc.taurus.messages.DrivetrainGoal;
 
 /**
@@ -25,7 +25,7 @@ import frc.taurus.messages.DrivetrainGoal;
 public class Robot extends TimedRobot {
 
   // User-Controls (joysticks & button boards)
-  IUserDriveControls userDriveControls = UserDriveControls.getInstance();   // TODO: allow selection of user drive control scheme
+  IDriveControls user1DriveControls = User1DriveControls.getInstance();   // TODO: allow selection of user drive control scheme
 
 
   /**
@@ -73,10 +73,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    float throttle = (float)userDriveControls.getThrottle();
-    float steering = (float)userDriveControls.getSteering();
-    boolean quickTurn = userDriveControls.getQuickTurn();
-    boolean lowGear = userDriveControls.getLowGear();    
+    float throttle = (float)user1DriveControls.getThrottle();
+    float steering = (float)user1DriveControls.getSteering();
+    boolean quickTurn = user1DriveControls.getQuickTurn();
+    boolean lowGear = user1DriveControls.getLowGear();    
 
     FlatBufferBuilder builder = new FlatBufferBuilder(1024);
     long timestamp = 123;

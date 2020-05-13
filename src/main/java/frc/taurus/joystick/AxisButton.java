@@ -3,20 +3,37 @@ package frc.taurus.joystick;
 /**
  * Use when an axis is used as a button
  */
-
-public class AxisButton extends Button
+public class AxisButton
 {
-    double mThreshold;
+    // minimum and maximum values that would result in a button press
+    private Controller mController;
+    int mId;                        // id of Axis to use as button
+    double mThreshold;              // threshold at which to trigger
+    boolean mCurrent = false;
+    boolean mLast = false;
 
-    public AxisButton(final Joystick joystick, final int id, double threshold) {
-        super(joystick, id);    // store joystick and button ID
+    public AxisButton(final Controller controller, final int id, double threshold) {
+        mController = controller;
+        mId = id;
         mThreshold = threshold;
     }
 
     public void update() {
-        double value = mJoystick.wpilibJoystick.getRawAxis(mId);
-        boolean triggered = (Math.signum(value) == Math.signum(mThreshold)) &&
-                            (value >= mThreshold);
-        update( triggered );
+        mLast = mCurrent;
+        double value = mController.getAxis(mId);
+        mCurrent = (Math.signum(value) == Math.signum(mThreshold)) &&
+                   (value >= mThreshold);
     }
+
+    public boolean getButton() {
+        return mCurrent;
+    }
+
+    public boolean getButtonPressed() {
+        return mCurrent && !mLast;
+    }
+
+    public boolean getButtonReleased() {
+        return !mCurrent && mLast;
+    }        
 }

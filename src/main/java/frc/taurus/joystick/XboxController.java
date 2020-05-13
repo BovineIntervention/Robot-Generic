@@ -1,12 +1,14 @@
 package frc.taurus.joystick;
 
-public class XboxController extends Joystick
+import edu.wpi.first.wpilibj.Joystick;
+
+public class XboxController extends Controller
 {
     public final double mDeadband;
 
     public enum Axis {
-        L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_STICK_TRIGGER_AXIS(2), 
-        R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_STICK_TRIGGER_AXIS(3);  
+        L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_TRIGGER_AXIS(2), 
+        R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_TRIGGER_AXIS(3);  
 
         public final int id;
         Axis(int id) {
@@ -23,12 +25,12 @@ public class XboxController extends Joystick
         }
     }
 
-    public XboxController(int port) {
-        this(port, 0.0);
+    public XboxController(Joystick joystick) {
+        this(joystick, 0.0);
     }
 
-    public XboxController(int port, double deadband) {
-        super(port);
+    public XboxController(Joystick joystick, double deadband) {
+        super(joystick);
         mDeadband = deadband;
     }
 
@@ -36,22 +38,21 @@ public class XboxController extends Joystick
          // invert the y-axis
         boolean invert = (axis == Axis.L_STICK_Y_AXIS) || (axis == Axis.R_STICK_Y_AXIS);
         double value = (invert ? -1 : 1) * this.wpilibJoystick.getRawAxis(axis.id);
-        return handleDeadband(value, mDeadband);
+        return applyDeadband(value, mDeadband);
     }
 
     public boolean getButton(Button button) {
-        return wpilibJoystick.getRawButton(button.id);
+        return getButton(button.id);
     }
 
-    public int getDPad() {
-        return wpilibJoystick.getPOV();    // returns -1 if not pressed, 0, 90, 180, 270 if pressed
+    public boolean getButtonPressed(Button button) {
+        return getButtonPressed(button.id);
     }
 
-    public void setRumble(boolean on) {
-        wpilibJoystick.setRumble(edu.wpi.first.wpilibj.GenericHID.RumbleType.kRightRumble, on ? 1 : 0);
+    public boolean getButtonReleased(Button button) {
+        return getButtonReleased(button.id);
     }
 
-    private double handleDeadband(double value, double deadband) {
-        return (Math.abs(value) > Math.abs(deadband)) ? value : 0;
-    }
+    // getPOV() available from base class
+    // setRumble(boolean) available from base class
 }

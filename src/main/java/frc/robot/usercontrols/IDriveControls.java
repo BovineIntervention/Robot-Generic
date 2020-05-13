@@ -5,7 +5,10 @@ package frc.robot.usercontrols;
  * These are likely to remain the same from year to year, but some special functions may be needed some years.
  */
 
-public interface IUserDriveControls {
+public interface IDriveControls {
+
+    void update();
+    
     double getThrottle();
     double getSteering();
     boolean getQuickTurn();
