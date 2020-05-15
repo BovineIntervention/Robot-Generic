@@ -38,6 +38,9 @@ public class Controller
     }
 
     public void addButton(Button button) {
+        /**
+         * All buttons should be added to the buttons list as they are constructed
+         */
         if (!buttons.contains(button)) {
             buttons.add(button);
         }
@@ -97,6 +100,10 @@ public class Controller
         private boolean mCurrent = false;
         private boolean mLast = false;
     
+        /**
+         * Button has a private constructor so that it can only be created through 
+         * Controller.addButton()
+         */        
         private Button(final Controller controller, final int id) {
             mController = controller;
             mId = id;
@@ -137,6 +144,10 @@ public class Controller
     {
         double mThreshold;              // threshold at which to trigger
 
+        /**
+         * AxisButton has a private constructor so that it can only be created through 
+         * Controller.addAxisButton()
+         */  
         private AxisButton(final Controller controller, final int id, double threshold) {
             super(controller, id);
             mThreshold = threshold;
@@ -162,8 +173,12 @@ public class Controller
         int mMin;
         int mMax;
 
+        /**
+         * PovButton has a private constructor so that it can only be created through 
+         * Controller.addPovButton()
+         */  
         private PovButton(final Controller controller, final int id,
-                        final int min, final int max) {
+                          final int min, final int max) {
             super(controller, id);
             mMin = min;
             mMax = max;
