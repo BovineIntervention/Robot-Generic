@@ -2,48 +2,72 @@ package frc.taurus.joystick;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 import org.junit.Test;
+
+import edu.wpi.first.wpilibj.Joystick;
 
 public class ButtonTest {
     @Test 
     public void pressTest() {
 
-        Joystick joystick = new Joystick(0);
-        Button button = joystick.addButton(0);
+        Joystick mockJoystick = mock(Joystick.class);
+        Controller controller = new Controller(mockJoystick);
+        
+        Button button0 = controller.addButton(0);
+        Button button1 = controller.addButton(1);
 
         // initially not pressed
-        button.update(false);
-        assertFalse( button.onPress() );
-        assertFalse( button.onRelease() );
-        assertFalse( button.isPressed() );
+        when(mockJoystick.getRawButton(0)).thenReturn(false);
+        when(mockJoystick.getRawButton(1)).thenReturn(false);  
+        controller.update();     
+        assertFalse( button0.getButton() );
+        assertFalse( button0.getButtonPressed() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
 
-        button.update(false);
-        assertFalse( button.onPress() );
-        assertFalse( button.onRelease() );
-        assertFalse( button.isPressed() );
-
-        // press
-        button.update(true);
-        assertTrue( button.onPress() );
-        assertFalse( button.onRelease() );
-        assertTrue( button.isPressed() );
-
-        button.update(true);
-        assertFalse( button.onPress() );
-        assertFalse( button.onRelease() );
-        assertTrue( button.isPressed() );
-
+        when(mockJoystick.getRawButton(0)).thenReturn(false);
+        controller.update();   
+        assertFalse( button0.getButton() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
+        
+        // press button 0
+        when(mockJoystick.getRawButton(0)).thenReturn(true);
+        controller.update();   
+        assertTrue( button0.getButton() );
+        assertTrue( button0.getButtonPressed() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
+        
+        when(mockJoystick.getRawButton(0)).thenReturn(true);
+        controller.update();   
+        assertTrue( button0.getButton() );
+        assertFalse( button0.getButtonPressed() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
+        
         // release
-        button.update(false);
-        assertFalse( button.onPress() );
-        assertTrue( button.onRelease() );
-        assertFalse( button.isPressed() );
-
-        button.update(false);
-        assertFalse( button.onPress() );
-        assertFalse( button.onRelease() );
-        assertFalse( button.isPressed() );
-
+        when(mockJoystick.getRawButton(0)).thenReturn(false);
+        controller.update();   
+        assertFalse( button0.getButton() );
+        assertFalse( button0.getButtonPressed() );
+        assertTrue( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
+        
+        when(mockJoystick.getRawButton(0)).thenReturn(false);
+        controller.update();   
+        assertFalse( button0.getButton() );
+        assertFalse( button0.getButtonPressed() );
+        assertFalse( button0.getButtonReleased() );
+        assertFalse( button1.getButton() );
+        
+        // press button 1
+        when(mockJoystick.getRawButton(1)).thenReturn(true);     
+        controller.update();   
+        assertFalse( button0.getButton() );
+        assertTrue( button1.getButton() );        
     }
 }

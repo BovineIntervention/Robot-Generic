@@ -2,13 +2,12 @@ package frc.taurus.joystick;
 
 import edu.wpi.first.wpilibj.Joystick;
 
-public class XboxController extends Controller
+public class ThrustmasterController extends Controller
 {
     public final double mDeadband;
 
     public enum Axis {
-        L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_TRIGGER_AXIS(2), 
-        R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_TRIGGER_AXIS(3);  
+        X_AXIS(0), Y_AXIS(1), Z_ROTATE_AXIS(2), SLIDER_AXIS(3);  
 
         public final int id;
         Axis(int id) {
@@ -17,7 +16,10 @@ public class XboxController extends Controller
     }
 
     public enum Button {
-        A(1), B(2), X(3), Y(4), L_BUMPER(5), R_BUMPER(6), BACK(7), START(8), L_STICK(9), R_STICK(10);
+        TRIGGER(1), BOTTOM_THUMB(2), LEFT_THUMB(3), RIGHT_THUMB(4), 
+        // counting from the inner (or thumb) side
+        TOP1(5), TOP2(6), TOP3(7), BOTTOM3(8), BOTTOM2(9), BOTTOM1(10),
+        TOP6(11), TOP5(12), TOP4(13), BOTTOM4(14), BOTTOM5(15), BOTTOM6(16);
 
         public final int id;
         Button(int id) {
@@ -25,24 +27,24 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(Joystick joystick) {
+    public ThrustmasterController(Joystick joystick) {
         this(joystick, 0.0);
     }
 
-    public XboxController(Joystick joystick, double deadband) {
+    public ThrustmasterController(Joystick joystick, double deadband) {
         super(joystick);
         mDeadband = deadband;
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
             addButton(button.id);
-        }
+        }        
     }
 
     public double getAxis(Axis axis) {
          // invert the y-axis
-        boolean invert = (axis == Axis.L_STICK_Y_AXIS) || (axis == Axis.R_STICK_Y_AXIS);
-        double value = (invert ? -1 : 1) * getAxis(axis.id);
+        boolean invert = (axis == Axis.X_AXIS);
+        double value = (invert ? -1 : 1) * this.wpilibJoystick.getRawAxis(axis.id);
         return applyDeadband(value, mDeadband);
     }
 
@@ -58,9 +60,6 @@ public class XboxController extends Controller
         return getButtonReleased(button.id);
     }
 
-    public int getPOV() {
-        return super.getPOV(0);
-    }
-
+    // getPOV() available from base class
     // setRumble(boolean) available from base class
 }

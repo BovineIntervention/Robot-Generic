@@ -1,4 +1,4 @@
-package frc.robot.usercontrols;
+package frc.robot.joystick;
 
 /**
  * The user controls required for drivetrain motion.
@@ -6,9 +6,6 @@ package frc.robot.usercontrols;
  */
 
 public interface IDriveControls {
-
-    void update();
-    
     double getThrottle();
     double getSteering();
     boolean getQuickTurn();

@@ -1,4 +1,4 @@
-package frc.robot.usercontrols;
+package frc.robot.joystick;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
@@ -12,7 +12,7 @@ import frc.taurus.joystick.XboxController;
  * new game.
  */
 
-public class OperatorControls implements IOperatorControls {
+public class OperatorControls extends ControlsBase implements IOperatorControls {
 
     private static OperatorControls mInstance = null;
     public static OperatorControls getInstance() {
@@ -30,18 +30,13 @@ public class OperatorControls implements IOperatorControls {
     private final AxisButton mIntakeAxisButton;
 
     private OperatorControls() {
-        mDriverController = new XboxController( new Joystick(Constants.ControllerConstants.kDriveControllerPort) );
-        mButtonBoard = new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort) );
-        mTurnNorthPovButton = new PovButton(mButtonBoard, -45, 45);
-        mTurnSouthPovButton = new PovButton(mButtonBoard, 135, 215);
-        mIntakeAxisButton = new AxisButton(mDriverController, XboxController.Axis.R_TRIGGER_AXIS.id, 0.5);
-    }
+        // use ControlsBase.addController() to add controllers to this control method
+        mDriverController = (XboxController)ControlsBase.addController( new XboxController( new Joystick(Constants.ControllerConstants.kDriveControllerPort) ));
+        mIntakeAxisButton = mDriverController.addAxisButton(XboxController.Axis.R_TRIGGER_AXIS.id, 0.5);
 
-    public void update() {
-        // call update for all AxisButtons and PovButtons
-        mIntakeAxisButton.update();
-        mTurnNorthPovButton.update();
-        mTurnSouthPovButton.update();
+        mButtonBoard = (ButtonBoardController)ControlsBase.addController( new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort) ));
+        mTurnNorthPovButton = mButtonBoard.addPovButton(0, -45, 45);
+        mTurnSouthPovButton = mButtonBoard.addPovButton(0, 135, 215);
     }
 
     // Driver has control of Intaking, Aiming and Shooting

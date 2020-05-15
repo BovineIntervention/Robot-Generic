@@ -1,4 +1,4 @@
-package frc.robot.usercontrols;
+package frc.robot.joystick;
 
 /**
  * The user controls beyond basic drivetrain motion.
@@ -6,8 +6,6 @@ package frc.robot.usercontrols;
  */
 
 public interface IOperatorControls {
-
-    void update();
     
     // change these functions as needed
     boolean getAutoAim();

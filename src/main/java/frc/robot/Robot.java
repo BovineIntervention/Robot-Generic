@@ -11,8 +11,8 @@ package frc.robot;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.usercontrols.IDriveControls;
-import frc.robot.usercontrols.User1DriveControls;
+import frc.robot.joystick.IDriveControls;
+import frc.robot.joystick.User1DriveControls;
 import frc.taurus.messages.DrivetrainGoal;
 
 /**

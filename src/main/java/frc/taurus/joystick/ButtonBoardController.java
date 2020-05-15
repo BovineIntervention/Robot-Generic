@@ -25,13 +25,19 @@ public class ButtonBoardController extends Controller
         }
     }
 
-    public ButtonBoardController(Joystick joystick) {
-        this(joystick, 0.0);
-    }
-
     public ButtonBoardController(Joystick joystick, double deadband) {
         super(joystick);
         mDeadband = deadband;
+
+        // add all enumerated buttons to button list
+        for (Button button : Button.values()) {
+            addButton(button.id);
+        }        
+    }
+
+    // convenience constructor when deadband is not specified
+    public ButtonBoardController(Joystick joystick) {
+        this(joystick, 0.0);
     }
 
     public double getAxis(Axis axis) {
