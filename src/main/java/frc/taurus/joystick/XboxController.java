@@ -46,18 +46,6 @@ public class XboxController extends Controller
         return applyDeadband(value, mDeadband);
     }
 
-    public boolean getButton(Button button) {
-        return getButton(button.id);
-    }
-
-    public boolean getButtonPressed(Button button) {
-        return getButtonPressed(button.id);
-    }
-
-    public boolean getButtonReleased(Button button) {
-        return getButtonReleased(button.id);
-    }
-
     public int getPOV() {
         return super.getPOV(0);
     }

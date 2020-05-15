@@ -48,18 +48,5 @@ public class ThrustmasterController extends Controller
         return applyDeadband(value, mDeadband);
     }
 
-    public boolean getButton(Button button) {
-        return getButton(button.id);
-    }
-
-    public boolean getButtonPressed(Button button) {
-        return getButtonPressed(button.id);
-    }
-
-    public boolean getButtonReleased(Button button) {
-        return getButtonReleased(button.id);
-    }
-
-    // getPOV() available from base class
     // setRumble(boolean) available from base class
 }

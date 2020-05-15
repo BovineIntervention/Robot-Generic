@@ -2,9 +2,8 @@ package frc.robot.joystick;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
-import frc.taurus.joystick.AxisButton;
 import frc.taurus.joystick.ButtonBoardController;
-import frc.taurus.joystick.PovButton;
+import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.XboxController;
 
 /**
@@ -24,28 +23,35 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
     }   
     
     private final XboxController mDriverController;
+    private final Controller.Button mShootButton;
+    private final Controller.Button mAutoAimButton;
+
     private final ButtonBoardController mButtonBoard;
-    private final PovButton mTurnNorthPovButton;
-    private final PovButton mTurnSouthPovButton;
-    private final AxisButton mIntakeAxisButton;
+    private final Controller.Button mClimbButton;
+    private final Controller.PovButton mTurnNorthPovButton;
+    private final Controller.PovButton mTurnSouthPovButton;
+    private final Controller.AxisButton mIntakeAxisButton;
 
     private OperatorControls() {
         // use ControlsBase.addController() to add controllers to this control method
         mDriverController = (XboxController)ControlsBase.addController( new XboxController( new Joystick(Constants.ControllerConstants.kDriveControllerPort) ));
+        mShootButton = mDriverController.addButton(XboxController.Button.X.id);
+        mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);
         mIntakeAxisButton = mDriverController.addAxisButton(XboxController.Axis.R_TRIGGER_AXIS.id, 0.5);
 
         mButtonBoard = (ButtonBoardController)ControlsBase.addController( new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort) ));
+        mClimbButton = mButtonBoard.addButton(ButtonBoardController.Button.SR.id);
         mTurnNorthPovButton = mButtonBoard.addPovButton(0, -45, 45);
         mTurnSouthPovButton = mButtonBoard.addPovButton(0, 135, 215);
     }
 
     // Driver has control of Intaking, Aiming and Shooting
     public boolean getIntake()  { return mIntakeAxisButton.getButton(); }
-    public boolean getAutoAim() { return mDriverController.getButton(XboxController.Button.X); }
-    public boolean getShoot()   { return mDriverController.getButton(XboxController.Button.R_BUMPER); }
+    public boolean getAutoAim() { return mAutoAimButton.getButton(); }
+    public boolean getShoot()   { return mShootButton.getButton(); }
 
     // Operator has control of Climbing and Turning
-    public boolean getClimb()       { return mButtonBoard.getButtonReleased(ButtonBoardController.Button.SR); }
+    public boolean getClimb()       { return mClimbButton.getButtonReleased(); }
     public boolean getTurnNorth()   { return mTurnNorthPovButton.getButtonPressed(); }
     public boolean getTurnSouth()   { return mTurnSouthPovButton.getButtonPressed(); }
 
