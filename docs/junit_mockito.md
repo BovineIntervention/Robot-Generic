@@ -38,3 +38,12 @@ import static org.mockito.Mockito.*;
 ```
 
 Use `WPILib: Test Robot Code` command to run the unit tests.  (click WPILib icon on toolbar, or type Ctrl-Shift-P)
+
+
+
+# Other WPILib woes
+
+If you run into other WPILib problems, including HAL errors, try adding the following
+https://www.chiefdelphi.com/t/unit-testing-java-io-ioexception-wpihaljni/372288/19
+
+Perform one build, then retry the unit test.

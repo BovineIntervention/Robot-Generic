@@ -34,12 +34,12 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
 
     private OperatorControls() {
         // use ControlsBase.addController() to add controllers to this control method
-        mDriverController = (XboxController)ControlsBase.addController( new XboxController( new Joystick(Constants.ControllerConstants.kDriveControllerPort) ));
+        mDriverController = (XboxController)ControlsBase.addController( new XboxController( new Joystick(Constants.ControllerConstants.kDriveControllerPort), Constants.ControllerConstants.kDriveDeadband ));
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
         mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);
         mIntakeAxisButton = mDriverController.addAxisButton(XboxController.Axis.R_TRIGGER_AXIS.id, 0.5);
 
-        mButtonBoard = (ButtonBoardController)ControlsBase.addController( new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort) ));
+        mButtonBoard = (ButtonBoardController)ControlsBase.addController( new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort), 0.0 ));
         mClimbButton = mButtonBoard.addButton(ButtonBoardController.Button.SR.id);
         mTurnNorthPovButton = mButtonBoard.addPovButton(0, -45, 45);
         mTurnSouthPovButton = mButtonBoard.addPovButton(0, 135, 215);

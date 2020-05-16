@@ -45,7 +45,7 @@ deploy {
 }
 
 // Set this to true to enable desktop support.
-def includeDesktopSupport = false
+def includeDesktopSupport = true
 
 
 
@@ -94,7 +94,8 @@ task compileFlatbuffers {
             println "Compiling: $file.name"
             exec {
                 executable = "tools/flatc.exe"
-                args = ["--java", "--gen-mutable", "-o", "src/main/java", file.absolutePath]
+                // args = ["--java", "--gen-mutable", "-o", "src/main/java", file.absolutePath]
+                args = ["--java", "-o", "src/main/java", file.absolutePath]
             }
     }
 }

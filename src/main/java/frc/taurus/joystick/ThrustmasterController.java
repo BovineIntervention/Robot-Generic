@@ -27,10 +27,6 @@ public class ThrustmasterController extends Controller
         }
     }
 
-    public ThrustmasterController(Joystick joystick) {
-        this(joystick, 0.0);
-    }
-
     public ThrustmasterController(Joystick joystick, double deadband) {
         super(joystick);
         mDeadband = deadband;

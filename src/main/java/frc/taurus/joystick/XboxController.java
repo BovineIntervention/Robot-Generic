@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.Joystick;
 public class XboxController extends Controller
 {
     public final double mDeadband;
-
+    
     public enum Axis {
         L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_TRIGGER_AXIS(2), 
         R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_TRIGGER_AXIS(3);  
@@ -23,10 +23,6 @@ public class XboxController extends Controller
         Button(int id) {
             this.id = id;
         }
-    }
-
-    public XboxController(Joystick joystick) {
-        this(joystick, 0.0);
     }
 
     public XboxController(Joystick joystick, double deadband) {

@@ -35,11 +35,6 @@ public class ButtonBoardController extends Controller
         }        
     }
 
-    // convenience constructor when deadband is not specified
-    public ButtonBoardController(Joystick joystick) {
-        this(joystick, 0.0);
-    }
-
     public double getAxis(Axis axis) {
         // invert the y-axis
        boolean invert = (axis == Axis.L_STICK_Y_AXIS) || (axis == Axis.R_STICK_Y_AXIS);

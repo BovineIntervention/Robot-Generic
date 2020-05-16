@@ -20,12 +20,11 @@ public class User1DriveControls extends ControlsBase implements IDriveControls {
 
     // define the physical controllers that will be used
     private final XboxController mDriveController;
-    private final double kDeadband = 0.05;
 
     private User1DriveControls() {
         // use ControlsBase.addController() to add controllers to this control method
-        Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);        
-        mDriveController = (XboxController)ControlsBase.addController(new XboxController(joystick, kDeadband));      
+        Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);     
+        mDriveController = (XboxController)ControlsBase.addController(new XboxController(joystick, Constants.ControllerConstants.kDriveDeadband));      
     }
 
     public double getThrottle() { return mDriveController.getAxis(XboxController.Axis.L_STICK_Y_AXIS); };
