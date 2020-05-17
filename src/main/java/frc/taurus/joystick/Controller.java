@@ -1,13 +1,14 @@
 package frc.taurus.joystick;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.messages.JoystickGoal;
 import frc.taurus.messages.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
@@ -19,12 +20,22 @@ public class Controller
 {
     public final Joystick wpilibJoystick;
     static ArrayList<Button> buttons;
-    public final MessageQueue mJoystickStatusQueue;
+    public final Optional<MessageQueue<JoystickStatus>> mStatusQueue;
+    public final Optional<MessageQueue<JoystickGoal>> mRumbleQueue;
 
     public Controller(final Joystick joystick) {
+        this(joystick, Optional.empty(), Optional.empty());
+    }
+
+    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue) {
+        this(joystick, statusQueue, Optional.empty());
+    }
+
+    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue, Optional<MessageQueue<JoystickGoal>> rumbleQueue) {
         wpilibJoystick = joystick;
         buttons = new ArrayList<>();
-        mJoystickStatusQueue = new MessageQueue();
+        mStatusQueue = statusQueue;
+        mRumbleQueue = rumbleQueue;
     }
 
     public Button addButton(int buttonId) {
@@ -59,7 +70,9 @@ public class Controller
             button.update();
         }
         log();
-        // TODO: check if controller rumble has been requested
+        if (mRumbleQueue.isPresent()) {
+            // TODO: check if controller rumble has been requested
+        }
     }
 
     public double getAxis(int axisId) {
@@ -94,38 +107,40 @@ public class Controller
     
     public void log()
     {
-        final int bufferSizeBytes = 128;   // slightly larger than required
-        FlatBufferBuilder builder = new FlatBufferBuilder(bufferSizeBytes);        
-        double timestamp = Timer.getFPGATimestamp();
+        if (mStatusQueue.isPresent()) {
+            final int bufferSizeBytes = 128;   // slightly larger than required
+            FlatBufferBuilder builder = new FlatBufferBuilder(bufferSizeBytes);        
+            double timestamp = Timer.getFPGATimestamp();
 
-        int offset = JoystickStatus.createJoystickStatus(builder,
-            timestamp,
-            (float)getAxis(0),
-            (float)getAxis(1),
-            (float)getAxis(2),
-            (float)getAxis(3),
-            (float)getAxis(4),
-            (float)getAxis(5),
-            getButton(1),
-            getButton(2),
-            getButton(3),
-            getButton(4),
-            getButton(5),
-            getButton(6),
-            getButton(7),
-            getButton(8),
-            getButton(9),
-            getButton(10),
-            getButton(11),
-            getButton(12),
-            getButton(13),
-            getButton(14),
-            getButton(15),
-            getButton(16),
-            getPOV(0));
-        JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+            int offset = JoystickStatus.createJoystickStatus(builder,
+                timestamp,
+                (float)getAxis(0),
+                (float)getAxis(1),
+                (float)getAxis(2),
+                (float)getAxis(3),
+                (float)getAxis(4),
+                (float)getAxis(5),
+                getButton(1),
+                getButton(2),
+                getButton(3),
+                getButton(4),
+                getButton(5),
+                getButton(6),
+                getButton(7),
+                getButton(8),
+                getButton(9),
+                getButton(10),
+                getButton(11),
+                getButton(12),
+                getButton(13),
+                getButton(14),
+                getButton(15),
+                getButton(16),
+                getPOV(0));
+            JoystickStatus.finishJoystickStatusBuffer(builder, offset);
 
-        mJoystickStatusQueue.add(builder, offset);
+            mStatusQueue.get().add(builder);
+        }
     }
 
 

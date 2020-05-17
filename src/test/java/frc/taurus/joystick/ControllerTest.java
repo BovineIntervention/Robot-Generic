@@ -1,7 +1,14 @@
 package frc.taurus.joystick;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 import org.junit.Test;
 
@@ -9,7 +16,10 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
+import frc.taurus.messages.JoystickGoal;
 import frc.taurus.messages.JoystickStatus;
+import frc.taurus.messages.MessageQueue;
+import frc.taurus.messages.MessageQueueManager;
 
 public class ControllerTest {
 
@@ -331,7 +341,9 @@ public class ControllerTest {
     public void logTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        Controller controller = new Controller(mockJoystick);
+        Optional<MessageQueue<JoystickStatus>> statusQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickStatusQueue);
+        Optional<MessageQueue<JoystickGoal>> goalQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickGoalQueue);
+        Controller controller = new Controller(mockJoystick, statusQueue, goalQueue);
 
         when(mockJoystick.getRawAxis(0)).thenReturn(0.1);
         when(mockJoystick.getRawAxis(1)).thenReturn(0.2);
@@ -361,7 +373,7 @@ public class ControllerTest {
 
         verify(mockJoystick, times(1)).getRawAxis(0);
 
-        JoystickStatus status = controller.mJoystickStatusQueue.remove();
+        JoystickStatus status = MessageQueueManager.getInstance().driveJoystickStatusQueue.remove();
 
         assertEquals(0.1, status.axis0(), eps);        
         assertEquals(0.2, status.axis1(), eps);        

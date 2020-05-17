@@ -1,6 +1,11 @@
 package frc.taurus.joystick;
 
+import java.util.Optional;
+
 import edu.wpi.first.wpilibj.Joystick;
+import frc.taurus.messages.JoystickGoal;
+import frc.taurus.messages.JoystickStatus;
+import frc.taurus.messages.MessageQueue;
 
 public class ButtonBoardController extends Controller
 {
@@ -25,15 +30,27 @@ public class ButtonBoardController extends Controller
         }
     }
 
-    public ButtonBoardController(Joystick joystick, double deadband) {
-        super(joystick);
+    public ButtonBoardController(Joystick joystick, double deadband, 
+                          Optional<MessageQueue<JoystickStatus>> joystickStatusQueue,
+                          Optional<MessageQueue<JoystickGoal>> joystickGoalQueue) {
+        super(joystick, joystickStatusQueue, joystickGoalQueue);
         mDeadband = deadband;
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
             addButton(button.id);
-        }        
+        }
     }
+
+    public ButtonBoardController(Joystick joystick, double deadband, 
+                          Optional<MessageQueue<JoystickStatus>> joystickStatusQueue) {
+        this(joystick, deadband, joystickStatusQueue, Optional.empty());
+    }
+
+    public ButtonBoardController(Joystick joystick, double deadband) {
+        this(joystick, deadband, Optional.empty(), Optional.empty());
+    }
+
 
     public double getAxis(Axis axis) {
         // invert the y-axis
