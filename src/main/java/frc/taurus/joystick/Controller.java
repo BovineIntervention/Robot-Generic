@@ -139,7 +139,7 @@ public class Controller
                 getPOV(0));
             JoystickStatus.finishJoystickStatusBuffer(builder, offset);
 
-            mStatusQueue.get().add(builder);
+            mStatusQueue.get().writeMessage(builder);
         }
     }
 

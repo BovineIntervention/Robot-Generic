@@ -341,9 +341,9 @@ public class ControllerTest {
     public void logTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        Optional<MessageQueue<JoystickStatus>> statusQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickStatusQueue);
-        Optional<MessageQueue<JoystickGoal>> goalQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickGoalQueue);
-        Controller controller = new Controller(mockJoystick, statusQueue, goalQueue);
+        MessageQueue<JoystickStatus> statusQueue = MessageQueueManager.getInstance().driveJoystickStatusQueue;
+        MessageQueue<JoystickGoal> goalQueue = MessageQueueManager.getInstance().driveJoystickGoalQueue;
+        Controller controller = new Controller(mockJoystick, Optional.of(statusQueue), Optional.of(goalQueue));
 
         when(mockJoystick.getRawAxis(0)).thenReturn(0.1);
         when(mockJoystick.getRawAxis(1)).thenReturn(0.2);
@@ -373,31 +373,37 @@ public class ControllerTest {
 
         verify(mockJoystick, times(1)).getRawAxis(0);
 
-        JoystickStatus status = MessageQueueManager.getInstance().driveJoystickStatusQueue.remove();
+        assertEquals(1, statusQueue.size());
+        Optional<JoystickStatus> optStatus = statusQueue.readNextMessage();
+        assertTrue(optStatus.isPresent());
 
-        assertEquals(0.1, status.axis0(), eps);        
-        assertEquals(0.2, status.axis1(), eps);        
-        assertEquals(0.3, status.axis2(), eps);        
-        assertEquals(0.4, status.axis3(), eps);        
-        assertEquals(0.5, status.axis4(), eps);        
-        assertEquals(0.6, status.axis5(), eps);    
-        assertTrue( status.button1());    
-        assertFalse(status.button2());    
-        assertTrue( status.button3());    
-        assertFalse(status.button4());    
-        assertTrue( status.button5());    
-        assertFalse(status.button6());    
-        assertTrue( status.button7());    
-        assertFalse(status.button8());    
-        assertTrue( status.button9());    
-        assertFalse(status.button10());    
-        assertTrue( status.button11());    
-        assertFalse(status.button12());    
-        assertTrue( status.button13());    
-        assertFalse(status.button14());    
-        assertTrue( status.button15());    
-        assertFalse(status.button16());    
-        assertEquals(45, status.pov(), eps);
+        if (optStatus.isPresent())
+        {
+            JoystickStatus status = optStatus.get();
+            assertEquals(0.1, status.axis0(), eps);        
+            assertEquals(0.2, status.axis1(), eps);        
+            assertEquals(0.3, status.axis2(), eps);        
+            assertEquals(0.4, status.axis3(), eps);        
+            assertEquals(0.5, status.axis4(), eps);        
+            assertEquals(0.6, status.axis5(), eps);    
+            assertTrue( status.button1());    
+            assertFalse(status.button2());    
+            assertTrue( status.button3());    
+            assertFalse(status.button4());    
+            assertTrue( status.button5());    
+            assertFalse(status.button6());    
+            assertTrue( status.button7());    
+            assertFalse(status.button8());    
+            assertTrue( status.button9());    
+            assertFalse(status.button10());    
+            assertTrue( status.button11());    
+            assertFalse(status.button12());    
+            assertTrue( status.button13());    
+            assertFalse(status.button14());    
+            assertTrue( status.button15());    
+            assertFalse(status.button16());    
+            assertEquals(45, status.pov(), eps);
+        }
     }    
 
 }
