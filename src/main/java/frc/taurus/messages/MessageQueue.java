@@ -1,16 +1,11 @@
 package frc.taurus.messages;
 
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
 import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-// import org.apache.commons.collections4.queue.CircularFifoQueue;
-// see:
-// https://commons.apache.org/proper/commons-collections/javadocs/api-4.4/org/apache/commons/collections4/queue/CircularFifoQueue.html
-// https://www.baeldung.com/commons-circular-fifo-queue
 
 
 public class MessageQueue<T> {

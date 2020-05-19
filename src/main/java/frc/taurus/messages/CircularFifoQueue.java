@@ -1,3 +1,13 @@
+/**
+ * This file is a modified version of version of 
+ * org.apache.commons.collections4.queue.CircularFifoQueue
+ * 
+ * Specifically to add public methods start() and end()
+ *      so that multiple readers could be attached to a given queue
+ *      and individually track where they were in the queue.
+ */
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,25 +26,13 @@
  */
 
  
-/**
- * This version of CircularFifoQueue adds public methods start() and end()
- */
 
 package frc.taurus.messages;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.AbstractCollection;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Queue;
-
-import org.apache.commons.collections4.BoundedCollection;
 
 /**
  * CircularFifoQueue is a first-in first-out queue with a fixed size that
@@ -56,11 +54,7 @@ import org.apache.commons.collections4.BoundedCollection;
  * @param <E> the type of elements in this collection
  * @since 4.0
  */
-public class CircularFifoQueue<E> extends AbstractCollection<E>
-    implements Queue<E>, BoundedCollection<E>, Serializable {
-
-    /** Serialization version. */
-    private static final long serialVersionUID = -8423413834657610406L;
+public class CircularFifoQueue<E> {
 
     /** Underlying storage array. */
     private transient E[] elements;
@@ -105,64 +99,12 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
         maxElements = elements.length;
     }
 
-    /**
-     * Constructor that creates a queue from the specified collection.
-     * The collection size also sets the queue size.
-     *
-     * @param coll  the collection to copy into the queue, may not be null
-     * @throws NullPointerException if the collection is null
-     */
-    public CircularFifoQueue(final Collection<? extends E> coll) {
-        this(coll.size());
-        addAll(coll);
-    }
-
-    //-----------------------------------------------------------------------
-    /**
-     * Write the queue out using a custom routine.
-     *
-     * @param out  the output stream
-     * @throws IOException if an I/O error occurs while writing to the output stream
-     */
-    private void writeObject(final ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        out.writeInt(size());
-        for (final E e : this) {
-            out.writeObject(e);
-        }
-    }
-
-    /**
-     * Read the queue in using a custom routine.
-     *
-     * @param in  the input stream
-     * @throws IOException if an I/O error occurs while writing to the output stream
-     * @throws ClassNotFoundException if the class of a serialized object can not be found
-     */
-    @SuppressWarnings("unchecked")
-    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        elements = (E[]) new Object[maxElements];
-        final int size = in.readInt();
-        for (int i = 0; i < size; i++) {
-            elements[i] = (E) in.readObject();
-        }
-        start = 0;
-        full = size == maxElements;
-        if (full) {
-            end = 0;
-        } else {
-            end = size;
-        }
-    }
-
     //-----------------------------------------------------------------------
     /**
      * Returns the number of elements stored in the queue.
      *
      * @return this queue's size
      */
-    @Override
     public int size() {
         int size = 0;
 
@@ -182,7 +124,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      *
      * @return true if this queue is empty
      */
-    @Override
     public boolean isEmpty() {
         return size() == 0;
     }
@@ -195,7 +136,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      *
      * @return always returns {@code false}
      */
-    @Override
     public boolean isFull() {
         return false;
     }
@@ -216,7 +156,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      *
      * @return the maximum number of elements the collection can hold
      */
-    @Override
     public int maxSize() {
         return maxElements;
     }
@@ -224,7 +163,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
     /**
      * Clears this queue.
      */
-    @Override
     public void clear() {
         full = false;
         start = 0;
@@ -240,7 +178,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      * @return true, always
      * @throws NullPointerException  if the given element is null
      */
-    @Override
     public boolean add(final E element) {
         Objects.requireNonNull(element, "element");
 
@@ -290,12 +227,10 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      * @return true, always
      * @throws NullPointerException  if the given element is null
      */
-    @Override
     public boolean offer(final E element) {
         return add(element);
     }
 
-    @Override
     public E poll() {
         if (isEmpty()) {
             return null;
@@ -303,7 +238,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
         return remove();
     }
 
-    @Override
     public E element() {
         if (isEmpty()) {
             throw new NoSuchElementException("queue is empty");
@@ -311,7 +245,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
         return peek();
     }
 
-    @Override
     public E peek() {
         if (isEmpty()) {
             return null;
@@ -319,7 +252,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
         return elements[start];
     }
 
-    @Override
     public E remove() {
         if (isEmpty()) {
             throw new NoSuchElementException("queue is empty");
@@ -371,7 +303,6 @@ public class CircularFifoQueue<E> extends AbstractCollection<E>
      *
      * @return an iterator over this queue's elements
      */
-    @Override
     public Iterator<E> iterator() {
         return new Iterator<E>() {
 
