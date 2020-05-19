@@ -1,12 +1,11 @@
 package frc.robot.joystick;
 
+import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.JoystickGoal;
-import frc.taurus.messages.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.MessageQueueManager;
 
@@ -30,8 +29,8 @@ public class User1DriveControls extends ControlsBase implements IDriveControls {
     private User1DriveControls() {
         // use ControlsBase.addController() to add controllers to this control method
         Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
-        Optional<MessageQueue<JoystickStatus>> statusQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickStatusQueue);
-        Optional<MessageQueue<JoystickGoal>> goalQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickGoalQueue);
+        Optional<MessageQueue<ByteBuffer>> statusQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickStatusQueue);
+        Optional<MessageQueue<ByteBuffer>> goalQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickGoalQueue);
         mDriveController = (XboxController)ControlsBase.addController(new XboxController(joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue));      
     }
 

@@ -1,73 +1,113 @@
 package frc.taurus.messages;
 
-import java.nio.ByteBuffer;
 import java.util.Optional;
-import java.util.function.Function;
-
-import com.google.flatbuffers.FlatBufferBuilder;
 
 
 
 public class MessageQueue<T> {
-    CircularFifoQueue<ByteBuffer> mQueue;
-    Function<ByteBuffer,T> mGetRootAs;
 
-    static int initialSize = 512;
+    private T[] buffer;             // storage array (circular)
+    private int capacity;           // capacity (size of buffer)
+    private int back = 0;           // index of last (youngest) element in array
 
-    public MessageQueue(Function<ByteBuffer,T> getRootAs, 
-                        int queueDepth) {
-        mGetRootAs = getRootAs;
-        mQueue = new CircularFifoQueue<ByteBuffer>(queueDepth);
+    /**
+     * Constructor that creates a queue with the default size of 32.
+     */
+    public MessageQueue() {
+        this(32);
     }
 
-    public MessageQueue(Function<ByteBuffer,T> getRootAs) {
-        this(getRootAs, initialSize);
+    /**
+     * Constructor that creates a queue with the specified size
+     * @param size the size of the queue (cannot be changed)
+     */
+    @SuppressWarnings("unchecked")
+    public MessageQueue(final int size) {
+        if (size <= 0) {
+            throw new IllegalArgumentException("The size must be greater than 0");
+        }
+        buffer = (T[]) new Object[size];
+        capacity = buffer.length;
     }
 
-    // the following methods should be synchronized so that
-    // multiple threads can access the same queue safely (no collisions)
-
-    public synchronized void reset() {
-        mQueue.clear();
+    /**
+     * Returns the maximum size of the queue
+     * @return this queue's capacity
+     */
+    public int capacity() {
+        return capacity;
     }
 
-    // TODO: I'd prefer to pass (builder, offset) and have this function finalize the buffer
-    // with finishJoystickStatusBuffer, just to make sure we don't miss that step
-    // need to figure out Supplier<> with two arguments, or create a class with those 2 arguments
-
-    public synchronized void writeMessage(FlatBufferBuilder builder) {
-        ByteBuffer bb = builder.dataBuffer();
-        mQueue.add(bb);
+    /**
+     * Returns index of front of queue.  Index monotonically increases,
+     * even when it exceeds the capacity of the underlying storage buffer.
+     * @return index of front of queue.
+     */
+    public synchronized int front() {
+        return Math.max(back, capacity) - capacity;
     }
 
-    public synchronized Optional<T> readNextMessage() {
-        if (mQueue.isEmpty()) {
+    /**
+     * Returns index of front of queue.  Index monotonically increases,
+     * even when it exceeds the capacity of the underlying storage buffer.
+     * @return index of front of queue.
+     */
+    public synchronized int back() {
+        return back;
+    }
+
+    public synchronized void clear() {
+        back = 0;
+    }
+
+    public synchronized void write(final T element) {
+        buffer[back % capacity] = null;     // dereference for garbage collection.  Not sure this is necessary
+        buffer[back % capacity] = element;
+        back++;
+    }
+
+    // public synchronized int updateReadIndex(int index) {
+    //     // make sure idx is in the bounds of valid data
+    //     if (index >= back) {
+    //         // idx has moved too far forward.  Message has not yet been written.
+    //         return(back);
+    //     }
+
+    //     if (index < front()) {
+    //         // idx is too far back.  This data has already been overwritten.
+    //         return(front());
+    //     }
+
+    //     return index;
+    // }
+
+
+    public synchronized Optional<T> read(QueueReader reader) {
+        // make sure idx is in the bounds of valid data
+        if (reader.nextReadIndex >= back) {
+            // idx has moved too far forward.  Message has not yet been written.
+            reader.nextReadIndex = back;
             return Optional.empty();
         }
-        ByteBuffer bb = mQueue.get(0);      // get first element in queue        
-        T element = mGetRootAs.apply(bb);   // convert ByteBuffer to desired message
-        return Optional.of(element);        // place desired message in an Optional
+
+        if (reader.nextReadIndex < front()) {
+            // idx is too far back.  This data has already been overwritten.
+            reader.nextReadIndex = front();
+        }
+
+        T element = buffer[reader.nextReadIndex % capacity];
+        reader.nextReadIndex++;
+
+        return Optional.of(element);
     }
 
-    public synchronized Optional<T> readLastMessage() {
-        if (mQueue.isEmpty()) {
+    public synchronized Optional<T> readLast() {
+        if (back == 0) {
+            // nothing written yet
             return Optional.empty();
         }
-        int endIdx = mQueue.size()-1;
-        ByteBuffer bb = mQueue.get(endIdx); // get last element in queue 
-        T element = mGetRootAs.apply(bb);   // convert ByteBuffer to desired message
-        return Optional.of(element);        // place desired message in an Optional
-    }
-
-    public synchronized boolean isEmpty() {
-        return mQueue.isEmpty();
-    }
-    public synchronized int size() {
-        return mQueue.size();
-    }
-
-    public synchronized int maxSize() {
-        return mQueue.maxSize();
+        T element = buffer[(back-1) % capacity];
+        return Optional.of(element);
     }
 
     public QueueReader makeReader() {
@@ -77,64 +117,46 @@ public class MessageQueue<T> {
 
 
 
-    class QueueReader {
+    public class QueueReader {
         MessageQueue<T> mParent;
-        int iNext = 0;
+        int nextReadIndex;
 
         private QueueReader(MessageQueue<T> parent) {
             mParent = parent;
-            iNext = parent.mQueue.start();
         }
 
-        public synchronized Optional<T> readNextMessage() {
-            if (iNext >= mQueue.end()) {
-                iNext = mQueue.end();
-                return Optional.empty();
-            }
-            if (iNext < mQueue.start()) {
-                iNext = mQueue.start();
-            }
-            var current = iNext;
-            iNext++;
-            ByteBuffer bb = mQueue.get(current); 
-            T element = mGetRootAs.apply(bb);   
-            return Optional.of(element);        
+        /**
+         * Get current size of queue
+         * @return numer of elements not yet read out of queue
+         */
+        public int size() {
+            return (mParent.back() - nextReadIndex);
+        }
+
+        /**
+         * Check if queue is empty
+         * @return true if all elements have been read out of queue
+         */
+        public boolean isEmpty() {
+            return (mParent.back() == nextReadIndex);
+        }
+
+        /**
+         * Read next element out of queue
+         * @return next element
+         */
+        public Optional<T> read() {
+            return mParent.read(this);
+            // readIndex will be adjusted in this function
         }       
 
-        public synchronized Optional<T> readLastMessage() {
-            iNext = mQueue.end();
-            ByteBuffer bb = mQueue.get(iNext); 
-            T element = mGetRootAs.apply(bb);   
-            return Optional.of(element);        
-        }
-
-        
-        public boolean isEmpty() {
-            return mParent.isEmpty();
-        }
-
-        public int size() {
-            int size = 0;
-    
-            int start = iNext;
-            int end = mQueue.end();
-            int maxElements = mQueue.maxSize();
-            boolean full = mQueue.isFull();
-
-            if (end < start) {
-                size = maxElements - start + end;
-            } else if (end == start) {
-                size = full ? maxElements : 0;
-            } else {
-                size = end - start;
-            }
-    
-            return size;
-        }
-    
-
-        public int maxSize() {
-            return mQueue.maxSize();
+        /**
+         * Read last element placed in queue
+         * @return last element
+         */
+        public Optional<T> readLast() {
+            nextReadIndex = mParent.back;
+            return mParent.readLast();
         }
     }
 }

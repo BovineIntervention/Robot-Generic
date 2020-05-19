@@ -1,5 +1,6 @@
 package frc.taurus.joystick;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -20,22 +21,25 @@ public class Controller
 {
     public final Joystick wpilibJoystick;
     static ArrayList<Button> buttons;
-    public final Optional<MessageQueue<JoystickStatus>> mStatusQueue;
-    public final Optional<MessageQueue<JoystickGoal>> mRumbleQueue;
+    public final Optional<MessageQueue<ByteBuffer>> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
+    public final Optional<MessageQueue<ByteBuffer>> mRumbleQueue;   // Optional: if a rumble queue is not given in the constructur, don't check for rumble commands
+    public MessageQueue<ByteBuffer>.QueueReader mRumbleReader;
 
     public Controller(final Joystick joystick) {
         this(joystick, Optional.empty(), Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue) {
+    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue) {
         this(joystick, statusQueue, Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue, Optional<MessageQueue<JoystickGoal>> rumbleQueue) {
+    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> rumbleQueue) {
         wpilibJoystick = joystick;
         buttons = new ArrayList<>();
         mStatusQueue = statusQueue;
         mRumbleQueue = rumbleQueue;
+        if (mRumbleQueue.isPresent())
+            mRumbleReader = rumbleQueue.get().makeReader();
     }
 
     public Button addButton(int buttonId) {
@@ -69,9 +73,15 @@ public class Controller
         for (var button : buttons) {
             button.update();
         }
+
         log();
+
         if (mRumbleQueue.isPresent()) {
-            // TODO: check if controller rumble has been requested
+            Optional<ByteBuffer> obb = mRumbleReader.readLast();
+            if (obb.isPresent()) {
+                JoystickGoal joystickGoal = JoystickGoal.getRootAsJoystickGoal(obb.get());
+                setRumble(joystickGoal.rumble());
+            }
         }
     }
 
@@ -138,8 +148,10 @@ public class Controller
                 getButton(16),
                 getPOV(0));
             JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+            ByteBuffer bb = builder.dataBuffer();
 
-            mStatusQueue.get().writeMessage(builder);
+            var statusQueue = mStatusQueue.get();
+            statusQueue.write(bb);
         }
     }
 

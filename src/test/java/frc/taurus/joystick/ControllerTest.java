@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -16,9 +17,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
-import frc.taurus.messages.JoystickGoal;
 import frc.taurus.messages.JoystickStatus;
-import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.MessageQueueManager;
 
 public class ControllerTest {
@@ -341,8 +340,9 @@ public class ControllerTest {
     public void logTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        MessageQueue<JoystickStatus> statusQueue = MessageQueueManager.getInstance().driveJoystickStatusQueue;
-        MessageQueue<JoystickGoal> goalQueue = MessageQueueManager.getInstance().driveJoystickGoalQueue;
+        var statusQueue = MessageQueueManager.getInstance().driveJoystickStatusQueue;
+        var statusReader = statusQueue.makeReader();
+        var goalQueue = MessageQueueManager.getInstance().driveJoystickGoalQueue;
         Controller controller = new Controller(mockJoystick, Optional.of(statusQueue), Optional.of(goalQueue));
 
         when(mockJoystick.getRawAxis(0)).thenReturn(0.1);
@@ -373,13 +373,13 @@ public class ControllerTest {
 
         verify(mockJoystick, times(1)).getRawAxis(0);
 
-        assertEquals(1, statusQueue.size());
-        Optional<JoystickStatus> optStatus = statusQueue.readNextMessage();
+        assertEquals(1, statusReader.size());
+        Optional<ByteBuffer> optStatus = statusReader.read();
         assertTrue(optStatus.isPresent());
 
         if (optStatus.isPresent())
         {
-            JoystickStatus status = optStatus.get();
+            JoystickStatus status = JoystickStatus.getRootAsJoystickStatus(optStatus.get());
             assertEquals(0.1, status.axis0(), eps);        
             assertEquals(0.2, status.axis1(), eps);        
             assertEquals(0.3, status.axis2(), eps);        

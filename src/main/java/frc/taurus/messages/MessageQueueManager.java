@@ -1,5 +1,6 @@
 package frc.taurus.messages;
 
+import java.nio.ByteBuffer;
 
 public class MessageQueueManager {
     // singleton pattern
@@ -11,18 +12,18 @@ public class MessageQueueManager {
         return mInstance;
     }   
 
-    public MessageQueue<JoystickGoal> driveJoystickGoalQueue;
-    public MessageQueue<JoystickStatus> driveJoystickStatusQueue;
+    public MessageQueue<ByteBuffer> driveJoystickGoalQueue;
+    public MessageQueue<ByteBuffer> driveJoystickStatusQueue;
 
-    public MessageQueue<JoystickGoal> operatorJoystickGoalQueue;
-    public MessageQueue<JoystickStatus> operatorJoystickStatusQueue;    
+    public MessageQueue<ByteBuffer> operatorJoystickGoalQueue;
+    public MessageQueue<ByteBuffer> operatorJoystickStatusQueue;    
 
     private MessageQueueManager() {
-        driveJoystickGoalQueue = new MessageQueue<JoystickGoal>(JoystickGoal::getRootAsJoystickGoal);
-        driveJoystickStatusQueue = new MessageQueue<JoystickStatus>(JoystickStatus::getRootAsJoystickStatus);
+        driveJoystickGoalQueue = new MessageQueue<ByteBuffer>();
+        driveJoystickStatusQueue = new MessageQueue<ByteBuffer>();
 
-        operatorJoystickGoalQueue = new MessageQueue<JoystickGoal>(JoystickGoal::getRootAsJoystickGoal);
-        operatorJoystickStatusQueue = new MessageQueue<JoystickStatus>(JoystickStatus::getRootAsJoystickStatus);
+        operatorJoystickGoalQueue = new MessageQueue<ByteBuffer>();
+        operatorJoystickStatusQueue = new MessageQueue<ByteBuffer>();
 
 
     }
