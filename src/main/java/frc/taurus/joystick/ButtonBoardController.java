@@ -4,7 +4,8 @@ import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.taurus.messages.MessageQueue;
+import frc.taurus.messages.GenericQueue;
+import frc.taurus.messages.JoystickStatusQueue;
 
 public class ButtonBoardController extends Controller
 {
@@ -30,8 +31,8 @@ public class ButtonBoardController extends Controller
     }
 
     public ButtonBoardController(Joystick joystick, double deadband, 
-                          Optional<MessageQueue<ByteBuffer>> joystickStatusQueue,
-                          Optional<MessageQueue<ByteBuffer>> joystickGoalQueue) {
+                          Optional<JoystickStatusQueue> joystickStatusQueue,
+                          Optional<GenericQueue<ByteBuffer>> joystickGoalQueue) {
         super(joystick, joystickStatusQueue, joystickGoalQueue);
         mDeadband = deadband;
 
@@ -42,7 +43,7 @@ public class ButtonBoardController extends Controller
     }
 
     public ButtonBoardController(Joystick joystick, double deadband, 
-                          Optional<MessageQueue<ByteBuffer>> joystickStatusQueue) {
+                          Optional<JoystickStatusQueue> joystickStatusQueue) {
         this(joystick, deadband, joystickStatusQueue, Optional.empty());
     }
 

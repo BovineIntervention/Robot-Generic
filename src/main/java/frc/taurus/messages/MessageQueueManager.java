@@ -12,18 +12,18 @@ public class MessageQueueManager {
         return mInstance;
     }   
 
-    public MessageQueue<ByteBuffer> driveJoystickGoalQueue;
-    public MessageQueue<ByteBuffer> driveJoystickStatusQueue;
+    public GenericQueue<ByteBuffer> driveJoystickGoalQueue;
+    public JoystickStatusQueue driveJoystickStatusQueue;
 
-    public MessageQueue<ByteBuffer> operatorJoystickGoalQueue;
-    public MessageQueue<ByteBuffer> operatorJoystickStatusQueue;    
+    public GenericQueue<ByteBuffer> operatorJoystickGoalQueue;
+    public JoystickStatusQueue operatorJoystickStatusQueue;    
 
     private MessageQueueManager() {
-        driveJoystickGoalQueue = new MessageQueue<ByteBuffer>();
-        driveJoystickStatusQueue = new MessageQueue<ByteBuffer>();
+        driveJoystickGoalQueue = new GenericQueue<ByteBuffer>();
+        driveJoystickStatusQueue = new JoystickStatusQueue();
 
-        operatorJoystickGoalQueue = new MessageQueue<ByteBuffer>();
-        operatorJoystickStatusQueue = new MessageQueue<ByteBuffer>();
+        operatorJoystickGoalQueue = new GenericQueue<ByteBuffer>();
+        operatorJoystickStatusQueue = new JoystickStatusQueue();
 
 
     }

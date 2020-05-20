@@ -9,9 +9,10 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.messages.GenericQueue;
 import frc.taurus.messages.JoystickGoal;
 import frc.taurus.messages.JoystickStatus;
-import frc.taurus.messages.MessageQueue;
+import frc.taurus.messages.JoystickStatusQueue;
 
 /**
  * A wrapper for WPILib's Joystick class that enables logging and testing via mocking
@@ -21,19 +22,20 @@ public class Controller
 {
     public final Joystick wpilibJoystick;
     static ArrayList<Button> buttons;
-    public final Optional<MessageQueue<ByteBuffer>> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
-    public final Optional<MessageQueue<ByteBuffer>> mRumbleQueue;   // Optional: if a rumble queue is not given in the constructur, don't check for rumble commands
-    public MessageQueue<ByteBuffer>.QueueReader mRumbleReader;
+    // public final Optional<GenericQueue<ByteBuffer>> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
+    public final Optional<JoystickStatusQueue> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
+    public final Optional<GenericQueue<ByteBuffer>> mRumbleQueue;   // Optional: if a rumble queue is not given in the constructur, don't check for rumble commands
+    public GenericQueue<ByteBuffer>.QueueReader mRumbleReader;
 
     public Controller(final Joystick joystick) {
         this(joystick, Optional.empty(), Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue) {
+    public Controller(final Joystick joystick, Optional<JoystickStatusQueue> statusQueue) {
         this(joystick, statusQueue, Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> rumbleQueue) {
+    public Controller(final Joystick joystick, Optional<JoystickStatusQueue> statusQueue, Optional<GenericQueue<ByteBuffer>> rumbleQueue) {
         wpilibJoystick = joystick;
         buttons = new ArrayList<>();
         mStatusQueue = statusQueue;
@@ -147,11 +149,10 @@ public class Controller
                 getButton(15),
                 getButton(16),
                 getPOV(0));
-            JoystickStatus.finishJoystickStatusBuffer(builder, offset);
-            ByteBuffer bb = builder.dataBuffer();
-
-            var statusQueue = mStatusQueue.get();
-            statusQueue.write(bb);
+            // JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+            // ByteBuffer bb = builder.dataBuffer();
+            // mStatusQueue.get().write(bb);
+            mStatusQueue.get().write(builder, offset);
         }
     }
 

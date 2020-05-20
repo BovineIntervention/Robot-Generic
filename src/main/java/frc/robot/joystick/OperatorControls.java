@@ -8,7 +8,8 @@ import frc.robot.Constants;
 import frc.taurus.joystick.ButtonBoardController;
 import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.MessageQueue;
+import frc.taurus.messages.GenericQueue;
+import frc.taurus.messages.JoystickStatusQueue;
 import frc.taurus.messages.MessageQueueManager;
 
 /**
@@ -40,8 +41,8 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
     private OperatorControls() {
         // use ControlsBase.addController() to add controllers to this control method
         Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
-        Optional<MessageQueue<ByteBuffer>> statusQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickStatusQueue);
-        Optional<MessageQueue<ByteBuffer>> goalQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickGoalQueue);
+        Optional<JoystickStatusQueue> statusQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickStatusQueue);
+        Optional<GenericQueue<ByteBuffer>> goalQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickGoalQueue);
         mDriverController = (XboxController)ControlsBase.addController( new XboxController( joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue ));
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
