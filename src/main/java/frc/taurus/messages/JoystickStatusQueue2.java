@@ -5,34 +5,34 @@ import java.util.Optional;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-public class JoystickStatusQueue extends MessageQueue<JoystickStatus> {
+public class JoystickStatusQueue2 extends MessageQueue2<JoystickStatus> {
 
     static final int size = 32;
 
-    public JoystickStatusQueue() {
+    public JoystickStatusQueue2() {
         super(size);
     }
 
-    public void write(FlatBufferBuilder builder, int offset) {
+    public void writeMessage(FlatBufferBuilder builder, int offset) {
         JoystickStatus.finishJoystickStatusBuffer(builder, offset);
         ByteBuffer bb = builder.dataBuffer();
-        mQueue.write(bb);
+        this.write(bb);//.write(bb);
     }
 
-    public JoystickStatusReader makeReader() {
-        return new JoystickStatusReader(this.mQueue);
+    public JoystickStatusReader2 makeMessageReader() {
+        return new JoystickStatusReader2(this);
     }
 
 
 
-    public class JoystickStatusReader extends MessageReader<JoystickStatus> {
+    public class JoystickStatusReader2 extends MessageQueue2<JoystickStatus>.MessageReader2 {
 
-        private JoystickStatusReader(GenericQueue<ByteBuffer> queue) {
+        private JoystickStatusReader2(JoystickStatusQueue2 queue) {
             super(queue);
         }
     
-        public Optional<JoystickStatus> read() {
-            Optional<ByteBuffer> obb = mReader.read();
+        public Optional<JoystickStatus> readNextMessage() {
+            Optional<ByteBuffer> obb = read();
             if (obb.isEmpty()) {
                 return Optional.empty();
             }
@@ -40,8 +40,8 @@ public class JoystickStatusQueue extends MessageQueue<JoystickStatus> {
             return Optional.of(out);
         }
     
-        public Optional<JoystickStatus> readLast() {
-            Optional<ByteBuffer> obb = mReader.readLast();
+        public Optional<JoystickStatus> readLastMessage() {
+            Optional<ByteBuffer> obb = readLast();
             if (obb.isEmpty()) {
                 return Optional.empty();
             }

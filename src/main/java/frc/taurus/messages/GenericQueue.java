@@ -140,7 +140,7 @@ public class GenericQueue<T> {
         GenericQueue<T> mParent;
         int nextReadIndex;
 
-        private QueueReader(GenericQueue<T> parent) {
+        protected QueueReader(GenericQueue<T> parent) {
             mParent = parent;
         }
 
