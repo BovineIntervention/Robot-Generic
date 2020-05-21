@@ -41,7 +41,8 @@ public class MessageQueue<T> extends GenericQueue<ByteBuffer> {
             if (obb.isEmpty()) {
                 return Optional.empty();
             }
-            var out = mGetRootAs.apply(obb.get());
+            ByteBuffer bb = obb.get();
+            var out = mGetRootAs.apply(bb);
             return Optional.of(out);
         }
     
@@ -50,7 +51,8 @@ public class MessageQueue<T> extends GenericQueue<ByteBuffer> {
             if (obb.isEmpty()) {
                 return Optional.empty();
             }
-            var out = mGetRootAs.apply(obb.get());
+            ByteBuffer bb = obb.get();
+            var out = mGetRootAs.apply(bb);
             return Optional.of(out);
         }            
     }    
