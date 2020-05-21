@@ -15,19 +15,14 @@ public final class DrivetrainGoal extends Table {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public DrivetrainGoal __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public long timestamp() { int o = __offset(4); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
-  public boolean mutateTimestamp(long timestamp) { int o = __offset(4); if (o != 0) { bb.putLong(o + bb_pos, timestamp); return true; } else { return false; } }
+  public double timestamp() { int o = __offset(4); return o != 0 ? bb.getDouble(o + bb_pos) : 0.0; }
   public float throttle() { int o = __offset(6); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public boolean mutateThrottle(float throttle) { int o = __offset(6); if (o != 0) { bb.putFloat(o + bb_pos, throttle); return true; } else { return false; } }
   public float steering() { int o = __offset(8); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public boolean mutateSteering(float steering) { int o = __offset(8); if (o != 0) { bb.putFloat(o + bb_pos, steering); return true; } else { return false; } }
   public boolean highGear() { int o = __offset(10); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
-  public boolean mutateHighGear(boolean high_gear) { int o = __offset(10); if (o != 0) { bb.put(o + bb_pos, (byte)(high_gear ? 1 : 0)); return true; } else { return false; } }
   public boolean quickTurn() { int o = __offset(12); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
-  public boolean mutateQuickTurn(boolean quick_turn) { int o = __offset(12); if (o != 0) { bb.put(o + bb_pos, (byte)(quick_turn ? 1 : 0)); return true; } else { return false; } }
 
   public static int createDrivetrainGoal(FlatBufferBuilder builder,
-      long timestamp,
+      double timestamp,
       float throttle,
       float steering,
       boolean high_gear,
@@ -42,7 +37,7 @@ public final class DrivetrainGoal extends Table {
   }
 
   public static void startDrivetrainGoal(FlatBufferBuilder builder) { builder.startTable(5); }
-  public static void addTimestamp(FlatBufferBuilder builder, long timestamp) { builder.addLong(0, timestamp, 0L); }
+  public static void addTimestamp(FlatBufferBuilder builder, double timestamp) { builder.addDouble(0, timestamp, 0.0); }
   public static void addThrottle(FlatBufferBuilder builder, float throttle) { builder.addFloat(1, throttle, 0.0f); }
   public static void addSteering(FlatBufferBuilder builder, float steering) { builder.addFloat(2, steering, 0.0f); }
   public static void addHighGear(FlatBufferBuilder builder, boolean highGear) { builder.addBoolean(3, highGear, false); }

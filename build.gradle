@@ -45,7 +45,7 @@ deploy {
 }
 
 // Set this to true to enable desktop support.
-def includeDesktopSupport = false
+def includeDesktopSupport = true
 
 
 
@@ -72,6 +72,7 @@ dependencies {
 
     // implementation 'com.github.davidmoten.flatbuffers-compiler:flatbuffers-compiler:1.12.0.1'
     implementation 'com.google.flatbuffers:flatbuffers-java:1.12.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
 }
 
 
@@ -94,7 +95,8 @@ task compileFlatbuffers {
             println "Compiling: $file.name"
             exec {
                 executable = "tools/flatc.exe"
-                args = ["--java", "--gen-mutable", "-o", "src/main/java", file.absolutePath]
+                // args = ["--java", "--gen-mutable", "-o", "src/main/java", file.absolutePath]
+                args = ["--java", "-o", "src/main/java", file.absolutePath]
             }
     }
 }

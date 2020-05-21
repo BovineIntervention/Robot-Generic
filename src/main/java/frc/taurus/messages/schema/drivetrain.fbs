@@ -1,8 +1,8 @@
 namespace frc.taurus.messages;
 
 table DrivetrainGoal {
-  // Timestamp (64-bit unsigned integer)
-  timestamp:ulong;
+  // Timestamp is the first element of every message
+  timestamp:double;
 
   // Position of the throttle (positive forwards).
   throttle:float;

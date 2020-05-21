@@ -1,19 +1,29 @@
 package frc.taurus.joystick;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.nio.ByteBuffer;
+import java.util.Optional;
 
 import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Joystick;
-
-import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.AxisButton;
+import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
+import frc.taurus.messages.JoystickStatus;
+import frc.taurus.messages.MessageQueueManager;
 
 public class ControllerTest {
+
+    double eps = 1e-6;  // using floats for joystick axes
+
     @Test
     public void addButtonTest() {
         Joystick mockJoystick = mock(Joystick.class);
@@ -25,8 +35,6 @@ public class ControllerTest {
 
     @Test 
     public void handleDeadbandTest() {
-
-        double eps = 1e-9;
 
         assertEquals( 0.5, Controller.applyDeadband( 0.5,  0.05), eps);
         assertEquals(-0.5, Controller.applyDeadband(-0.5,  0.05), eps);
