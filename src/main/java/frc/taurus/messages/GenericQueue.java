@@ -66,41 +66,6 @@ public class GenericQueue<T> {
         back++;
     }
 
-    // public synchronized int updateReadIndex(int index) {
-    //     // make sure idx is in the bounds of valid data
-    //     if (index >= back) {
-    //         // idx has moved too far forward.  Message has not yet been written.
-    //         return(back);
-    //     }
-
-    //     if (index < front()) {
-    //         // idx is too far back.  This data has already been overwritten.
-    //         return(front());
-    //     }
-
-    //     return index;
-    // }
-
-    public synchronized Optional<T> read(GenericReader<T> reader) {
-       // make sure idx is in the bounds of valid data
-       if (reader.nextReadIndex >= back) {
-            // idx has moved too far forward.  Message has not yet been written.
-            reader.nextReadIndex = back;
-            return Optional.empty();
-        }
-
-        if (reader.nextReadIndex < front()) {
-            // idx is too far back.  This data has already been overwritten.
-            reader.nextReadIndex = front();
-        }
-
-        T element = buffer[reader.nextReadIndex % capacity];
-        reader.nextReadIndex++;
-
-        return Optional.of(element);
-    }
-
-
     public synchronized Optional<T> read(QueueReader reader) {
         // make sure idx is in the bounds of valid data
         if (reader.nextReadIndex >= back) {

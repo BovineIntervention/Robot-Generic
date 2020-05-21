@@ -1,11 +1,11 @@
 package frc.taurus.joystick;
 
-import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.taurus.messages.GenericQueue;
-import frc.taurus.messages.JoystickStatusQueue;
+import frc.taurus.messages.JoystickGoal;
+import frc.taurus.messages.JoystickStatus;
+import frc.taurus.messages.MessageQueue;
 
 public class XboxController extends Controller
 {
@@ -31,9 +31,9 @@ public class XboxController extends Controller
     }
 
     public XboxController(Joystick joystick, double deadband, 
-                          Optional<JoystickStatusQueue> joystickStatusQueue,
-                          Optional<GenericQueue<ByteBuffer>> joystickGoalQueue) {
-        super(joystick, joystickStatusQueue, joystickGoalQueue);
+                          Optional<MessageQueue<JoystickStatus>> joystickStausQueue,
+                          Optional<MessageQueue<JoystickGoal>> joystickGoalQueue) {
+        super(joystick, joystickStausQueue, joystickGoalQueue);
         mDeadband = deadband;
 
         // add all enumerated buttons to button list
@@ -43,8 +43,8 @@ public class XboxController extends Controller
     }
 
     public XboxController(Joystick joystick, double deadband, 
-                          Optional<JoystickStatusQueue> joystickStatusQueue) {
-        this(joystick, deadband, joystickStatusQueue, Optional.empty());
+                          Optional<MessageQueue<JoystickStatus>> joystickStausQueue) {
+        this(joystick, deadband, joystickStausQueue, Optional.empty());
     }
 
     public XboxController(Joystick joystick, double deadband) {

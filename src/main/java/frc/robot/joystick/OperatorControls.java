@@ -1,6 +1,5 @@
 package frc.robot.joystick;
 
-import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
@@ -8,8 +7,9 @@ import frc.robot.Constants;
 import frc.taurus.joystick.ButtonBoardController;
 import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.GenericQueue;
-import frc.taurus.messages.JoystickStatusQueue;
+import frc.taurus.messages.JoystickGoal;
+import frc.taurus.messages.JoystickStatus;
+import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.MessageQueueManager;
 
 /**
@@ -41,8 +41,8 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
     private OperatorControls() {
         // use ControlsBase.addController() to add controllers to this control method
         Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
-        Optional<JoystickStatusQueue> statusQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickStatusQueue);
-        Optional<GenericQueue<ByteBuffer>> goalQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickGoalQueue);
+        Optional<MessageQueue<JoystickStatus>> statusQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickStatusQueue);
+        Optional<MessageQueue<JoystickGoal>> goalQueue = Optional.of(MessageQueueManager.getInstance().operatorJoystickGoalQueue);
         mDriverController = (XboxController)ControlsBase.addController( new XboxController( joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue ));
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
