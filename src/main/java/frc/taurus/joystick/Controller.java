@@ -183,15 +183,15 @@ public class Controller
         // WPILib defines these functions, but with this Button class 
         // we can extend this to PovButtons and AxisButtons
     
-        public boolean getButton() {
+        public boolean isPressed() {
             return mCurrent;
         }
     
-        public boolean getButtonPressed() {
+        public boolean posEdge() {
             return mCurrent && !mLast;
         }
     
-        public boolean getButtonReleased() {
+        public boolean negEdge() {
             return !mCurrent && mLast;
         }        
     }  

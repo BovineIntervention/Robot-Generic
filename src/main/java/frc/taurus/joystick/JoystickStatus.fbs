@@ -1,0 +1,29 @@
+namespace frc.taurus.joystick;
+
+
+ // TODO: include all joysticks plus DriverStation data
+ // enabled, autnomous, teamId, test, fmsAttached
+ // like 971's aos/robot_state/joystick_state.fbs
+
+table JoystickStatus {
+  // Timestamp is the first element of every message
+  timestamp:double;
+
+  // Axes
+  axis0:float;
+  axis1:float;
+  axis2:float;
+  axis3:float;
+  axis4:float;
+  axis5:float;
+
+  // Buttons
+  buttons:[bool:16];
+
+  // POV
+  pov:int;
+}
+
+root_type JoystickStatus;
+
+file_identifier "JOYS";

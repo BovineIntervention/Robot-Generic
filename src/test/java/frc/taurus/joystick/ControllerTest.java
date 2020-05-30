@@ -4,12 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import org.junit.Test;
 
@@ -17,8 +12,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
-import frc.taurus.messages.JoystickStatus;
-import frc.taurus.messages.MessageQueueManager;
 
 public class ControllerTest {
 
@@ -62,53 +55,53 @@ public class ControllerTest {
         when(mockJoystick.getRawButton(0)).thenReturn(false);
         when(mockJoystick.getRawButton(1)).thenReturn(false);  
         controller.update();     
-        assertFalse( button0.getButton() );
-        assertFalse( button0.getButtonPressed() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertFalse( button0.isPressed() );
+        assertFalse( button0.posEdge() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button1.isPressed() );
 
         when(mockJoystick.getRawButton(0)).thenReturn(false);
         controller.update();   
-        assertFalse( button0.getButton() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertFalse( button0.isPressed() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button1.isPressed() );
         
         // press button 0
         when(mockJoystick.getRawButton(0)).thenReturn(true);
         controller.update();   
-        assertTrue( button0.getButton() );
-        assertTrue( button0.getButtonPressed() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertTrue( button0.isPressed() );
+        assertTrue( button0.posEdge() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button1.isPressed() );
         
         when(mockJoystick.getRawButton(0)).thenReturn(true);
         controller.update();   
-        assertTrue( button0.getButton() );
-        assertFalse( button0.getButtonPressed() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertTrue( button0.isPressed() );
+        assertFalse( button0.posEdge() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button1.isPressed() );
         
         // release
         when(mockJoystick.getRawButton(0)).thenReturn(false);
         controller.update();   
-        assertFalse( button0.getButton() );
-        assertFalse( button0.getButtonPressed() );
-        assertTrue( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertFalse( button0.isPressed() );
+        assertFalse( button0.posEdge() );
+        assertTrue( button0.negEdge() );
+        assertFalse( button1.isPressed() );
         
         when(mockJoystick.getRawButton(0)).thenReturn(false);
         controller.update();   
-        assertFalse( button0.getButton() );
-        assertFalse( button0.getButtonPressed() );
-        assertFalse( button0.getButtonReleased() );
-        assertFalse( button1.getButton() );
+        assertFalse( button0.isPressed() );
+        assertFalse( button0.posEdge() );
+        assertFalse( button0.negEdge() );
+        assertFalse( button1.isPressed() );
         
         // press button 1
         when(mockJoystick.getRawButton(1)).thenReturn(true);     
         controller.update();   
-        assertFalse( button0.getButton() );
-        assertTrue( button1.getButton() );        
+        assertFalse( button0.isPressed() );
+        assertTrue( button1.isPressed() );        
     }   
     
     @Test 
@@ -123,41 +116,41 @@ public class ControllerTest {
         // return fake axis values
         when(mockJoystick.getRawAxis(id)).thenReturn(0.1);
         controller.update();
-        assertFalse( axisButton.getButton() );
-        assertFalse( axisButton.getButtonPressed() );
-        assertFalse( axisButton.getButtonReleased() );
+        assertFalse( axisButton.isPressed() );
+        assertFalse( axisButton.posEdge() );
+        assertFalse( axisButton.negEdge() );
 
         when(mockJoystick.getRawAxis(id)).thenReturn(0.4);
         controller.update();
-        assertFalse( axisButton.getButton() );
-        assertFalse( axisButton.getButtonReleased() );
-        assertFalse( axisButton.getButtonReleased() );
+        assertFalse( axisButton.isPressed() );
+        assertFalse( axisButton.negEdge() );
+        assertFalse( axisButton.negEdge() );
 
         // press
         when(mockJoystick.getRawAxis(id)).thenReturn(0.6);
         controller.update();
-        assertTrue( axisButton.getButton() );
-        assertTrue( axisButton.getButtonPressed() );
-        assertFalse( axisButton.getButtonReleased() );
+        assertTrue( axisButton.isPressed() );
+        assertTrue( axisButton.posEdge() );
+        assertFalse( axisButton.negEdge() );
 
         when(mockJoystick.getRawAxis(id)).thenReturn(1.0);
         controller.update();        
-        assertTrue( axisButton.getButton() );
-        assertFalse( axisButton.getButtonPressed() );
-        assertFalse( axisButton.getButtonReleased() );
+        assertTrue( axisButton.isPressed() );
+        assertFalse( axisButton.posEdge() );
+        assertFalse( axisButton.negEdge() );
 
         // release
         when(mockJoystick.getRawAxis(id)).thenReturn(0.3);
         controller.update();
-        assertFalse( axisButton.getButton() );
-        assertFalse( axisButton.getButtonPressed() );
-        assertTrue( axisButton.getButtonReleased() );
+        assertFalse( axisButton.isPressed() );
+        assertFalse( axisButton.posEdge() );
+        assertTrue( axisButton.negEdge() );
 
         when(mockJoystick.getRawAxis(id)).thenReturn(0.3);
         controller.update();
-        assertFalse( axisButton.getButton() );
-        assertFalse( axisButton.getButtonPressed() );
-        assertFalse( axisButton.getButtonReleased() );             
+        assertFalse( axisButton.isPressed() );
+        assertFalse( axisButton.posEdge() );
+        assertFalse( axisButton.negEdge() );             
     }    
 
     @Test 
@@ -177,161 +170,161 @@ public class ControllerTest {
         // not pressed
         when(mockJoystick.getPOV(id)).thenReturn(-1);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );
 
         // North
         when(mockJoystick.getPOV(id)).thenReturn(0);
         controller.update();
-        assertTrue( povButtonNorth.getButton() );
-        assertTrue( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );
+        assertTrue( povButtonNorth.isPressed() );
+        assertTrue( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );
 
         // Northeast
         when(mockJoystick.getPOV(id)).thenReturn(45);
         controller.update();
-        assertTrue( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );
+        assertTrue( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );
 
         // East
         when(mockJoystick.getPOV(id)).thenReturn(90);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertTrue( povButtonNorth.getButtonReleased() );
-        assertTrue( povButtonEast.getButton() );
-        assertTrue( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );        
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertTrue( povButtonNorth.negEdge() );
+        assertTrue( povButtonEast.isPressed() );
+        assertTrue( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );        
 
         // Southeast
         when(mockJoystick.getPOV(id)).thenReturn(135);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertTrue( povButtonEast.getButtonReleased() );
-        assertTrue( povButtonSouth.getButton() );
-        assertTrue( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );             
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertTrue( povButtonEast.negEdge() );
+        assertTrue( povButtonSouth.isPressed() );
+        assertTrue( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );             
 
         // South
         when(mockJoystick.getPOV(id)).thenReturn(180);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertTrue( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );             
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertTrue( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );             
         
         // Southwest
         when(mockJoystick.getPOV(id)).thenReturn(225);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertTrue( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );             
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertTrue( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );             
 
         // West
         when(mockJoystick.getPOV(id)).thenReturn(270);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertTrue( povButtonSouth.getButtonReleased() );
-        assertTrue( povButtonWest.getButton() );
-        assertTrue( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );   
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertTrue( povButtonSouth.negEdge() );
+        assertTrue( povButtonWest.isPressed() );
+        assertTrue( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );   
         
         // Northwest
         when(mockJoystick.getPOV(id)).thenReturn(315);
         controller.update();
-        assertTrue( povButtonNorth.getButton() );
-        assertTrue( povButtonNorth.getButtonPressed() );
-        assertFalse( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertTrue( povButtonWest.getButtonReleased() );      
+        assertTrue( povButtonNorth.isPressed() );
+        assertTrue( povButtonNorth.posEdge() );
+        assertFalse( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertTrue( povButtonWest.negEdge() );      
         
         // Unpressed
         when(mockJoystick.getPOV(id)).thenReturn(-1);
         controller.update();
-        assertFalse( povButtonNorth.getButton() );
-        assertFalse( povButtonNorth.getButtonPressed() );
-        assertTrue( povButtonNorth.getButtonReleased() );
-        assertFalse( povButtonEast.getButton() );
-        assertFalse( povButtonEast.getButtonPressed() );
-        assertFalse( povButtonEast.getButtonReleased() );
-        assertFalse( povButtonSouth.getButton() );
-        assertFalse( povButtonSouth.getButtonPressed() );
-        assertFalse( povButtonSouth.getButtonReleased() );
-        assertFalse( povButtonWest.getButton() );
-        assertFalse( povButtonWest.getButtonPressed() );
-        assertFalse( povButtonWest.getButtonReleased() );         
+        assertFalse( povButtonNorth.isPressed() );
+        assertFalse( povButtonNorth.posEdge() );
+        assertTrue( povButtonNorth.negEdge() );
+        assertFalse( povButtonEast.isPressed() );
+        assertFalse( povButtonEast.posEdge() );
+        assertFalse( povButtonEast.negEdge() );
+        assertFalse( povButtonSouth.isPressed() );
+        assertFalse( povButtonSouth.posEdge() );
+        assertFalse( povButtonSouth.negEdge() );
+        assertFalse( povButtonWest.isPressed() );
+        assertFalse( povButtonWest.posEdge() );
+        assertFalse( povButtonWest.negEdge() );         
     }    
 }

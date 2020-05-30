@@ -56,13 +56,13 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
     }
 
     // Driver has control of Intaking, Aiming and Shooting
-    public boolean getIntake()  { return mIntakeAxisButton.getButton(); }
-    public boolean getAutoAim() { return mAutoAimButton.getButton(); }
-    public boolean getShoot()   { return mShootButton.getButton(); }
+    public boolean getIntake()  { return mIntakeAxisButton.isPressed(); }
+    public boolean getAutoAim() { return mAutoAimButton.isPressed(); }
+    public boolean getShoot()   { return mShootButton.isPressed(); }
 
     // Operator has control of Climbing and Turning
-    public boolean getClimb()       { return mClimbButton.getButtonReleased(); }
-    public boolean getTurnNorth()   { return mTurnNorthPovButton.getButtonPressed(); }
-    public boolean getTurnSouth()   { return mTurnSouthPovButton.getButtonPressed(); }
+    public boolean getClimb()       { return mClimbButton.negEdge(); }
+    public boolean getTurnNorth()   { return mTurnNorthPovButton.posEdge(); }
+    public boolean getTurnSouth()   { return mTurnSouthPovButton.posEdge(); }
 
 }
