@@ -1,4 +1,4 @@
-package frc.taurus.messages;
+package frc.taurus.joystick;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +10,9 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
+import frc.taurus.config.Config;
+import frc.taurus.messages.MessageQueue;
+
 public class JoystickStatusTest {
 
     double eps = 1e-6;  // using floats for joystick axes
@@ -18,7 +21,8 @@ public class JoystickStatusTest {
     @Test 
     public void writeSingleMessageTest() {
 
-        var statusQueue = MessageQueueManager.getInstance().driveJoystickStatusQueue;
+        @SuppressWarnings("unchecked")
+        MessageQueue<JoystickStatus> statusQueue = (MessageQueue<JoystickStatus>) Config.JOYSTICK_STATUS.getQueue();
         var statusReader = statusQueue.makeMessageReader();
 
         final int bufferSizeBytes = 128;   // slightly larger than required

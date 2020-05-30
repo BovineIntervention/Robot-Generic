@@ -8,12 +8,17 @@
 package frc.robot;
 
 
+import java.util.Optional;
+
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.joystick.IDriveControls;
 import frc.robot.joystick.User1DriveControls;
-import frc.taurus.messages.DrivetrainGoal;
+import frc.taurus.config.Config;
+import frc.taurus.drivetrain.DrivetrainGoal;
+import frc.taurus.joystick.JoystickGoal;
+import frc.taurus.joystick.JoystickStatus;
+import frc.taurus.messages.MessageQueue;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,9 +29,12 @@ import frc.taurus.messages.DrivetrainGoal;
  */
 public class Robot extends TimedRobot {
 
-  // User-Controls (joysticks & button boards)
-  IDriveControls user1DriveControls = User1DriveControls.getInstance();   // TODO: allow selection of user drive control scheme
 
+  // User-Controls (joysticks & button boards)
+  // TODO: allow selection of user drive control scheme
+  @SuppressWarnings("unchecked")
+  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of((MessageQueue<JoystickStatus>) Config.JOYSTICK_STATUS.getQueue()), 
+                                                                 Optional.of((MessageQueue<JoystickGoal>)   Config.JOYSTICK_GOAL.getQueue()));   
 
   /**
    * This function is run when the robot is first started up and should be used

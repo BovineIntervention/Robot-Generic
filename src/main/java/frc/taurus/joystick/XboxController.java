@@ -3,8 +3,6 @@ package frc.taurus.joystick;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.taurus.messages.JoystickGoal;
-import frc.taurus.messages.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 public class XboxController extends Controller

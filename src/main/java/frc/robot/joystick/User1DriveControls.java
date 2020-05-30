@@ -4,34 +4,23 @@ import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.taurus.joystick.JoystickGoal;
+import frc.taurus.joystick.JoystickStatus;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.JoystickGoal;
-import frc.taurus.messages.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
-import frc.taurus.messages.MessageQueueManager;
 
 /**
  * This file defines the user controls / button mappings
  */
 
 public class User1DriveControls extends ControlsBase implements IDriveControls {
-    // singleton pattern
-    private static User1DriveControls mInstance = null;
-    public static User1DriveControls getInstance() {
-        if (mInstance == null) {
-             mInstance = new User1DriveControls();
-        }
-        return mInstance;
-    }   
 
     // define the physical controllers that will be used
     private final XboxController mDriveController;
 
-    private User1DriveControls() {
+    public User1DriveControls(Optional<MessageQueue<JoystickStatus>> statusQueue, Optional<MessageQueue<JoystickGoal>> goalQueue) {
         // use ControlsBase.addController() to add controllers to this control method
         Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
-        Optional<MessageQueue<JoystickStatus>> statusQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickStatusQueue);
-        Optional<MessageQueue<JoystickGoal>> goalQueue = Optional.of(MessageQueueManager.getInstance().driveJoystickGoalQueue);
         mDriveController = (XboxController)ControlsBase.addController(new XboxController(joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue));      
     }
 

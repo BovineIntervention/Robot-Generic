@@ -1,0 +1,13 @@
+{
+  "channels":
+  [
+    {
+      "type": "frc.taurus.joystick.JoystickStatus",
+      "log_filename": "joystick"
+    },
+    {
+      "type": "frc.taurus.joystick.JoystickGoal",
+      "log_filename": "joystick"
+    }
+  ]
+}

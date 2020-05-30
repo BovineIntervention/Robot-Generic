@@ -8,7 +8,7 @@ import frc.taurus.joystick.Controller;
  * ControlsBase keeps a static list of all unique controllers.
  */
 
-abstract class ControlsBase {
+public abstract class ControlsBase {
 
     static ArrayList<Controller> controllers;
 

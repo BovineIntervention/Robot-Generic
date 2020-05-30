@@ -1,4 +1,9 @@
-namespace frc.taurus.messages;
+namespace frc.taurus.joystick;
+
+
+ // TODO: include all joysticks plus DriverStation data
+ // enabled, autnomous, teamId, test, fmsAttached
+ // like 971's aos/robot_state/joystick_state.fbs
 
 table JoystickStatus {
   // Timestamp is the first element of every message
@@ -34,10 +39,6 @@ table JoystickStatus {
   pov:int;
 }
 
-table JoystickGoal {
-  // Timestamp (64-bit unsigned integer)
-  timestamp:ulong;
-  rumble:bool;
-}
-
 root_type JoystickStatus;
+
+file_identifier "JOYS";

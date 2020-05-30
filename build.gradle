@@ -72,7 +72,8 @@ dependencies {
 
     // implementation 'com.github.davidmoten.flatbuffers-compiler:flatbuffers-compiler:1.12.0.1'
     implementation 'com.google.flatbuffers:flatbuffers-java:1.12.0'
-    implementation 'org.apache.commons:commons-collections4:4.4'
+    // implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    // implementation 'com.google.guava:guava:29.0-jre'    
 }
 
 
@@ -87,11 +88,11 @@ jar {
 
 // tools\flatc.exe --java --gen-mutable -o "src/main/java" src/main/java/frc/taurus/messages/schema/drivetrain.fbs
 task compileFlatbuffers {
-    String fbs_folder = "src/main/java/frc/taurus/messages/schema" 
+
+    String base_folder = "src/main/java/frc/" 
+    FileTree files = fileTree(base_folder) { include '**/*.fbs' }
     
-    FileTree files = fileTree(fbs_folder).matching{ include "**/*.fbs"}
-    
-    files.each{ File file ->
+    files.each { File file ->
             println "Compiling: $file.name"
             exec {
                 executable = "tools/flatc.exe"
@@ -99,4 +100,15 @@ task compileFlatbuffers {
                 args = ["--java", "-o", "src/main/java", file.absolutePath]
             }
     }
+
+    base_folder = "src/test/java/frc/" 
+    files = fileTree(base_folder) { include '**/*.fbs' }
+    
+    files.each { File file ->
+            println "Compiling: $file.name"
+            exec {
+                executable = "tools/flatc.exe"
+                args = ["--java", "-o", "src/test/java", file.absolutePath]
+            }
+    }    
 }

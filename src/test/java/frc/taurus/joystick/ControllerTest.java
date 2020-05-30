@@ -4,12 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import org.junit.Test;
 
@@ -17,8 +12,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
-import frc.taurus.messages.JoystickStatus;
-import frc.taurus.messages.MessageQueueManager;
 
 public class ControllerTest {
 
