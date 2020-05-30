@@ -22,7 +22,7 @@ public class JoystickStatusTest {
     public void writeSingleMessageTest() {
 
         @SuppressWarnings("unchecked")
-        MessageQueue<JoystickStatus> statusQueue = (MessageQueue<JoystickStatus>) Config.JOYSTICK_STATUS.getQueue();
+        MessageQueue<JoystickStatus> statusQueue = (MessageQueue<JoystickStatus>) Config.DRIVER_JOYSTICK_STATUS.getQueue();
         var statusReader = statusQueue.makeMessageReader();
 
         final int bufferSizeBytes = 128;   // slightly larger than required

@@ -13,6 +13,7 @@ import java.util.Optional;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.joystick.OperatorControls;
 import frc.robot.joystick.User1DriveControls;
 import frc.taurus.config.Config;
 import frc.taurus.drivetrain.DrivetrainGoal;
@@ -33,9 +34,11 @@ public class Robot extends TimedRobot {
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
   @SuppressWarnings("unchecked")
-  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of((MessageQueue<JoystickStatus>) Config.JOYSTICK_STATUS.getQueue()), 
-                                                                 Optional.of((MessageQueue<JoystickGoal>)   Config.JOYSTICK_GOAL.getQueue()));   
-
+  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of((MessageQueue<JoystickStatus>) Config.DRIVER_JOYSTICK_STATUS.getQueue()), 
+                                                                 Optional.of((MessageQueue<JoystickGoal>)   Config.DRIVER_JOYSTICK_GOAL.getQueue()));  
+  @SuppressWarnings("unchecked") 
+  OperatorControls operatorControls = new OperatorControls(Optional.of((MessageQueue<JoystickStatus>) Config.OPERATOR_JOYSTICK_STATUS.getQueue()), 
+                                                           Optional.of((MessageQueue<JoystickGoal>)   Config.OPERATOR_JOYSTICK_GOAL.getQueue()));  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
