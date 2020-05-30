@@ -5,23 +5,20 @@ namespace frc.taurus.joystick;
  // enabled, autnomous, teamId, test, fmsAttached
  // like 971's aos/robot_state/joystick_state.fbs
 
+struct AxisVector {
+  axes : [float:6];
+}
+struct ButtonVector {
+  buttons : [bool:16];
+}
+
 table JoystickStatus {
   // Timestamp is the first element of every message
-  timestamp:double;
+  timestamp : double;
 
-  // Axes
-  axis0:float;
-  axis1:float;
-  axis2:float;
-  axis3:float;
-  axis4:float;
-  axis5:float;
-
-  // Buttons
-  buttons:[bool:16];
-
-  // POV
-  pov:int;
+  axes : AxisVector;
+  buttons : ButtonVector;
+  pov : int;
 }
 
 root_type JoystickStatus;

@@ -1,5 +1,6 @@
 package frc.taurus.messages;
 
+import frc.taurus.joystick.JoystickStatus;
 
 public class MessageQueueManager {
     // singleton pattern
