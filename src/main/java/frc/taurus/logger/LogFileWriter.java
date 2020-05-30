@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -140,17 +139,4 @@ public class LogFileWriter {
             e.printStackTrace();
         }
     }    
-
-    // public byte[] readLogFile(String filename) {
-    //     File file = new File(basePath + "/" + filename);
-    //     byte[] buffer = new byte[0];
-    //     try (RandomAccessFile f = new RandomAccessFile(file, "r")) {
-    //         buffer = new byte[(int)f.length()];
-    //         f.readFully(buffer);
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return buffer;
-    // }
-
 }

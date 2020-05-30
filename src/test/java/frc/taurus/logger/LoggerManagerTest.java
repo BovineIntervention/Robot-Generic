@@ -20,12 +20,12 @@ import frc.taurus.messages.TestMessage;
 
 public class LoggerManagerTest {
 
-    final int BUFFER_SIZE = 1024;
+    ChannelManager channelManager = ChannelManager.getInstance();
 
     @SuppressWarnings("unchecked")
     @Test
     public void writeOneMessageTest() {
-        ChannelManager channelManager = ChannelManager.getInstance();
+        
         MessageQueue<TestMessage> queue = (MessageQueue<TestMessage>)channelManager.fetch(Config.TEST_MESSAGE);
 
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
@@ -36,6 +36,8 @@ public class LoggerManagerTest {
         channelManager.close();     // close file so we can read it
 
 
+
+        // Read log file and check its contents
         LogFileReader parser = new LogFileReader(Config.TEST_MESSAGE);
         ByteBuffer bb = parser.getNextTable();
 
