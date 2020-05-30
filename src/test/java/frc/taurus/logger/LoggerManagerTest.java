@@ -26,11 +26,12 @@ public class LoggerManagerTest {
     @Test
     public void writeOneMessageTest() {
         
-        MessageQueue<TestMessage> queue = (MessageQueue<TestMessage>)channelManager.fetch(Config.TEST_MESSAGE);
+        MessageQueue<ByteBuffer> queue = (MessageQueue<ByteBuffer>)channelManager.fetch(Config.TEST_MESSAGE);
 
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
         int offset = TestMessage.createTestMessage(builder, 686);
-        queue.writeMessage(builder, offset);      
+        builder.finish(offset);
+        queue.write(builder.dataBuffer());      
         
         channelManager.update();    // write to file
         channelManager.close();     // close file so we can read it

@@ -4,13 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.ByteBuffer;
 import java.util.Optional;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
-import frc.taurus.messages.MessageQueueManager;
+import frc.taurus.config.Config;
 
 public class JoystickStatusTest {
 
@@ -20,8 +21,8 @@ public class JoystickStatusTest {
     @Test 
     public void writeSingleMessageTest() {
 
-        var statusQueue = MessageQueueManager.getInstance().driveJoystickStatusQueue;
-        var statusReader = statusQueue.makeMessageReader();
+        var statusQueue = Config.DRIVER_JOYSTICK_STATUS.getQueue();
+        var statusReader = statusQueue.makeReader();
 
         // values to store in flatbuffer
         double timestamp = 12345678.0;
@@ -48,7 +49,10 @@ public class JoystickStatusTest {
         JoystickStatus.addPov(builder, pov);
         int offset = JoystickStatus.endJoystickStatus(builder);
 
-        statusQueue.writeMessage(builder, offset);
+        JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+        ByteBuffer bb = builder.dataBuffer();
+
+        statusQueue.write(bb);
 
 
 
@@ -57,13 +61,13 @@ public class JoystickStatusTest {
 
         assertFalse(statusReader.isEmpty());
         assertEquals(1, statusReader.size());
-        Optional<JoystickStatus> optStatus = statusReader.readLastMessage();
+        Optional<ByteBuffer> optStatus = statusReader.readLast();
         assertTrue(statusReader.isEmpty());
         assertTrue(optStatus.isPresent());
 
         if (optStatus.isPresent())
         {
-            JoystickStatus status = optStatus.get();
+            JoystickStatus status = JoystickStatus.getRootAsJoystickStatus( optStatus.get() );
             assertEquals(timestamp, status.timestamp(), eps);
 
             AxisVector axesVector = status.axes();

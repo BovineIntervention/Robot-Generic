@@ -1,12 +1,8 @@
 package frc.taurus.config;
 
-import frc.taurus.config.ChannelIntf;
-import frc.taurus.config.ChannelType;
-import frc.taurus.joystick.JoystickGoal;
-import frc.taurus.joystick.JoystickStatus;
+import java.nio.ByteBuffer;
+
 import frc.taurus.messages.MessageQueue;
-import frc.taurus.messages.TestMessage;
-import frc.taurus.messages.TestMessage2;
 
 /**
  * Channels used in the code need to be listed here.  
@@ -16,28 +12,28 @@ import frc.taurus.messages.TestMessage2;
  */
 
 public enum Config implements ChannelIntf {
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick.log",     new MessageQueue<JoystickStatus>(){} ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick.log",     new MessageQueue<JoystickGoal>(){} ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick.log",     new MessageQueue<JoystickStatus>(){} ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick.log",     new MessageQueue<JoystickGoal>(){} ),
-    TEST_MESSAGE    (ChannelType.TestMessage,       "test.log",         new MessageQueue<TestMessage>(){} ),
-    TEST_MESSAGE_2  (ChannelType.TestMessage2,      "test.log",         new MessageQueue<TestMessage2>(){} );
+    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick.log" ),
+    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick.log" ),
+    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick.log" ),
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick.log" ),
+    TEST_MESSAGE                (ChannelType.TestMessage,       "test.log" ),
+    TEST_MESSAGE_2              (ChannelType.TestMessage2,      "test.log" );
 
     private final int num;
     private final String name;
     private final String logFilename;
-    private final MessageQueue<?> queue;
+    private final MessageQueue<ByteBuffer> queue;
 
-    Config(final int num, final String logFilename, final MessageQueue<?> queue) {
+    Config(final int num, final String logFilename) {
         this.num = num;
         this.name = ChannelType.name(num);        
         this.logFilename = logFilename;
-        this.queue = queue;
+        this.queue = new MessageQueue<ByteBuffer>(){};
     }
 
     public int getNum() { return num; }
     public String getName() { return name; }
     public String getLogFilename() { return logFilename; }
-    public MessageQueue<?> getQueue() { return queue; }  
+    public MessageQueue<ByteBuffer> getQueue() { return queue; }  
 }
 

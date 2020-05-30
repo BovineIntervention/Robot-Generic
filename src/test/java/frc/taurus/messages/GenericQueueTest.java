@@ -16,8 +16,8 @@ public class GenericQueueTest {
     // verify queue can be reset/cleared
     @Test
     public void resetTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();
 
         queue.write(686);                       // write value to queue
         
@@ -34,8 +34,8 @@ public class GenericQueueTest {
     // verify we can send one value
     @Test
     public void sendSingleValueTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();
 
         queue.write(686);                       // write value to queue
         
@@ -53,7 +53,7 @@ public class GenericQueueTest {
     // verify GenericQueue.readLast() returns the last element, always
     @Test
     public void queueReadLastTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
         
         queue.write(254);                            // write 3 elements into queue
         queue.write(971);                            
@@ -74,13 +74,13 @@ public class GenericQueueTest {
     // check that queue reader reads several values correctly
     @Test
     public void readerReadTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
         
         queue.write(254);                       // write 3 elements into queue     
         queue.write(971);                            
         queue.write(686);                            
     
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();
 
         assertEquals(3, reader.size());
         Optional<Integer> opt = reader.read();   // read the next value, removing it
@@ -112,13 +112,13 @@ public class GenericQueueTest {
     // check that queue reader reads the last value correctly
     @Test
     public void readerReadLastTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
         
         queue.write(254);                           // write three values into queue               
         queue.write(971);                            
         queue.write(686);                            
     
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();
 
         assertEquals(3, reader.size());
         assertFalse(reader.isEmpty());
@@ -140,8 +140,8 @@ public class GenericQueueTest {
     // check that queue delivers multiple values correctly, and in sequence
     @Test
     public void deliverManyValuesTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();    
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();    
         
         for (int k=0; k<10; k++) {
             queue.write(k);      // write a counting pattern
@@ -162,8 +162,8 @@ public class GenericQueueTest {
     // and we start to overwrite the beginning of the buffer
     @Test
     public void wraparoundTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();    
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();    
         
         queue.clear();
 
@@ -197,7 +197,7 @@ public class GenericQueueTest {
     // ensure that the queue works with multiple readers
     @Test
     public void multipleReaderTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
         
         var reader1 = queue.makeReader();
         var reader2 = queue.makeReader();
@@ -249,8 +249,8 @@ public class GenericQueueTest {
     @Test
     public void speedTest() {
         final int numValues = 1000000;
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(numValues);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();    
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(numValues);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();    
         
         // fill queue with counting pattern
         for (int k=0; k<numValues; k++) {
@@ -276,7 +276,7 @@ public class GenericQueueTest {
         final int kNumValues = 10000;
         final int numThreads = 5;
         final long timeout = 1000;  // milliseconds
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(kNumValues);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(kNumValues);
 
         // start reader threads
         Thread[] threads = new Thread[numThreads];
@@ -285,7 +285,7 @@ public class GenericQueueTest {
                 public void run() {
                     // System.out.println(Thread.currentThread().getName() 
                     //          + " started");
-                    GenericQueue<Integer>.QueueReader reader = queue.makeReader();                    
+                    MessageQueue<Integer>.QueueReader reader = queue.makeReader();                    
                     int cnt = 0;
                     long start = System.currentTimeMillis();
                     long end = start + timeout;
@@ -334,7 +334,7 @@ public class GenericQueueTest {
         final int kNumValuesPerThread = 10000;
         final int kNumThreads = 5;
         final long timeout = 1000;  // milliseconds
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(kNumValuesPerThread * kNumThreads);
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(kNumValuesPerThread * kNumThreads);
 
         CountDownLatch latch = new CountDownLatch(kNumThreads);
         AtomicReference<AssertionError> failure = new AtomicReference<>();
@@ -346,7 +346,7 @@ public class GenericQueueTest {
                 public void run() {
                     // System.out.println(Thread.currentThread().getName() 
                     //          + " started");
-                    GenericQueue<Integer>.QueueReader reader = queue.makeReader();                    
+                    MessageQueue<Integer>.QueueReader reader = queue.makeReader();                    
                     int cnt = 0;
                     long start = System.currentTimeMillis();
                     long end = start + timeout;
@@ -428,8 +428,8 @@ public class GenericQueueTest {
     // check that reader index moves up when reader gets too far behind
     @Test
     public void readerIndexTest() {
-        GenericQueue<Integer> queue = new GenericQueue<Integer>(10);
-        GenericQueue<Integer>.QueueReader reader = queue.makeReader();    
+        MessageQueue<Integer> queue = new MessageQueue<Integer>(10);
+        MessageQueue<Integer>.QueueReader reader = queue.makeReader();    
 
         assertEquals(0, reader.nextReadIndex);
 

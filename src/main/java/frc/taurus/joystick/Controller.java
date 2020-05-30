@@ -19,19 +19,19 @@ public class Controller
 {
     public final Joystick wpilibJoystick;
     static ArrayList<Button> buttons;
-    public final Optional<MessageQueue<JoystickStatus>> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
-    public final Optional<MessageQueue<JoystickGoal>> mRumbleQueue;   // Optional: if a rumble queue is not given in the constructur, don't check for rumble commands
-    public MessageQueue<JoystickGoal>.QueueReader mRumbleReader;
+    public final Optional<MessageQueue<ByteBuffer>> mStatusQueue;   // Optional: if a status queue is not given in the constructor, don't send JoystickStatus
+    public final Optional<MessageQueue<ByteBuffer>> mRumbleQueue;   // Optional: if a rumble queue is not given in the constructur, don't check for rumble commands
+    public MessageQueue<ByteBuffer>.QueueReader mRumbleReader;
 
     public Controller(final Joystick joystick) {
         this(joystick, Optional.empty(), Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue) {
+    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue) {
         this(joystick, statusQueue, Optional.empty());
     }
 
-    public Controller(final Joystick joystick, Optional<MessageQueue<JoystickStatus>> statusQueue, Optional<MessageQueue<JoystickGoal>> rumbleQueue) {
+    public Controller(final Joystick joystick, Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> rumbleQueue) {
         wpilibJoystick = joystick;
         buttons = new ArrayList<>();
         mStatusQueue = statusQueue;
@@ -139,7 +139,10 @@ public class Controller
             JoystickStatus.addPov(builder, getPOV(0));
             int offset = JoystickStatus.endJoystickStatus(builder);
             
-            mStatusQueue.get().writeMessage(builder, offset);
+            JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+            ByteBuffer bb = builder.dataBuffer();
+            
+            mStatusQueue.get().write(bb);
         }
     }
 

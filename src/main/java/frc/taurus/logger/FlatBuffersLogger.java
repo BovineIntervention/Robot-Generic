@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import frc.taurus.config.ChannelIntf;
-import frc.taurus.messages.GenericQueue;
+import frc.taurus.messages.MessageQueue;
 
 /**
  * A log file is a sequence of size prefixed flatbuffers.
@@ -21,9 +21,9 @@ public class FlatBuffersLogger {
 
     class ChannelTypeReaderPair {
         public int channelType;
-        public GenericQueue<ByteBuffer>.QueueReader reader;
+        public MessageQueue<ByteBuffer>.QueueReader reader;
 
-        ChannelTypeReaderPair(final int channelType, final GenericQueue<ByteBuffer>.QueueReader reader) {
+        ChannelTypeReaderPair(final int channelType, final MessageQueue<ByteBuffer>.QueueReader reader) {
             this.channelType = channelType;
             this.reader = reader;
         }
@@ -43,7 +43,8 @@ public class FlatBuffersLogger {
 
 
     public void register(ChannelIntf channel) {
-        ChannelTypeReaderPair pair = new ChannelTypeReaderPair( channel.getNum(), channel.getQueue().makeReader() );
+        @SuppressWarnings("unchecked")
+        ChannelTypeReaderPair pair = new ChannelTypeReaderPair( channel.getNum(), (MessageQueue<ByteBuffer>.QueueReader)channel.getQueue().makeReader() );
         pairList.add(pair);
     }
 
