@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
 import frc.taurus.joystick.XboxController;
 import frc.taurus.messages.JoystickGoal;
-import frc.taurus.messages.JoystickStatus;
+import frc.taurus.joystick.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.MessageQueueManager;
 

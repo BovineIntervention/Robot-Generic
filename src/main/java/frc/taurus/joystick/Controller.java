@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.messages.JoystickGoal;
-import frc.taurus.messages.JoystickStatus;
+import frc.taurus.joystick.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 /**
@@ -122,31 +122,25 @@ public class Controller
             FlatBufferBuilder builder = new FlatBufferBuilder(bufferSizeBytes);        
             double timestamp = Timer.getFPGATimestamp();
 
-            int offset = JoystickStatus.createJoystickStatus(builder,
-                timestamp,
-                (float)getAxis(0),
-                (float)getAxis(1),
-                (float)getAxis(2),
-                (float)getAxis(3),
-                (float)getAxis(4),
-                (float)getAxis(5),
-                getButton(1),
-                getButton(2),
-                getButton(3),
-                getButton(4),
-                getButton(5),
-                getButton(6),
-                getButton(7),
-                getButton(8),
-                getButton(9),
-                getButton(10),
-                getButton(11),
-                getButton(12),
-                getButton(13),
-                getButton(14),
-                getButton(15),
-                getButton(16),
-                getPOV(0));
+            float[] axes = new float[6];
+            for (int k=0; k<16; k++) {
+                axes[k] = (float)getAxis(k);
+            }
+            int axesOffset = AxisVector.createAxisVector(builder, axes);
+
+            boolean[] buttons = new boolean[16];
+            for (int k=0; k<16; k++) {
+                buttons[k] = getButton(k+1);
+            }
+            int buttonsOffset = ButtonVector.createButtonVector(builder, buttons);
+
+            JoystickStatus.startJoystickStatus(builder);
+            JoystickStatus.addTimestamp(builder, timestamp);
+            JoystickStatus.addAxes(builder, axesOffset);
+            JoystickStatus.addButtons(builder, buttonsOffset);
+            JoystickStatus.addPov(builder, getPOV(0));
+            int offset = JoystickStatus.endJoystickStatus(builder);
+            
             mStatusQueue.get().writeMessage(builder, offset);
         }
     }
@@ -183,15 +177,15 @@ public class Controller
         // WPILib defines these functions, but with this Button class 
         // we can extend this to PovButtons and AxisButtons
     
-        public boolean getButton() {
+        public boolean isPressed() {
             return mCurrent;
         }
     
-        public boolean getButtonPressed() {
+        public boolean posEdge() {
             return mCurrent && !mLast;
         }
     
-        public boolean getButtonReleased() {
+        public boolean negEdge() {
             return !mCurrent && mLast;
         }        
     }  
