@@ -159,7 +159,7 @@ imgui.ini
 
 
 !flatc.exe
-
+*.tmp
 # End of https://www.gitignore.io/api/c++,java,linux,macos,gradle,windows,visualstudiocode
 
 *.tmp

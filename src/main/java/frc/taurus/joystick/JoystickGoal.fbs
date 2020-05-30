@@ -1,0 +1,10 @@
+namespace frc.taurus.joystick;
+
+table JoystickGoal {
+  timestamp:double;
+  rumble:bool;
+}
+
+root_type JoystickGoal;
+
+file_identifier "JOYG";

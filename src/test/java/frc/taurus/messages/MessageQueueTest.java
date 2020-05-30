@@ -19,7 +19,7 @@ public class MessageQueueTest {
     // verify queue can be reset/cleared
     @Test
     public void resetTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
@@ -35,11 +35,27 @@ public class MessageQueueTest {
         assertTrue(reader.isEmpty());
     }
 
+    // MessageQueue<TestMessage> testQueue = new MessageQueue<TestMessage>(10);
+
+    // test type token
+    @Test
+    public void typeTest() throws SecurityException, NoSuchFieldException {
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
+        MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
+        MessageQueue<TestMessage2> queue2 = new MessageQueue<TestMessage2>(10){};
+        MessageQueue<TestMessage2>.MessageReader reader2 = queue2.makeMessageReader();
+        assertEquals(TestMessage.class, queue.type());
+        assertEquals(TestMessage.class, reader.type());
+        assertEquals(TestMessage2.class, queue2.type());
+        assertEquals(TestMessage2.class, reader2.type());
+    }
+
+
 
     // verify we can send one value
     @Test
     public void sendSingleValueTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
@@ -51,7 +67,7 @@ public class MessageQueueTest {
         assertTrue(opt.isPresent());            // verify that the value is present (not empty)
         
         TestMessage msg = opt.get();            // get the element
-        assertEquals(686, msg.value());         // verify contents are 686
+        assertEquals(686, msg.intValue());      // verify contents are 686
 
         assertEquals(0, reader.size());         // verify queue is now empty
         assertTrue(reader.isEmpty());           // verify queue is now empty
@@ -61,9 +77,11 @@ public class MessageQueueTest {
     // verify GenericQueue.readLastMessage() returns the last element, always
     @Test
     public void readLastMessageTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
 
+        // you must create a new builder for each write, 
+        // or all written values will end up being the same        
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
         int offset = TestMessage.createTestMessage(builder, 254);
         queue.writeMessage(builder, offset);       
@@ -84,16 +102,18 @@ public class MessageQueueTest {
             assertTrue(opt.isPresent());                 // verify that the value is present (not empty)
 
             TestMessage msg = opt.get();                   // get the value
-            assertEquals(686, msg.value());           // verify contents are 686
+            assertEquals(686, msg.intValue());           // verify contents are 686
         }
     }
 
     // check that queue reader reads several values correctly
     @Test
     public void readerReadNextMessageTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
 
+        // you must create a new builder for each write, 
+        // or all written values will end up being the same
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
         int offset = TestMessage.createTestMessage(builder, 254);
         queue.writeMessage(builder, offset);   
@@ -110,19 +130,19 @@ public class MessageQueueTest {
         Optional<TestMessage> opt = reader.readNextMessage();   // read the next value, removing it
         assertTrue(opt.isPresent());             // verify that the value is present (not empty)
         TestMessage msg = opt.get();               // get the value
-        assertEquals(254, msg.value());       // verify contents are 254
+        assertEquals(254, msg.intValue());       // verify contents are 254
         
         assertEquals(2, reader.size());
         opt = reader.readNextMessage();                     // read the next value    
         assertTrue(opt.isPresent());                                
         msg = opt.get();                                      
-        assertEquals(971, msg.value());       // verify contents are 971                    
+        assertEquals(971, msg.intValue());       // verify contents are 971                    
         
         assertEquals(1, reader.size());
         opt = reader.readNextMessage();                     // read the next value    
         assertTrue(opt.isPresent());                                
         msg = opt.get();                              
-        assertEquals(686, msg.value());       // verify contents are 686                     
+        assertEquals(686, msg.intValue());       // verify contents are 686                     
         
         assertEquals(0, reader.size());
         assertTrue(reader.isEmpty());           // verify all elements have been read out
@@ -136,9 +156,11 @@ public class MessageQueueTest {
     // check that queue reader reads the last value correctly
     @Test
     public void readerReadLastMessageTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
+        // you must create a new builder for each write, 
+        // or all written values will end up being the same
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
         int offset = TestMessage.createTestMessage(builder, 254);
         queue.writeMessage(builder, offset);       
@@ -157,7 +179,7 @@ public class MessageQueueTest {
         Optional<TestMessage> opt = reader.readLastMessage();  // read the last value, remove all values
         assertTrue(opt.isPresent());                // verify that the value is present (not empty)
         TestMessage msg = opt.get();                  // get the value
-        assertEquals(686, msg.value());          // verify contents are 686
+        assertEquals(686, msg.intValue());          // verify contents are 686
 
         assertEquals(0, reader.size());
         assertTrue(reader.isEmpty());
@@ -171,7 +193,7 @@ public class MessageQueueTest {
     // check that queue delivers multiple values correctly, and in sequence
     @Test
     public void deliverManyValuesTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
         for (int k=0; k<10; k++) {
@@ -183,7 +205,7 @@ public class MessageQueueTest {
         int cnt = 0;            
         Optional<TestMessage> opt = reader.readNextMessage();
         while (opt.isPresent()) {
-            assertEquals(cnt++, opt.get().value());  // check we are reading counting pattern
+            assertEquals(cnt++, opt.get().intValue());  // check we are reading counting pattern
             opt = reader.readNextMessage();
         }
 
@@ -195,7 +217,7 @@ public class MessageQueueTest {
     // and we start to overwrite the beginning of the buffer
     @Test
     public void wraparoundTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
         queue.clear();
@@ -210,7 +232,7 @@ public class MessageQueueTest {
         int cnt = 0;
         Optional<TestMessage> opt = reader.readNextMessage();
         while (opt.isPresent()) {
-            assertEquals(cnt++, opt.get().value());
+            assertEquals(cnt++, opt.get().intValue());
             opt = reader.readNextMessage();            
         }
 
@@ -223,7 +245,7 @@ public class MessageQueueTest {
 
         opt = reader.readNextMessage();
         while (opt.isPresent()) {
-            assertEquals(cnt++, opt.get().value());
+            assertEquals(cnt++, opt.get().intValue());
             opt = reader.readNextMessage();            
         }
 
@@ -234,7 +256,7 @@ public class MessageQueueTest {
     // ensure that the queue works with multiple readers
     @Test
     public void multipleReaderTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         
         var reader1 = queue.makeMessageReader();
         var reader2 = queue.makeMessageReader();
@@ -253,7 +275,7 @@ public class MessageQueueTest {
         var opt = reader1.readNextMessage();
         assertTrue(opt.isPresent());
         while (opt.isPresent()) {
-            assertEquals(cnt++, opt.get().value());
+            assertEquals(cnt++, opt.get().intValue());
             opt = reader1.readNextMessage();            
         }
         assertTrue(reader1.isEmpty());
@@ -263,7 +285,7 @@ public class MessageQueueTest {
         opt = reader2.readNextMessage();
         assertTrue(opt.isPresent());
         while (opt.isPresent()) {
-            assertEquals(cnt++, opt.get().value());
+            assertEquals(cnt++, opt.get().intValue());
             opt = reader2.readNextMessage();            
         }   
         assertTrue(reader2.isEmpty());
@@ -273,11 +295,11 @@ public class MessageQueueTest {
         for (int k=0; k<9; k++) {
             opt = reader3.readNextMessage();
             assertTrue(opt.isPresent());
-            assertEquals(k, opt.get().value());
+            assertEquals(k, opt.get().intValue());
             
             opt = reader4.readNextMessage();
             assertTrue(opt.isPresent());
-            assertEquals(k, opt.get().value());
+            assertEquals(k, opt.get().intValue());
         }
         assertTrue(reader3.isEmpty());
         assertTrue(reader4.isEmpty());
@@ -288,7 +310,7 @@ public class MessageQueueTest {
     @Test
     public void speedTest() {
         final int numValues = 1000000;
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(numValues, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(numValues){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
         
         // fill queue with counting pattern
@@ -302,7 +324,7 @@ public class MessageQueueTest {
         while (!reader.isEmpty()) {
             var opt = reader.readNextMessage();
             if (opt.isPresent()) {
-                assertEquals(cnt++, opt.get().value());
+                assertEquals(cnt++, opt.get().intValue());
             }
         }
         assertEquals(1000000, cnt);        
@@ -317,7 +339,7 @@ public class MessageQueueTest {
         final int kNumValues = 10000;
         final int numThreads = 5;
         final long timeout = 1000;  // milliseconds
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(kNumValues, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(kNumValues){};
 
         // start reader threads
         Thread[] threads = new Thread[numThreads];
@@ -335,7 +357,7 @@ public class MessageQueueTest {
                         while (!reader.isEmpty()) {
                             var opt = reader.readNextMessage();
                             if (opt.isPresent()) {
-                                assertEquals(cnt++, opt.get().value());
+                                assertEquals(cnt++, opt.get().intValue());
                             }
                         }
                     }
@@ -378,7 +400,7 @@ public class MessageQueueTest {
         final int kNumValuesPerThread = 10000;
         final int kNumThreads = 5;
         final long timeout = 1000;  // milliseconds
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(kNumValuesPerThread*kNumThreads, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(kNumValuesPerThread*kNumThreads){};
 
         CountDownLatch latch = new CountDownLatch(kNumThreads);
         AtomicReference<AssertionError> failure = new AtomicReference<>();
@@ -477,7 +499,7 @@ public class MessageQueueTest {
     // check that reader index moves up when reader gets too far behind
     @Test
     public void readerIndexTest() {
-        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10, TestMessage::getRootAsTestMessage);
+        MessageQueue<TestMessage> queue = new MessageQueue<TestMessage>(10){};
         MessageQueue<TestMessage>.MessageReader reader = queue.makeMessageReader();
 
         assertEquals(0, reader.nextReadIndex);
@@ -511,7 +533,7 @@ public class MessageQueueTest {
         assertEquals(12, queue.back());
         opt = reader.readNextMessage();
         assertTrue(opt.isPresent());
-        assertEquals(1, opt.get().value());         
+        assertEquals(1, opt.get().intValue());         
         assertEquals(3, reader.nextReadIndex);  
     }
 }

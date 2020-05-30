@@ -1,0 +1,13 @@
+namespace frc.taurus.messages;
+
+table TestMessage {
+  int_value : int;
+}
+
+table TestMessage2 {
+  dbl_value : double;
+}
+
+file_identifier "TEST";
+
+root_type TestMessage;

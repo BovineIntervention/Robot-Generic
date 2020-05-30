@@ -1,0 +1,19 @@
+include "../config/ChannelType.fbs";    // don't know why '../config/' seems to be necessary
+
+namespace frc.taurus.config;
+
+table Channel { 
+    channelType : ChannelType;  // enum
+    name : string;              // flatbuffer class name
+    log_filename : string;      // log file for this channel (several channels can be in one file)
+}
+
+
+table Configuration {
+    channels : [Channel];   // list of channels
+}
+
+
+root_type Configuration;
+
+file_identifier "CNFG";

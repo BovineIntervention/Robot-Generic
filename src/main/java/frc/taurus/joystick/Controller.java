@@ -9,8 +9,6 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
-import frc.taurus.messages.JoystickGoal;
-import frc.taurus.joystick.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 /**

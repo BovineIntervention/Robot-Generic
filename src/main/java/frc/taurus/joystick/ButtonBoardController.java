@@ -3,8 +3,6 @@ package frc.taurus.joystick;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.taurus.messages.JoystickGoal;
-import frc.taurus.joystick.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 public class ButtonBoardController extends Controller
