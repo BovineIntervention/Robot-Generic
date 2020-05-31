@@ -5,7 +5,7 @@ package frc.robot.joystick;
  * These will change for every new game.
  */
 
-public interface IOperatorControls {
+public interface ISuperstructureControls {
     
     // change these functions as needed
     boolean getAutoAim();

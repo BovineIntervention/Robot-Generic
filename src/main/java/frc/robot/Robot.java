@@ -13,8 +13,8 @@ import java.util.Optional;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.joystick.OperatorControls;
-import frc.robot.joystick.User1DriveControls;
+import frc.robot.joystick.SuperstructureControlsExample;
+import frc.robot.joystick.DriverControlsXboxExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
@@ -32,10 +32,12 @@ public class Robot extends TimedRobot {
 
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
-  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS)), 
-                                                                 Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL)));  
-  OperatorControls operatorControls = new OperatorControls(Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS)), 
-                                                           Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)));  
+  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
+          Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS)), 
+          Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL)));  
+  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
+          Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS)), 
+          Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)));  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -81,10 +83,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    float throttle = (float)user1DriveControls.getThrottle();
-    float steering = (float)user1DriveControls.getSteering();
-    boolean quickTurn = user1DriveControls.getQuickTurn();
-    boolean lowGear = user1DriveControls.getLowGear();    
+    float throttle = (float)driverControls.getThrottle();
+    float steering = (float)driverControls.getSteering();
+    boolean quickTurn = driverControls.getQuickTurn();
+    boolean lowGear = driverControls.getLowGear();    
 
     FlatBufferBuilder builder = new FlatBufferBuilder(1024);
     long timestamp = 123;

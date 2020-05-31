@@ -12,15 +12,16 @@ import frc.taurus.messages.MessageQueue;
  * This file defines the user controls / button mappings
  */
 
-public class User1DriveControls extends ControlsBase implements IDriveControls {
+public class DriverControlsXboxExample extends ControlsBase implements IDriverControls {
 
     // define the physical controllers that will be used
     private final XboxController mDriveController;
 
-    public User1DriveControls(Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> goalQueue) {
+    public DriverControlsXboxExample(Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> goalQueue) {
         // use ControlsBase.addController() to add controllers to this control method
-        Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
-        mDriveController = (XboxController)ControlsBase.addController(new XboxController(joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue));      
+        Joystick joystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);  
+        mDriveController = (XboxController)ControlsBase.addController(
+            new XboxController(joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue));      
     }
 
     public double getThrottle() { return mDriveController.getAxis(XboxController.Axis.L_STICK_Y_AXIS); };

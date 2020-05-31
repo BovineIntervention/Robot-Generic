@@ -13,10 +13,10 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public enum Config implements ChannelIntf {
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick.log" ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick.log" ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick.log" ),
+    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick_driver.log" ),
+    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick_driver.log" ),
+    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick_operator.log" ),
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick_operator.log" ),
 
     // insert new channels above this line
     // leave the following two test message channels for unit testing

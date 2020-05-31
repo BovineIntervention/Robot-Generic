@@ -15,7 +15,7 @@ import frc.taurus.messages.MessageQueue;
  * new game.
  */
 
-public class OperatorControls extends ControlsBase implements IOperatorControls {
+public class SuperstructureControlsExample extends ControlsBase implements ISuperstructureControls {
 
     private final XboxController mDriverController;
     private final Controller.Button mShootButton;
@@ -27,17 +27,20 @@ public class OperatorControls extends ControlsBase implements IOperatorControls 
     private final Controller.PovButton mTurnSouthPovButton;
     private final Controller.AxisButton mIntakeAxisButton;
 
-    public OperatorControls(Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> goalQueue) {
+    public SuperstructureControlsExample(Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> goalQueue) {
         // use ControlsBase.addController() to add controllers to this control method
-        Joystick joystick = new Joystick(Constants.ControllerConstants.kDriveControllerPort);  
+        Joystick joystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);  
 
-        mDriverController = (XboxController)ControlsBase.addController( new XboxController( joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue ));
+        mDriverController = (XboxController)ControlsBase.addController( 
+                            new XboxController( joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue ));
+
+        mButtonBoard = (ButtonBoardController)ControlsBase.addController( 
+                            new ButtonBoardController(  new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort), 0.0 ));
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
         mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);
         mIntakeAxisButton = mDriverController.addAxisButton(XboxController.Axis.R_TRIGGER_AXIS.id, 0.5);
 
-        mButtonBoard = (ButtonBoardController)ControlsBase.addController( new ButtonBoardController(  new Joystick(Constants.ControllerConstants.kOperatorControllerPort), 0.0 ));
         mClimbButton = mButtonBoard.addButton(ButtonBoardController.Button.SR.id);
         mTurnNorthPovButton = mButtonBoard.addPovButton(0, -45, 45);
         mTurnSouthPovButton = mButtonBoard.addPovButton(0, 135, 215);
