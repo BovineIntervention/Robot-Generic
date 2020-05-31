@@ -8,13 +8,11 @@
 package frc.robot;
 
 
-import java.util.Optional;
-
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.joystick.SuperstructureControlsExample;
 import frc.robot.joystick.DriverControlsXboxExample;
+import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
@@ -33,11 +31,12 @@ public class Robot extends TimedRobot {
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
   DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
-          Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS)), 
-          Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL)));  
+          channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS), 
+          channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL));  
   SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
-          Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS)), 
-          Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)));  
+          driverControls.getDriverController(),
+          channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
+          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL));  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.

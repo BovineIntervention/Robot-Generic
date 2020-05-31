@@ -1,7 +1,6 @@
 package frc.taurus.joystick;
 
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.messages.MessageQueue;
@@ -30,8 +29,8 @@ public class XboxController extends Controller
     }
 
     public XboxController(Joystick joystick, double deadband, 
-                          Optional<MessageQueue<ByteBuffer>> joystickStausQueue,
-                          Optional<MessageQueue<ByteBuffer>> joystickGoalQueue) {
+                          MessageQueue<ByteBuffer> joystickStausQueue,
+                          MessageQueue<ByteBuffer> joystickGoalQueue) {
         super(joystick, joystickStausQueue, joystickGoalQueue);
         mDeadband = deadband;
 
@@ -41,14 +40,6 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(Joystick joystick, double deadband, 
-                          Optional<MessageQueue<ByteBuffer>> joystickStausQueue) {
-        this(joystick, deadband, joystickStausQueue, Optional.empty());
-    }
-
-    public XboxController(Joystick joystick, double deadband) {
-        this(joystick, deadband, Optional.empty(), Optional.empty());
-    }
 
     public double getAxis(Axis axis) {
          // invert the y-axis

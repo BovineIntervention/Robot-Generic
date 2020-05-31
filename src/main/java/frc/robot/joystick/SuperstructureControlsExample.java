@@ -1,7 +1,6 @@
 package frc.robot.joystick;
 
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
@@ -15,7 +14,7 @@ import frc.taurus.messages.MessageQueue;
  * new game.
  */
 
-public class SuperstructureControlsExample extends ControlsBase implements ISuperstructureControls {
+public class SuperstructureControlsExample implements ISuperstructureControls {
 
     private final XboxController mDriverController;
     private final Controller.Button mShootButton;
@@ -27,15 +26,12 @@ public class SuperstructureControlsExample extends ControlsBase implements ISupe
     private final Controller.PovButton mTurnSouthPovButton;
     private final Controller.AxisButton mIntakeAxisButton;
 
-    public SuperstructureControlsExample(Optional<MessageQueue<ByteBuffer>> statusQueue, Optional<MessageQueue<ByteBuffer>> goalQueue) {
-        // use ControlsBase.addController() to add controllers to this control method
-        Joystick joystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);  
+    public SuperstructureControlsExample(XboxController driverController, MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> goalQueue) {
+        // use Controller.addController() to add controllers to this control method
+        Joystick operatorJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort);
 
-        mDriverController = (XboxController)ControlsBase.addController( 
-                            new XboxController( joystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue ));
-
-        mButtonBoard = (ButtonBoardController)ControlsBase.addController( 
-                            new ButtonBoardController(  new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort), 0.0 ));
+        mDriverController = driverController;
+        mButtonBoard = new ButtonBoardController( operatorJoystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue );
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
         mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);
