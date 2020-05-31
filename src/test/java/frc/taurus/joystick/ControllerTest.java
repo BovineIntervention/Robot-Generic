@@ -28,7 +28,7 @@ public class ControllerTest {
         Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
         Button button = controller.addButton(2);
         button.update();
-        assertEquals(1, Controller.buttons.size());
+        assertEquals(1, controller.buttons.size());
     }
 
     @Test 

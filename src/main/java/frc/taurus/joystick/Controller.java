@@ -2,7 +2,6 @@ package frc.taurus.joystick;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
 
 import com.google.flatbuffers.FlatBufferBuilder;
@@ -23,16 +22,13 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public class Controller {
-  static public HashSet<Joystick> joystickList = new HashSet<Joystick>();   // HashSets do not allow duplicate entries
-  static public ArrayList<Controller> controllerList = new ArrayList<Controller>();
 
-  public final Joystick wpilibJoystick;
-  static ArrayList<Button> buttons;
+  Joystick wpilibJoystick;
+  ArrayList<Button> buttons;
 
-  public final MessageQueue<ByteBuffer> statusQueue; 
-  public final MessageQueue<ByteBuffer> goalQueue;    
-  public final MessageQueue<ByteBuffer>.QueueReader mGoalReader;    // for rumble commands
-
+  MessageQueue<ByteBuffer> statusQueue; 
+  MessageQueue<ByteBuffer> goalQueue;    
+  MessageQueue<ByteBuffer>.QueueReader mGoalReader;    // for rumble commands
 
   /**
    * Controller wraps WPILib Joystick class  
@@ -44,14 +40,6 @@ public class Controller {
    */
   public Controller(final Joystick joystick, 
     final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> goalQueue) {
-
-    // first, let's keep track of all controllers
-    if (joystickList.contains(joystick)) {
-      System.err.println("Error: duplicate joystick added to Controller");
-      System.exit(-1);
-    }
-    joystickList.add(joystick);   // joystickList is only used to check for unique controllers
-    controllerList.add(this);
 
     this.wpilibJoystick = joystick;
     buttons = new ArrayList<>();
@@ -91,20 +79,9 @@ public class Controller {
     }
   }
 
-  /**
-   * update() will get the current axis and button values from the Driver Station packet
-   * then log these values in the JoystickStatus queues (one for each controller)
-   * then check the JoystickGoal queues to see if rumble should be turned on
-   */
-  public void update() {
-    for (var controller : controllerList) {
-        controller.updateController();
-    }
-  }
-
   // update button pressed / released for all buttons
   // including PovButtons and AxisButtons
-  private void updateController() {
+  public void update() {
     for (var button : buttons) {
       button.update();
     }
@@ -122,7 +99,7 @@ public class Controller {
     return wpilibJoystick.getRawAxis(axisId);
   }
 
-  private boolean getButton(int buttonId) {
+  public boolean getButton(int buttonId) {
     // called only from Button.update();
     return wpilibJoystick.getRawButton(buttonId);
   }
@@ -249,7 +226,7 @@ public class Controller {
 
 
 
-  
+
   /**
    * To use the D-Pad (POV) as up to 8 distinct buttons
    */
