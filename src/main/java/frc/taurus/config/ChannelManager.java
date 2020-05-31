@@ -1,6 +1,7 @@
 package frc.taurus.config;
 
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
 
 import frc.taurus.logger.LoggerManager;
 import frc.taurus.messages.MessageQueue;
@@ -15,7 +16,7 @@ public class ChannelManager {
 		return instance;
 	}
 
-    ArrayList<ChannelIntf> channels = new ArrayList<ChannelIntf>();
+    HashSet<ChannelIntf> channels = new HashSet<ChannelIntf>();     // HashSet has high performance contains() and get(), needed by fetch()
     LoggerManager loggerManager = new LoggerManager();
 
     private ChannelManager() {}    
@@ -26,7 +27,13 @@ public class ChannelManager {
         }
     }
 
-    public MessageQueue<?> fetch(ChannelIntf channel) {
+    public void reset() {
+        channels.clear();
+        loggerManager.reset();
+    }
+
+    public MessageQueue<ByteBuffer> fetch(ChannelIntf channel) {
+System.out.println("fetch " + channel.getNum() + " : " + channel.getName());    
         if (!channels.contains(channel)) {
             this.register(channel);
             loggerManager.register(channel);

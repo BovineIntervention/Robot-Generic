@@ -15,8 +15,9 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.joystick.OperatorControls;
 import frc.robot.joystick.User1DriveControls;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
-import frc.taurus.drivetrain.DrivetrainGoal;
+import frc.taurus.drivetrain.generated.DrivetrainGoal;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -27,13 +28,14 @@ import frc.taurus.drivetrain.DrivetrainGoal;
  */
 public class Robot extends TimedRobot {
 
+  ChannelManager channelManager = ChannelManager.getInstance();
 
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
-  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of(Config.DRIVER_JOYSTICK_STATUS.getQueue()), 
-                                                                 Optional.of(Config.DRIVER_JOYSTICK_GOAL.getQueue()));  
-  OperatorControls operatorControls = new OperatorControls(Optional.of(Config.OPERATOR_JOYSTICK_STATUS.getQueue()), 
-                                                           Optional.of(Config.OPERATOR_JOYSTICK_GOAL.getQueue()));  
+  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS)), 
+                                                                 Optional.of(channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL)));  
+  OperatorControls operatorControls = new OperatorControls(Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS)), 
+                                                           Optional.of(channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)));  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.

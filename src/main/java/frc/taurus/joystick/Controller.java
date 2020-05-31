@@ -9,6 +9,10 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.joystick.generated.AxisVector;
+import frc.taurus.joystick.generated.ButtonVector;
+import frc.taurus.joystick.generated.JoystickGoal;
+import frc.taurus.joystick.generated.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 /**
@@ -121,13 +125,13 @@ public class Controller
             double timestamp = Timer.getFPGATimestamp();
 
             float[] axes = new float[6];
-            for (int k=0; k<16; k++) {
+            for (int k=0; k<axes.length; k++) {
                 axes[k] = (float)getAxis(k);
             }
             int axesOffset = AxisVector.createAxisVector(builder, axes);
 
             boolean[] buttons = new boolean[16];
-            for (int k=0; k<16; k++) {
+            for (int k=0; k<buttons.length; k++) {
                 buttons[k] = getButton(k+1);
             }
             int buttonsOffset = ButtonVector.createButtonVector(builder, buttons);
@@ -139,7 +143,7 @@ public class Controller
             JoystickStatus.addPov(builder, getPOV(0));
             int offset = JoystickStatus.endJoystickStatus(builder);
             
-            JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+            JoystickStatus.finishSizePrefixedJoystickStatusBuffer(builder, offset);
             ByteBuffer bb = builder.dataBuffer();
             
             mStatusQueue.get().write(bb);

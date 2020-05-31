@@ -11,7 +11,11 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
+import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
+import frc.taurus.joystick.generated.AxisVector;
+import frc.taurus.joystick.generated.ButtonVector;
+import frc.taurus.joystick.generated.JoystickStatus;
 
 public class JoystickStatusTest {
 
@@ -21,7 +25,7 @@ public class JoystickStatusTest {
     @Test 
     public void writeSingleMessageTest() {
 
-        var statusQueue = Config.DRIVER_JOYSTICK_STATUS.getQueue();
+        var statusQueue = ChannelManager.getInstance().fetch(Config.DRIVER_JOYSTICK_STATUS);
         var statusReader = statusQueue.makeReader();
 
         // values to store in flatbuffer

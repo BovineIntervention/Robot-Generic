@@ -15,6 +15,8 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
+import frc.taurus.messages.generated.TestMessage1;
+
 public class MessageQueueTest {
     
     // verify queue can be reset/cleared
@@ -24,7 +26,7 @@ public class MessageQueueTest {
         MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
         
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 686);
+        int offset = TestMessage1.createTestMessage1(builder, 686);
         builder.finish(offset);
         queue.write(builder.dataBuffer());     
         
@@ -46,31 +48,38 @@ public class MessageQueueTest {
         MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
         
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 686);
+        int offset = TestMessage1.createTestMessage1(builder, 686);
         builder.finish(offset);
         queue.write(builder.dataBuffer());     
 
         
-        // assertEquals(1, reader.size());         // verify queue has 1 element
-        // Optional<ByteBuffer> opt = reader.read();  // read from queue
-        // assertTrue(opt.isPresent());            // verify that the value is present (not empty)
-        
-        // TestMessage msg = TestMessage.getRootAsTestMessage( opt.get() );            // get the element
-        // assertEquals(686, msg.intValue());      // verify contents are 686
-
-        // assertEquals(0, reader.size());         // verify queue is now empty
-        // assertTrue(reader.isEmpty());           // verify queue is now empty
-
         assertEquals(1, reader.size());         // verify queue has 1 element
         Optional<ByteBuffer> opt = reader.read();  // read from queue
         assertTrue(opt.isPresent());            // verify that the value is present (not empty)
         
-        TestMessage msg = TestMessage.getRootAsTestMessage( opt.get() );            // get the element
+        TestMessage1 msg = TestMessage1.getRootAsTestMessage1( opt.get() );            // get the element
         assertEquals(686, msg.intValue());      // verify contents are 686
 
         assertEquals(0, reader.size());         // verify queue is now empty
         assertTrue(reader.isEmpty());           // verify queue is now empty
 
+    }
+    
+
+    // verify we can send one value
+    @Test (expected = AssertionError.class)
+    @SuppressWarnings("unused")
+    public void forgotToFinishFlatBuffer() {
+        MessageQueue<ByteBuffer> queue = new MessageQueue<ByteBuffer>(10){};
+        
+        FlatBufferBuilder builder = new FlatBufferBuilder(64);
+        int offset = TestMessage1.createTestMessage1(builder, 686);
+        
+        // this is the line that we forgot
+        // builder.finish(offset);
+
+        // builder.dataBuffer() should throw an AssertionError
+        queue.write(builder.dataBuffer());     
     }
     
 
@@ -83,19 +92,19 @@ public class MessageQueueTest {
         // you must create a new builder for each write, 
         // or all written values will end up being the same        
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 254);
+        int offset = TestMessage1.createTestMessage1(builder, 254);
         builder.finish(offset);
         queue.write(builder.dataBuffer());     
        
 
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 971);
+        offset = TestMessage1.createTestMessage1(builder, 971);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
         
 
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 686);
+        offset = TestMessage1.createTestMessage1(builder, 686);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
   
@@ -107,7 +116,7 @@ public class MessageQueueTest {
             Optional<ByteBuffer> opt = reader.readLast();    // read the last element
             assertTrue(opt.isPresent());                 // verify that the value is present (not empty)
 
-            TestMessage msg = TestMessage.getRootAsTestMessage( opt.get() );                   // get the value
+            TestMessage1 msg = TestMessage1.getRootAsTestMessage1( opt.get() );                   // get the value
             assertEquals(686, msg.intValue());           // verify contents are 686
         }
     }
@@ -121,19 +130,19 @@ public class MessageQueueTest {
         // you must create a new builder for each write, 
         // or all written values will end up being the same
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 254);
+        int offset = TestMessage1.createTestMessage1(builder, 254);
         builder.finish(offset);
         queue.write(builder.dataBuffer());     
    
 
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 971);
+        offset = TestMessage1.createTestMessage1(builder, 971);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
         
         
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 686);
+        offset = TestMessage1.createTestMessage1(builder, 686);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
   
@@ -141,19 +150,19 @@ public class MessageQueueTest {
         assertEquals(3, reader.size());
         Optional<ByteBuffer> opt = reader.read();   // read the next value, removing it
         assertTrue(opt.isPresent());             // verify that the value is present (not empty)
-        TestMessage msg = TestMessage.getRootAsTestMessage( opt.get() );               // get the value
+        TestMessage1 msg = TestMessage1.getRootAsTestMessage1( opt.get() );               // get the value
         assertEquals(254, msg.intValue());       // verify contents are 254
         
         assertEquals(2, reader.size());
         opt = reader.read();                     // read the next value    
         assertTrue(opt.isPresent());                                
-        msg = TestMessage.getRootAsTestMessage( opt.get() );                                      
+        msg = TestMessage1.getRootAsTestMessage1( opt.get() );                                      
         assertEquals(971, msg.intValue());       // verify contents are 971                    
         
         assertEquals(1, reader.size());
         opt = reader.read();                     // read the next value    
         assertTrue(opt.isPresent());                                
-        msg = TestMessage.getRootAsTestMessage( opt.get() );                              
+        msg = TestMessage1.getRootAsTestMessage1( opt.get() );                              
         assertEquals(686, msg.intValue());       // verify contents are 686                     
         
         assertEquals(0, reader.size());
@@ -174,19 +183,19 @@ public class MessageQueueTest {
         // you must create a new builder for each write, 
         // or all written values will end up being the same
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 254);
+        int offset = TestMessage1.createTestMessage1(builder, 254);
         builder.finish(offset);
         queue.write(builder.dataBuffer());     
        
  
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 971);
+        offset = TestMessage1.createTestMessage1(builder, 971);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
         
  
         builder = new FlatBufferBuilder(64);
-        offset = TestMessage.createTestMessage(builder, 686);
+        offset = TestMessage1.createTestMessage1(builder, 686);
         builder.finish(offset);
         queue.write(builder.dataBuffer());      
   
@@ -196,7 +205,7 @@ public class MessageQueueTest {
 
         Optional<ByteBuffer> opt = reader.readLast();  // read the last value, remove all values
         assertTrue(opt.isPresent());                // verify that the value is present (not empty)
-        TestMessage msg = TestMessage.getRootAsTestMessage( opt.get() );                  // get the value
+        TestMessage1 msg = TestMessage1.getRootAsTestMessage1( opt.get() );                  // get the value
         assertEquals(686, msg.intValue());          // verify contents are 686
 
         assertEquals(0, reader.size());
@@ -216,7 +225,7 @@ public class MessageQueueTest {
         
         for (int k=0; k<10; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -226,7 +235,7 @@ public class MessageQueueTest {
         int cnt = 0;            
         Optional<ByteBuffer> opt = reader.read();
         while (opt.isPresent()) {
-            assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());  // check we are reading counting pattern
+            assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());  // check we are reading counting pattern
             opt = reader.read();
         }
 
@@ -246,7 +255,7 @@ public class MessageQueueTest {
         // fill queue with counting pattern
         for (int k=0; k<10; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -255,14 +264,14 @@ public class MessageQueueTest {
         int cnt = 0;
         Optional<ByteBuffer> opt = reader.read();
         while (opt.isPresent()) {
-            assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             opt = reader.read();            
         }
 
         // continue filling queue with counting pattern
         for (int k=10; k<15; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -270,7 +279,7 @@ public class MessageQueueTest {
 
         opt = reader.read();
         while (opt.isPresent()) {
-            assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             opt = reader.read();            
         }
 
@@ -291,7 +300,7 @@ public class MessageQueueTest {
         // fill queue with counting pattern
         for (int k=0; k<9; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -302,7 +311,7 @@ public class MessageQueueTest {
         var opt = reader1.read();
         assertTrue(opt.isPresent());
         while (opt.isPresent()) {
-            assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             opt = reader1.read();            
         }
         assertTrue(reader1.isEmpty());
@@ -312,7 +321,7 @@ public class MessageQueueTest {
         opt = reader2.read();
         assertTrue(opt.isPresent());
         while (opt.isPresent()) {
-            assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             opt = reader2.read();            
         }   
         assertTrue(reader2.isEmpty());
@@ -322,11 +331,11 @@ public class MessageQueueTest {
         for (int k=0; k<9; k++) {
             opt = reader3.read();
             assertTrue(opt.isPresent());
-            assertEquals(k, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(k, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             
             opt = reader4.read();
             assertTrue(opt.isPresent());
-            assertEquals(k, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+            assertEquals(k, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
         }
         assertTrue(reader3.isEmpty());
         assertTrue(reader4.isEmpty());
@@ -343,7 +352,7 @@ public class MessageQueueTest {
         // fill queue with counting pattern
         for (int k=0; k<numValues; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -353,7 +362,7 @@ public class MessageQueueTest {
         while (!reader.isEmpty()) {
             var opt = reader.read();
             if (opt.isPresent()) {
-                assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+                assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
             }
         }
         assertEquals(1000000, cnt);        
@@ -386,7 +395,7 @@ public class MessageQueueTest {
                         while (!reader.isEmpty()) {
                             var opt = reader.read();
                             if (opt.isPresent()) {
-                                assertEquals(cnt++, TestMessage.getRootAsTestMessage( opt.get() ).intValue());
+                                assertEquals(cnt++, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());
                             }
                         }
                     }
@@ -401,7 +410,7 @@ public class MessageQueueTest {
         // start writing
         for (int k=0; k<kNumValues; k++) {
             FlatBufferBuilder builder = new FlatBufferBuilder(64);
-            int offset = TestMessage.createTestMessage(builder, k);
+            int offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -476,7 +485,7 @@ public class MessageQueueTest {
                 public void run() {
                     for (int k=0; k<kNumValuesPerThread; k++) {
                         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-                        int offset = TestMessage.createTestMessage(builder, k);
+                        int offset = TestMessage1.createTestMessage1(builder, k);
                         builder.finish(offset);
                         ByteBuffer bb = builder.dataBuffer();
                         queue.write(bb);      
@@ -538,7 +547,7 @@ public class MessageQueueTest {
         assertEquals(0, reader.nextReadIndex);
 
         FlatBufferBuilder builder = new FlatBufferBuilder(64);
-        int offset = TestMessage.createTestMessage(builder, 686);
+        int offset = TestMessage1.createTestMessage1(builder, 686);
                 builder.finish(offset);
         queue.write(builder.dataBuffer());     
  
@@ -550,7 +559,7 @@ public class MessageQueueTest {
         // write 11 numbers
         for (int k=0; k<11; k++) {
             builder = new FlatBufferBuilder(64);
-            offset = TestMessage.createTestMessage(builder, k);
+            offset = TestMessage1.createTestMessage1(builder, k);
             builder.finish(offset);
             ByteBuffer bb = builder.dataBuffer();
             queue.write(bb);      
@@ -570,7 +579,7 @@ public class MessageQueueTest {
         assertEquals(12, queue.back());
         opt = reader.read();
         assertTrue(opt.isPresent());
-        assertEquals(1, TestMessage.getRootAsTestMessage( opt.get() ).intValue());         
+        assertEquals(1, TestMessage1.getRootAsTestMessage1( opt.get() ).intValue());         
         assertEquals(3, reader.nextReadIndex);  
     }
 }

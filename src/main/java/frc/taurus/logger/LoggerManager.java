@@ -8,9 +8,10 @@ import java.util.TreeMap;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.Timer;
-import frc.taurus.config.Channel;
 import frc.taurus.config.ChannelIntf;
-import frc.taurus.config.Configuration;
+import frc.taurus.config.generated.Channel;
+import frc.taurus.config.generated.Configuration;
+import frc.taurus.logger.generated.LogFileHeader;
 
 
 public class LoggerManager {
@@ -27,6 +28,10 @@ public class LoggerManager {
             channels.add(channel);
             createLogger(channel);
         }
+System.out.println("LoggerManager register() " + channel.getNum() + " : " + channel.getName());
+for (var ch : channels) {
+    System.out.println(ch.toString());
+}
     }
     
     
@@ -43,6 +48,9 @@ public class LoggerManager {
             FlatBuffersLogger logger = loggerMap.get(filename);
             logger.register(channel);
         }
+for (var key : loggerMap.keySet()) {
+    System.out.println(key);
+}        
     }
     
     public void update() {
@@ -57,7 +65,15 @@ public class LoggerManager {
         }
     }
     
-
+    public void reset() {
+        close();
+        channels.clear();
+        loggerMap.clear();
+System.out.println("LoggerManager reset()");
+for (var key : loggerMap.keySet()) {
+    System.out.println(key);
+}  
+    }
 
     
     public static ByteBuffer getFileHeader() {
@@ -65,13 +81,13 @@ public class LoggerManager {
         
         // create Channels
         int[] channelOffsets = new int[channels.size()];
-        int k = 0;
-        for (var channel : channels) {
+        for (int k=0; k<channels.size(); k++) {
+            ChannelIntf channel = channels.get(k);
             channelOffsets[k] = Channel.createChannel(builder, 
                                     channel.getNum(),
                                     builder.createString(channel.getName()),
                                     builder.createString(channel.getLogFilename()));
-        }                            
+        }
         // create Channel vector
         int channelVectorOffset = Configuration.createChannelsVector(builder, channelOffsets);
         
@@ -88,6 +104,10 @@ public class LoggerManager {
     }    
 
     public String getLogFilename(ChannelIntf channel) {
+System.out.println("LoggerManager.getLogFilename() " + channel.getNum() + " : " + channel.getName());
+for (var key : loggerMap.keySet()) {
+    System.out.println(key);
+}              
         FlatBuffersLogger logger = loggerMap.get(channel.getLogFilename());
         return logger.getBasePath() + "/" + channel.getLogFilename();
     }

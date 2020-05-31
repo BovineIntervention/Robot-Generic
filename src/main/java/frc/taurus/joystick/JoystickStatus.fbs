@@ -1,4 +1,4 @@
-namespace frc.taurus.joystick;
+namespace frc.taurus.joystick.generated;
 
 
  // TODO: include all joysticks plus DriverStation data

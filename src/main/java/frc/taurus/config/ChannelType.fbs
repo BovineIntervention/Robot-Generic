@@ -1,4 +1,4 @@
-namespace frc.taurus.config;
+namespace frc.taurus.config.generated;
 
 // Every entry in this enumeration also needs to be added to the Config enumeration
 
@@ -6,7 +6,7 @@ enum ChannelType : int {
   JoystickStatus, 
   JoystickGoal,
 
-  TestMessage,    // leave these here for unit testing
+  TestMessage1,   // leave these here for unit testing
   TestMessage2    // leave these here for unit testing
   }
 

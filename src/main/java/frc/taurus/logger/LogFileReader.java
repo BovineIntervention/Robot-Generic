@@ -17,6 +17,7 @@ public class LogFileReader {
     RandomAccessFile file;
 
     public LogFileReader(ChannelIntf channel)  {
+System.out.println("LogFileReader " + channel.getNum() + " : " + channel.getName());
         String filename = ChannelManager.getInstance().getLogFilename(channel);
         try {
             file = new RandomAccessFile(new File(filename), "r");
@@ -37,5 +38,13 @@ public class LogFileReader {
             e.printStackTrace();
         }
         return ByteBuffer.wrap(bytes); 
+    }
+
+    public void close() {
+        try {
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
