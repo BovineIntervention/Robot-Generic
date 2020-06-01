@@ -6,12 +6,15 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.ByteBuffer;
+
 import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
+import frc.taurus.messages.MessageQueue;
 
 public class ControllerTest {
 
@@ -20,10 +23,12 @@ public class ControllerTest {
     @Test
     public void addButtonTest() {
         Joystick mockJoystick = mock(Joystick.class);
-        Controller controller = new Controller(mockJoystick);
+        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
+        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
+        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
         Button button = controller.addButton(2);
         button.update();
-        assertEquals(1, Controller.buttons.size());
+        assertEquals(1, controller.buttons.size());
     }
 
     @Test 
@@ -46,7 +51,9 @@ public class ControllerTest {
     public void buttonTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        Controller controller = new Controller(mockJoystick);
+        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
+        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
+        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
         
         Button button0 = controller.addButton(0);
         Button button1 = controller.addButton(1);
@@ -108,7 +115,9 @@ public class ControllerTest {
     public void axisButtonTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        Controller controller = new Controller(mockJoystick);
+        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
+        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
+        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
         int id = 0;
         AxisButton axisButton = controller.addAxisButton(id, 0.5);
 
@@ -157,7 +166,10 @@ public class ControllerTest {
     public void povButtonTest() {
 
         Joystick mockJoystick = mock(Joystick.class);
-        Controller controller = new Controller(mockJoystick);
+        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
+        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
+        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
+
         int id = 0;
         PovButton povButtonNorth = controller.addPovButton(id, -45, 45);
         PovButton povButtonEast  = controller.addPovButton(id, 90, 90);

@@ -2,11 +2,13 @@ package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import frc.taurus.config.ChannelIntf;
-import frc.taurus.messages.GenericQueue;
+import frc.taurus.logger.generated.Packet;
+import frc.taurus.messages.MessageQueue;
 
 /**
  * A log file is a sequence of size prefixed flatbuffers.
@@ -21,15 +23,16 @@ public class FlatBuffersLogger {
 
     class ChannelTypeReaderPair {
         public int channelType;
-        public GenericQueue<ByteBuffer>.QueueReader reader;
+        public MessageQueue<ByteBuffer>.QueueReader reader;
 
-        ChannelTypeReaderPair(final int channelType, final GenericQueue<ByteBuffer>.QueueReader reader) {
+        ChannelTypeReaderPair(final int channelType, final MessageQueue<ByteBuffer>.QueueReader reader) {
             this.channelType = channelType;
             this.reader = reader;
         }
     }
 
-    String filename;
+    final String filename;
+    final Supplier<ByteBuffer> getFileHeaderCallback;
     ArrayList<ChannelTypeReaderPair> pairList = new ArrayList<ChannelTypeReaderPair>();
 
     LogFileWriter writer = new LogFileWriter();
@@ -37,8 +40,9 @@ public class FlatBuffersLogger {
     long packetCount = 0;
 
     // TODO: add timestamp to filename or folder
-    public FlatBuffersLogger(String filename) {
+    public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
         this.filename = filename;
+        this.getFileHeaderCallback = getFileHeaderCallback;
     }
 
 
@@ -50,7 +54,7 @@ public class FlatBuffersLogger {
 
     public void update() {
         if (packetCount == 0) {
-            writer.writeBytes(filename, LoggerManager.getFileHeader());
+            writer.writeBytes(filename, getFileHeaderCallback.get());
         }
         for (var pair : pairList) {
             while (!pair.reader.isEmpty()) {

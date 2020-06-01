@@ -1,6 +1,6 @@
 package frc.taurus.joystick;
 
-import java.util.Optional;
+import java.nio.ByteBuffer;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.messages.MessageQueue;
@@ -31,8 +31,8 @@ public class ThrustmasterController extends Controller
     }
 
     public ThrustmasterController(Joystick joystick, double deadband, 
-                                  Optional<MessageQueue<JoystickStatus>> joystickStausQueue,
-                                  Optional<MessageQueue<JoystickGoal>> joystickGoalQueue) {
+                                  MessageQueue<ByteBuffer> joystickStausQueue,
+                                  MessageQueue<ByteBuffer> joystickGoalQueue) {
         super(joystick, joystickStausQueue, joystickGoalQueue);
         mDeadband = deadband;
 
@@ -42,14 +42,6 @@ public class ThrustmasterController extends Controller
         }
     }
 
-    public ThrustmasterController(Joystick joystick, double deadband, 
-                          Optional<MessageQueue<JoystickStatus>> joystickStausQueue) {
-        this(joystick, deadband, joystickStausQueue, Optional.empty());
-    }
-
-    public ThrustmasterController(Joystick joystick, double deadband) {
-        this(joystick, deadband, Optional.empty(), Optional.empty());
-    }
 
 
     public double getAxis(Axis axis) {

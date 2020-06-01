@@ -1,4 +1,4 @@
-namespace frc.taurus.joystick;
+namespace frc.taurus.joystick.generated;
 
 table JoystickGoal {
   timestamp:double;

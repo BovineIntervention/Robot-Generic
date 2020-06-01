@@ -14,28 +14,36 @@ import frc.taurus.config.ChannelManager;
 
 public class LogFileReader {
 
-    RandomAccessFile file;
+  RandomAccessFile file;
 
-    public LogFileReader(ChannelIntf channel)  {
-        String filename = ChannelManager.getInstance().getLogFilename(channel);
-        try {
-            file = new RandomAccessFile(new File(filename), "r");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+  public LogFileReader(final ChannelManager channelManager, final ChannelIntf channel) {
+    final String filename = channelManager.getLogFilename(channel);
+    try {
+      file = new RandomAccessFile(new File(filename), "r");
+    } catch (final FileNotFoundException e) {
+      e.printStackTrace();
     }
+  }
 
-    public ByteBuffer getNextTable() {
-        byte bytes[] = new byte[0];
-        try {
-            byte[] prefix = new byte[4];    // prefix is always 4 bytes
-            file.readFully(prefix);         // get prefix
-            int tableSize = ByteBufferUtil.getSizePrefix(ByteBuffer.wrap(prefix).order(ByteOrder.LITTLE_ENDIAN));
-            bytes = new byte[tableSize];
-            file.readFully(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ByteBuffer.wrap(bytes); 
+  public ByteBuffer getNextTable() {
+    byte bytes[] = new byte[0];
+    try {
+      final byte[] prefix = new byte[4]; // prefix is always 4 bytes
+      file.readFully(prefix); // get prefix
+      final int tableSize = ByteBufferUtil.getSizePrefix(ByteBuffer.wrap(prefix).order(ByteOrder.LITTLE_ENDIAN));
+      bytes = new byte[tableSize];
+      file.readFully(bytes);
+    } catch (final IOException e) {
+      e.printStackTrace();
     }
+    return ByteBuffer.wrap(bytes);
+  }
+
+  public void close() {
+    try {
+      file.close();
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+  }
 }

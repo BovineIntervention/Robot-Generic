@@ -1,6 +1,6 @@
 include "../config/ChannelType.fbs";    // don't know why '../config/' seems to be necessary
 
-namespace frc.taurus.config;
+namespace frc.taurus.config.generated;
 
 table Channel { 
     channelType : ChannelType;  // enum
