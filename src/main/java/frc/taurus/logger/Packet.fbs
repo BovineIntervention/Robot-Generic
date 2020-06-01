@@ -13,7 +13,7 @@ table Packet {
   
 
   // Nested flatbuffer.
-  payload : [ubyte];
+  payload : [ubyte] (required);
 }
 
 root_type Packet;

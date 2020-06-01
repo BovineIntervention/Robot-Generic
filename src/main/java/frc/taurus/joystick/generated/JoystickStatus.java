@@ -30,6 +30,8 @@ public final class JoystickStatus extends Table {
   public static void addPov(FlatBufferBuilder builder, int pov) { builder.addInt(3, pov, 0); }
   public static int endJoystickStatus(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 6);  // axes
+    builder.required(o, 8);  // buttons
     return o;
   }
   public static void finishJoystickStatusBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "JOYS"); }

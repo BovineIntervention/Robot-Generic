@@ -45,6 +45,7 @@ public final class Packet extends Table {
   public static void startPayloadVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
   public static int endPacket(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 8);  // payload
     return o;
   }
   public static void finishPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "FPKT"); }

@@ -40,6 +40,8 @@ public final class Channel extends Table {
   public static void addLogFilename(FlatBufferBuilder builder, int logFilenameOffset) { builder.addOffset(2, logFilenameOffset, 0); }
   public static int endChannel(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 6);  // name
+    builder.required(o, 8);  // log_filename
     return o;
   }
 
