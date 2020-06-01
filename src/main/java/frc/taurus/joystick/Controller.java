@@ -95,6 +95,10 @@ public class Controller {
     }
   }
 
+  public int getPort() {
+    return wpilibJoystick.getPort();
+  }
+
   public double getAxis(int axisId) {
     return wpilibJoystick.getRawAxis(axisId);
   }
@@ -141,6 +145,7 @@ public class Controller {
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
     JoystickStatus.startJoystickStatus(builder);
     JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
+    JoystickStatus.addPort(builder, getPort());
     JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
     JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
     JoystickStatus.addPov(builder, getPOV(0));

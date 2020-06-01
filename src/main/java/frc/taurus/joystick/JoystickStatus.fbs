@@ -16,6 +16,7 @@ table JoystickStatus {
   // Timestamp is the first element of every message
   timestamp : double;
 
+  port : int;
   axes : AxisVector (required);
   buttons : ButtonVector (required);
   pov : int;
