@@ -6,10 +6,8 @@ public final class ChannelType {
   private ChannelType() { }
   public static final int JoystickStatus = 0;
   public static final int JoystickGoal = 1;
-  public static final int TestMessage1 = 2;
-  public static final int TestMessage2 = 3;
 
-  public static final String[] names = { "JoystickStatus", "JoystickGoal", "TestMessage1", "TestMessage2", };
+  public static final String[] names = { "JoystickStatus", "JoystickGoal", };
 
   public static String name(int e) { return names[e]; }
 }

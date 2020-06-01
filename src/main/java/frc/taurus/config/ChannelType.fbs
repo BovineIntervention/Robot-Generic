@@ -4,9 +4,6 @@ namespace frc.taurus.config.generated;
 
 enum ChannelType : int {
   JoystickStatus, 
-  JoystickGoal,
-
-  TestMessage1,   // leave these here for unit testing
-  TestMessage2    // leave these here for unit testing
+  JoystickGoal
   }
 

@@ -1,7 +1,7 @@
 namespace frc.taurus.messages.generated;
 
 table TestMessage2 {
-  dbl_value : double;
+  dbl_value : double;   // note: I made this one double just to be different than TestMessage1
 }
 
 root_type TestMessage2;

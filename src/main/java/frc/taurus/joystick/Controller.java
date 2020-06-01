@@ -146,7 +146,7 @@ public class Controller {
     JoystickStatus.addPov(builder, getPOV(0));
     int offset = JoystickStatus.endJoystickStatus(builder);
 
-    JoystickStatus.finishSizePrefixedJoystickStatusBuffer(builder, offset);
+    JoystickStatus.finishJoystickStatusBuffer(builder, offset);
     ByteBuffer bb = builder.dataBuffer();
     bufferSize = Math.max(bufferSize, bb.remaining()); // correct buffer size for next time
 

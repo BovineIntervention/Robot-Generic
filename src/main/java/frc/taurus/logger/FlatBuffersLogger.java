@@ -2,6 +2,7 @@ package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
@@ -30,7 +31,8 @@ public class FlatBuffersLogger {
         }
     }
 
-    String filename;
+    final String filename;
+    final Supplier<ByteBuffer> getFileHeaderCallback;
     ArrayList<ChannelTypeReaderPair> pairList = new ArrayList<ChannelTypeReaderPair>();
 
     LogFileWriter writer = new LogFileWriter();
@@ -38,8 +40,9 @@ public class FlatBuffersLogger {
     long packetCount = 0;
 
     // TODO: add timestamp to filename or folder
-    public FlatBuffersLogger(String filename) {
+    public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
         this.filename = filename;
+        this.getFileHeaderCallback = getFileHeaderCallback;
     }
 
 
@@ -51,7 +54,7 @@ public class FlatBuffersLogger {
 
     public void update() {
         if (packetCount == 0) {
-            writer.writeBytes(filename, LoggerManager.getFileHeader());
+            writer.writeBytes(filename, getFileHeaderCallback.get());
         }
         for (var pair : pairList) {
             while (!pair.reader.isEmpty()) {

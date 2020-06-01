@@ -16,12 +16,7 @@ public enum Config implements ChannelIntf {
     DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick_driver.log" ),
     DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick_driver.log" ),
     OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick_operator.log" ),
-
-    // insert new channels above this line
-    // leave the following two test message channels for unit testing
-    TEST_MESSAGE_1              (ChannelType.TestMessage1,      "test.log" ),
-    TEST_MESSAGE_2              (ChannelType.TestMessage2,      "test.log" );
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick_operator.log" );
 
     private final int num;
     private final String name;
