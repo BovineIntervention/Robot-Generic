@@ -17,11 +17,14 @@ abstract class LogFileWriterBase {
                               "/home/lvuser/",  // next, check if we are running on a roboRIO
                               "C:/" };          // next, use project folder on host PC (for testing)
 
+    for (int k=0; k<possiblePaths.length; k++) {
+      possiblePaths[k] = possiblePaths[k].replace("/", File.separator);
+    }
+
     for (var pathName : possiblePaths) {
       File path = new File(pathName);
-      String absPathName = path.getAbsolutePath();
       if (path.exists()) {
-        File logPath = new File(absPathName + "/" + "logs");
+        File logPath = new File(path.getAbsolutePath() + File.separator + "logs");
         if (!logPath.exists()) {
           logPath.mkdir();
         }

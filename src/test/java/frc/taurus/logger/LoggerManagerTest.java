@@ -29,6 +29,8 @@ public class LoggerManagerTest {
     ChannelManager channelManager = new ChannelManager();
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
+    FlatBuffersLogReader reader = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
+
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
@@ -38,8 +40,7 @@ public class LoggerManagerTest {
     channelManager.close(); // close file so we can read it
 
     // Read log file and check its contents
-    FlatBuffersLogReader parser = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
-    ByteBuffer bb = parser.getNextTable();
+    ByteBuffer bb = reader.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
@@ -54,7 +55,7 @@ public class LoggerManagerTest {
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    bb = parser.getNextTable();
+    bb = reader.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
@@ -63,7 +64,7 @@ public class LoggerManagerTest {
     TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
     assertEquals(686, testMessage1.intValue());
 
-    parser.close();
+    reader.close();
   }
 
   @Test
@@ -73,6 +74,7 @@ public class LoggerManagerTest {
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
 
+    FlatBuffersLogReader reader = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
 
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
@@ -88,8 +90,7 @@ public class LoggerManagerTest {
     channelManager.close(); // close file so we can read it
 
     // Read log file and check its contents
-    FlatBuffersLogReader parser = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
-    ByteBuffer bb = parser.getNextTable();
+    ByteBuffer bb = reader.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
@@ -112,7 +113,7 @@ public class LoggerManagerTest {
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
     // 1st packet is TEST_MESSAGE_1
-    bb = parser.getNextTable();
+    bb = reader.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
@@ -122,7 +123,7 @@ public class LoggerManagerTest {
     assertEquals(686, testMessage1.intValue());
 
     // 2nd packet is TEST_MESSAGE_2
-    bb = parser.getNextTable();
+    bb = reader.getNextTable();
     packet = Packet.getRootAsPacket(bb);
     assertEquals(1, packet.packetCount());
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
@@ -131,7 +132,7 @@ public class LoggerManagerTest {
     TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
     assertEquals(686.0, testMessage2.dblValue(), eps);
 
-    parser.close();
+    reader.close();
 
   }
 

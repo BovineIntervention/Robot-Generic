@@ -15,7 +15,7 @@ public class TextLogFileWriter extends LogFileWriterBase {
   public TextLogFileWriter(final String filename) {
     this.filename = filename;
     try {
-      File file = new File(logPath() + "/" + filename);
+      File file = new File(logPath() + File.separator + filename);
       file.createNewFile();
       writer = new BufferedWriter(new FileWriter(file), BUFFER_SIZE);
     } catch (IOException e) {

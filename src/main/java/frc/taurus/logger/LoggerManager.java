@@ -88,7 +88,7 @@ public class LoggerManager {
   }
 
   public String getLogFilename(ChannelIntf channel) {
-    return LogFileWriterBase.logPath() + "/" + channel.getLogFilename();
+    return channel.getLogFilename();
   }
 
 }

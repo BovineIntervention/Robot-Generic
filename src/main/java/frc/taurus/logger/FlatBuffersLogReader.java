@@ -15,7 +15,8 @@ public class FlatBuffersLogReader {
 
   public FlatBuffersLogReader(final String filename) {
     try {
-      file = new RandomAccessFile(new File(LogFileWriterBase.logPath() + "/" + filename), "r");
+      String fullPathFilename = LogFileWriterBase.logPath() + File.separator + filename;
+      file = new RandomAccessFile(new File(fullPathFilename), "r");
     } catch (final FileNotFoundException e) {
       e.printStackTrace();
     }

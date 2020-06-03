@@ -16,7 +16,7 @@ public class BinaryLogFileWriter extends LogFileWriterBase {
   public BinaryLogFileWriter(final String filename) {
     this.filename = filename;
     try {
-      File file = new File(logPath() + "/" + filename);
+      File file = new File(logPath() + File.separator + filename);
       file.createNewFile();
       writer = new BufferedOutputStream(new FileOutputStream(file), BUFFER_SIZE);
     } catch (IOException e) {
