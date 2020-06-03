@@ -18,8 +18,6 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public class FlatBuffersLogger {
-    // Instantiate a new MessageLogger for each thread that needs logging
-    // TODO: put logger in its own thread
 
     class ChannelTypeReaderPair {
         public int channelType;

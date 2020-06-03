@@ -47,6 +47,7 @@ public class TextLogFileWriter extends LogFileWriterBase {
     try {
       if (writer != null) {
         writer.close();
+        writer = null;    // avoid problems if write() is called again
       }
 
     } catch (IOException e) {

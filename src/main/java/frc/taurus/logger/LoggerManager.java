@@ -13,6 +13,8 @@ import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.logger.generated.LogFileHeader;
 
+// TODO: separate thread for loggers
+
 public class LoggerManager {
 
   SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();

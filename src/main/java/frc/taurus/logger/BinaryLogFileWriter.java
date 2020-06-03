@@ -54,8 +54,8 @@ public class BinaryLogFileWriter extends LogFileWriterBase {
     try {
       if (writer != null) {
         writer.close();
+        writer = null;    // avoid problems if write() is called again
       }
-
     } catch (IOException e) {
       e.printStackTrace();
     }
