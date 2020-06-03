@@ -87,8 +87,4 @@ public class LoggerManager {
     return fileHeader;
   }
 
-  public String getLogFilename(ChannelIntf channel) {
-    return channel.getLogFilename();
-  }
-
 }

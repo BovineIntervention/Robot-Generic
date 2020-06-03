@@ -29,7 +29,7 @@ public class LoggerManagerTest {
     ChannelManager channelManager = new ChannelManager();
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
+    FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
@@ -74,7 +74,7 @@ public class LoggerManagerTest {
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
 
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(channelManager.getLogFilename(TestConfig.TEST_MESSAGE_1));
+    FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);

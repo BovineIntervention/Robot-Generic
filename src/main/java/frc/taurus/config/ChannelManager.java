@@ -40,8 +40,4 @@ public class ChannelManager {
     loggerManager.close();
   }
 
-  public String getLogFilename(ChannelIntf channel) {
-    return loggerManager.getLogFilename(channel);
-  }
-
 }
