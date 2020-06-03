@@ -17,7 +17,7 @@ public final class Packet extends Table {
   public Packet __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public long packetCount() { int o = __offset(4); return o != 0 ? (long)bb.getInt(o + bb_pos) & 0xFFFFFFFFL : 0L; }
-  public int channelType() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public short channelType() { int o = __offset(6); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
   public int payload(int j) { int o = __offset(8); return o != 0 ? bb.get(__vector(o) + j * 1) & 0xFF : 0; }
   public int payloadLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
   public ByteVector payloadVector() { return payloadVector(new ByteVector()); }
@@ -27,18 +27,18 @@ public final class Packet extends Table {
 
   public static int createPacket(FlatBufferBuilder builder,
       long packet_count,
-      int channelType,
+      short channelType,
       int payloadOffset) {
     builder.startTable(3);
     Packet.addPayload(builder, payloadOffset);
-    Packet.addChannelType(builder, channelType);
     Packet.addPacketCount(builder, packet_count);
+    Packet.addChannelType(builder, channelType);
     return Packet.endPacket(builder);
   }
 
   public static void startPacket(FlatBufferBuilder builder) { builder.startTable(3); }
   public static void addPacketCount(FlatBufferBuilder builder, long packetCount) { builder.addInt(0, (int)packetCount, (int)0L); }
-  public static void addChannelType(FlatBufferBuilder builder, int channelType) { builder.addInt(1, channelType, 0); }
+  public static void addChannelType(FlatBufferBuilder builder, short channelType) { builder.addShort(1, channelType, 0); }
   public static void addPayload(FlatBufferBuilder builder, int payloadOffset) { builder.addOffset(2, payloadOffset, 0); }
   public static int createPayloadVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
   public static int createPayloadVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }

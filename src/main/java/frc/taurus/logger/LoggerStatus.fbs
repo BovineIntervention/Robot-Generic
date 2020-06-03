@@ -1,0 +1,26 @@
+include "../config/ChannelType.fbs";
+
+namespace frc.taurus.logger.generated;
+
+// the number of messages that are unread by the loggers's queue reader
+struct ChannelStatus {
+  channel_type : frc.taurus.config.generated.ChannelType; // name of the FlatBuffer that defines the payload
+  num_unread_messages : short;
+}
+
+// each log may contain several queues
+table LogStatus {
+  channel_status : [ChannelStatus] (required);
+}
+
+// table for all loggers
+table LoggerStatus {
+  // Timestamp is the first element of every message
+  timestamp : double;
+
+  log_status : [LogStatus] (required);
+}
+
+root_type LoggerStatus;
+
+file_identifier "LOGS";

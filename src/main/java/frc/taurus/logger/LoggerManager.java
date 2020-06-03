@@ -9,11 +9,15 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelIntf;
+import frc.taurus.config.Config;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.logger.generated.LogFileHeader;
+import frc.taurus.logger.generated.LoggerStatus;
 
 // TODO: separate thread for loggers
+
+
 
 public class LoggerManager {
 
@@ -21,6 +25,7 @@ public class LoggerManager {
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
 
   public LoggerManager() {
+    register(Config.LOGGER_STATUS);
   }
 
   // TODO: add timestamp to filename or folder
@@ -47,9 +52,45 @@ public class LoggerManager {
   }
 
   public void update() {
+    updateLoggerStatus();
+
     for (var logger : loggerMap.values()) {
       logger.update();
     }
+  }
+
+  int bufferSize = 0;
+  
+  public void updateLoggerStatus() {
+    // FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
+    // LoggerStatus.startLoggerStatus(builder);
+
+    // int offsets[] = new int[loggerMap.size()];
+    // for (var logger : loggerMap) {
+    //   LogStatus.createLogStatus(builder, logger..getType(), logger) {
+
+    //   short[] numMessagesUnread = new short[loggerMap.size()];
+    // for (int k = 0; k < axes.length; k++) {
+    //   axes[k] = (float) getAxis(k);   // axis IDs are base 0
+    // }
+
+    // boolean[] buttons = new boolean[16];
+    // for (int k = 0; k < buttons.length; k++) {
+    //   buttons[k] = getButton(k + 1);  // button IDs are base 1, not base 0
+    // }
+
+    // JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
+    // JoystickStatus.addPort(builder, getPort());
+    // JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
+    // JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
+    // JoystickStatus.addPov(builder, getPOV(0));
+    // int offset = JoystickStatus.endJoystickStatus(builder);
+
+    // JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+    // ByteBuffer bb = builder.dataBuffer();
+    // bufferSize = Math.max(bufferSize, bb.remaining()); // correct buffer size for next time
+
+    // statusQueue.write(bb);    
   }
 
   public void close() {

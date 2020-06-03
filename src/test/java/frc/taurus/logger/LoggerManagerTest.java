@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
@@ -49,10 +50,14 @@ public class LoggerManagerTest {
                                                                          // seconds of it being started
 
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(1, configuration.channelsLength());
+    assertEquals(1+1, configuration.channelsLength());
 
-    int k = 0;
-    Channel channel = configuration.channels(k);
+    Channel channel = configuration.channels(0);
+    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
+    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
+    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
+
+    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -100,16 +105,22 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
-    // 1st channel in configuration is TEST_MESSAGE_1
+    // 1st channel in configuration is LOGGER_STATUS
     Channel channel = configuration.channels(0);
+    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
+    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
+    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
+
+    // 2nd channel in configuration is TEST_MESSAGE_1
+    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 2nd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(1);
+    // 3rd channel in configuration is TEST_MESSAGE_2
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -249,28 +260,34 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(4, configuration.channelsLength());
+    assertEquals(4+1, configuration.channelsLength());
 
-    // 1st channel in configuration is TEST_MESSAGE_1
+    // 1st channel in configuration is LOGGER_STATUS
     Channel channel = configuration.channels(0);
+    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
+    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
+    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
+
+    // 2nd channel in configuration is TEST_MESSAGE_1
+    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 2nd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(1);
+    // 3rd channel in configuration is TEST_MESSAGE_2
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_2.getLogFilename(), channel.logFilename());
 
-    // 3rd channel in configuration is TEST_MESSAGE_3
-    channel = configuration.channels(2);
+    // 4th channel in configuration is TEST_MESSAGE_3
+    channel = configuration.channels(3);
     assertEquals(TestConfig.TEST_MESSAGE_3.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_3.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_3.getLogFilename(), channel.logFilename());
 
-    // 4th channel in configuration is TEST_MESSAGE_4
-    channel = configuration.channels(3);
+    // 5th channel in configuration is TEST_MESSAGE_4
+    channel = configuration.channels(4);
     assertEquals(TestConfig.TEST_MESSAGE_4.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_4.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_4.getLogFilename(), channel.logFilename());
