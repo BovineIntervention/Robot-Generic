@@ -16,15 +16,15 @@ import frc.taurus.logger.generated.LogFileHeader;
 public class LoggerManager {
 
   SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();
-  ArrayList<ChannelIntf> channels = new ArrayList<ChannelIntf>();
+  ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
 
   public LoggerManager() {
   }
 
   // TODO: add timestamp to filename or folder
   public void register(ChannelIntf channel) {
-    if (!channels.contains(channel)) {
-      channels.add(channel);
+    if (!channelList.contains(channel)) {
+      channelList.add(channel);
       createLogger(channel);
     }
   }
@@ -58,7 +58,7 @@ public class LoggerManager {
 
   public void reset() {
     close();
-    channels.clear();
+    channelList.clear();
     loggerMap.clear();
   }
 
@@ -66,9 +66,9 @@ public class LoggerManager {
     FlatBufferBuilder builder = new FlatBufferBuilder(256);
 
     // create Channels
-    int[] channelOffsets = new int[channels.size()];
-    for (int k = 0; k < channels.size(); k++) {
-      ChannelIntf channel = channels.get(k);
+    int[] channelOffsets = new int[channelList.size()];
+    for (int k = 0; k < channelList.size(); k++) {
+      ChannelIntf channel = channelList.get(k);
       channelOffsets[k] = Channel.createChannel(builder, channel.getNum(), builder.createString(channel.getName()),
           builder.createString(channel.getLogFilename()));
     }
@@ -88,8 +88,7 @@ public class LoggerManager {
   }
 
   public String getLogFilename(ChannelIntf channel) {
-    FlatBuffersLogger logger = loggerMap.get(channel.getLogFilename());
-    return logger.getBasePath() + "/" + channel.getLogFilename();
+    return LogFileWriterBase.logPath() + "/" + channel.getLogFilename();
   }
 
 }

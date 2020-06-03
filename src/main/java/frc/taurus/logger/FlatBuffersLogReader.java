@@ -9,17 +9,13 @@ import java.nio.ByteOrder;
 
 import com.google.flatbuffers.ByteBufferUtil;
 
-import frc.taurus.config.ChannelIntf;
-import frc.taurus.config.ChannelManager;
-
-public class LogFileReader {
+public class FlatBuffersLogReader {
 
   RandomAccessFile file;
 
-  public LogFileReader(final ChannelManager channelManager, final ChannelIntf channel) {
-    final String filename = channelManager.getLogFilename(channel);
+  public FlatBuffersLogReader(final String filename) {
     try {
-      file = new RandomAccessFile(new File(filename), "r");
+      file = new RandomAccessFile(new File(LogFileWriterBase.logPath() + "/" + filename), "r");
     } catch (final FileNotFoundException e) {
       e.printStackTrace();
     }

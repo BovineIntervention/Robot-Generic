@@ -35,7 +35,7 @@ public class FlatBuffersLogger {
     final Supplier<ByteBuffer> getFileHeaderCallback;
     ArrayList<ChannelTypeReaderPair> pairList = new ArrayList<ChannelTypeReaderPair>();
 
-    LogFileWriter writer = new LogFileWriter();
+    BinaryLogFileWriter writer;
     int maxHeaderSize = 0;
     long packetCount = 0;
 
@@ -43,6 +43,7 @@ public class FlatBuffersLogger {
     public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
         this.filename = filename;
         this.getFileHeaderCallback = getFileHeaderCallback;
+        writer = new BinaryLogFileWriter(filename);
     }
 
 
@@ -54,7 +55,7 @@ public class FlatBuffersLogger {
 
     public void update() {
         if (packetCount == 0) {
-            writer.writeBytes(filename, getFileHeaderCallback.get());
+            writer.write(getFileHeaderCallback.get());
         }
         for (var pair : pairList) {
             while (!pair.reader.isEmpty()) {
@@ -81,16 +82,10 @@ public class FlatBuffersLogger {
         maxHeaderSize = Math.max(maxHeaderSize, bb_packet.remaining() - payloadSize);
 
         // write Packet to file
-        writer.writeBytes(filename, bb_packet);
+        writer.write(bb_packet);
     }
 
     public void close() {
         writer.close();
     }
-
-
-    public String getBasePath() {
-        return writer.getBasePath();
-    }
-
 }
