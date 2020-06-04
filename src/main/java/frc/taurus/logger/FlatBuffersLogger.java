@@ -22,17 +22,6 @@ import frc.taurus.messages.MessageQueue;
 
 public class FlatBuffersLogger {
 
-   
-  class ChannelTypeReaderPair {
-    public short channelType;
-    public MessageQueue<ByteBuffer>.QueueReader reader;
-
-    ChannelTypeReaderPair(final short channelType, final MessageQueue<ByteBuffer>.QueueReader reader) {
-      this.channelType = channelType;
-      this.reader = reader;
-    }
-  }
-
   final String filename;
   final Supplier<ByteBuffer> getFileHeaderCallback;
   ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>> queueTypeReaderPair = new ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>>();
@@ -61,14 +50,15 @@ public class FlatBuffersLogger {
       var channelType = pair.getKey();
       var reader = pair.getValue();
       while (!reader.isEmpty()) {
+        short queueSize = (short)reader.size();
         ByteBuffer bb = reader.read().get(); // we know Optional::isPresent() is true because of earlier !isEmpty()
-        writePacket(channelType, bb); // write to file
+        writePacket(channelType, queueSize, bb); // write to file
       }
     }
     writer.flush();
   }
 
-  public void writePacket(final short channelType, final ByteBuffer bb_payload) {
+  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bb_payload) {
     int payloadSize = bb_payload.remaining();
 
     FlatBufferBuilder builder = new FlatBufferBuilder(maxHeaderSize + payloadSize);
@@ -77,7 +67,7 @@ public class FlatBuffersLogger {
     int dataOffset = Packet.createPayloadVector(builder, bb_payload);
 
     // Create Packet
-    int offset = Packet.createPacket(builder, packetCount++, channelType, dataOffset);
+    int offset = Packet.createPacket(builder, packetCount++, channelType, queueSize, dataOffset);
     Packet.finishSizePrefixedPacketBuffer(builder, offset); // add size prefix to files
     ByteBuffer bb_packet = builder.dataBuffer();
 
@@ -90,4 +80,5 @@ public class FlatBuffersLogger {
   public void close() {
     writer.close();
   }
+
 }

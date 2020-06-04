@@ -9,23 +9,22 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelIntf;
-import frc.taurus.config.Config;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.logger.generated.LogFileHeader;
-import frc.taurus.logger.generated.LoggerStatus;
+import frc.taurus.messages.MessageQueue;
 
-// TODO: separate thread for loggers
-
-
+// TODO: separate single thread for LoggerManager and Loggers
 
 public class LoggerManager {
 
   SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
+  MessageQueue<ByteBuffer> statusQueue;
 
-  public LoggerManager() {
-    register(Config.LOGGER_STATUS);
+  public LoggerManager(ChannelIntf loggerStatusChannel) {
+    statusQueue = loggerStatusChannel.getQueue();
+    register(loggerStatusChannel);
   }
 
   // TODO: add timestamp to filename or folder
@@ -52,47 +51,12 @@ public class LoggerManager {
   }
 
   public void update() {
-    updateLoggerStatus();
-
     for (var logger : loggerMap.values()) {
       logger.update();
     }
   }
 
-  int bufferSize = 0;
-  
-  public void updateLoggerStatus() {
-    // FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
-    // LoggerStatus.startLoggerStatus(builder);
-
-    // int offsets[] = new int[loggerMap.size()];
-    // for (var logger : loggerMap) {
-    //   LogStatus.createLogStatus(builder, logger..getType(), logger) {
-
-    //   short[] numMessagesUnread = new short[loggerMap.size()];
-    // for (int k = 0; k < axes.length; k++) {
-    //   axes[k] = (float) getAxis(k);   // axis IDs are base 0
-    // }
-
-    // boolean[] buttons = new boolean[16];
-    // for (int k = 0; k < buttons.length; k++) {
-    //   buttons[k] = getButton(k + 1);  // button IDs are base 1, not base 0
-    // }
-
-    // JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
-    // JoystickStatus.addPort(builder, getPort());
-    // JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
-    // JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
-    // JoystickStatus.addPov(builder, getPOV(0));
-    // int offset = JoystickStatus.endJoystickStatus(builder);
-
-    // JoystickStatus.finishJoystickStatusBuffer(builder, offset);
-    // ByteBuffer bb = builder.dataBuffer();
-    // bufferSize = Math.max(bufferSize, bb.remaining()); // correct buffer size for next time
-
-    // statusQueue.write(bb);    
-  }
-
+ 
   public void close() {
     for (var logger : loggerMap.values()) {
       logger.close();
@@ -106,6 +70,7 @@ public class LoggerManager {
   }
 
   public ByteBuffer getFileHeader() {
+    //TODO: autosize
     FlatBufferBuilder builder = new FlatBufferBuilder(256);
 
     // create Channels
@@ -122,8 +87,7 @@ public class LoggerManager {
     int configOffset = Configuration.createConfiguration(builder, channelVectorOffset);
 
     // create LogFileHeader
-    double timestamp = Timer.getFPGATimestamp();
-    int offset = LogFileHeader.createLogFileHeader(builder, timestamp, configOffset);
+    int offset = LogFileHeader.createLogFileHeader(builder, Timer.getFPGATimestamp(), configOffset);
     LogFileHeader.finishSizePrefixedLogFileHeaderBuffer(builder, offset);
     ByteBuffer fileHeader = builder.dataBuffer();
 

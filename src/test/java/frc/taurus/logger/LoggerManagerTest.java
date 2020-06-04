@@ -65,6 +65,7 @@ public class LoggerManagerTest {
     bb = reader.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
+    assertEquals(1, packet.queueSize());
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
 
     bb = packet.payloadAsByteBuffer();
@@ -129,6 +130,7 @@ public class LoggerManagerTest {
     bb = reader.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
+    assertEquals(1, packet.queueSize());
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
 
     bb = packet.payloadAsByteBuffer();
@@ -139,6 +141,7 @@ public class LoggerManagerTest {
     bb = reader.getNextTable();
     packet = Packet.getRootAsPacket(bb);
     assertEquals(1, packet.packetCount());
+    assertEquals(1, packet.queueSize());
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
 
     bb = packet.payloadAsByteBuffer();
@@ -204,6 +207,7 @@ public class LoggerManagerTest {
       ByteBuffer bb = reader12.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(2*k, packet.packetCount());
+      assertEquals(1, packet.queueSize());
       assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
 
       bb = packet.payloadAsByteBuffer();
@@ -214,6 +218,7 @@ public class LoggerManagerTest {
       bb = reader12.getNextTable();
       packet = Packet.getRootAsPacket(bb);
       assertEquals(2*k+1, packet.packetCount());
+      assertEquals(1, packet.queueSize());
       assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
 
       bb = packet.payloadAsByteBuffer();
@@ -225,6 +230,7 @@ public class LoggerManagerTest {
       ByteBuffer bb = reader3.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(k, packet.packetCount());
+      assertEquals(1, packet.queueSize());
       assertEquals(TestConfig.TEST_MESSAGE_3.getNum(), packet.channelType());
 
       bb = packet.payloadAsByteBuffer();
@@ -236,6 +242,7 @@ public class LoggerManagerTest {
       ByteBuffer bb = reader4.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(k, packet.packetCount());
+      assertEquals(1, packet.queueSize());
       assertEquals(TestConfig.TEST_MESSAGE_4.getNum(), packet.channelType());
 
       bb = packet.payloadAsByteBuffer();
