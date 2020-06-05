@@ -13,11 +13,12 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public enum Config implements ChannelIntf {
-    LOGGER_STATUS               (ChannelType.LoggerStatus,      "logger_status.log"),
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick_driver.log" ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick_driver.log" ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick_operator.log" );
+    LOGGER_STATUS               (ChannelType.LoggerStatus,        "logger_status.log"),
+    DRIVER_STATION_STATUS       (ChannelType.DriverStationStatus, "driver_station.log"),
+    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,      "joystick_driver.log" ),
+    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,        "joystick_driver.log" ),
+    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,      "joystick_operator.log" ),
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" );
 
     private final short num;
     private final String name;

@@ -69,9 +69,12 @@ public class LoggerManager {
     loggerMap.clear();
   }
 
+
+  int bufferSize = 0;
+
   public ByteBuffer getFileHeader() {
-    //TODO: autosize
-    FlatBufferBuilder builder = new FlatBufferBuilder(256);
+  
+    FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
 
     // create Channels
     int[] channelOffsets = new int[channelList.size()];
@@ -90,6 +93,8 @@ public class LoggerManager {
     int offset = LogFileHeader.createLogFileHeader(builder, Timer.getFPGATimestamp(), configOffset);
     LogFileHeader.finishSizePrefixedLogFileHeaderBuffer(builder, offset);
     ByteBuffer fileHeader = builder.dataBuffer();
+
+    bufferSize = Math.max(bufferSize, fileHeader.remaining());
 
     return fileHeader;
   }

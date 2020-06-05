@@ -4,6 +4,7 @@ namespace frc.taurus.config.generated;
 
 enum ChannelType : short {
   LoggerStatus,
+  DriverStationStatus,
   JoystickStatus, 
   JoystickGoal,
   }
