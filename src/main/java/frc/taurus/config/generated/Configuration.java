@@ -35,6 +35,7 @@ public final class Configuration extends Table {
   public static void startChannelsVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endConfiguration(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 4);  // channels
     return o;
   }
   public static void finishConfigurationBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "CNFG"); }

@@ -17,34 +17,39 @@ public final class Packet extends Table {
   public Packet __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public long packetCount() { int o = __offset(4); return o != 0 ? (long)bb.getInt(o + bb_pos) & 0xFFFFFFFFL : 0L; }
-  public int channelType() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
-  public int payload(int j) { int o = __offset(8); return o != 0 ? bb.get(__vector(o) + j * 1) & 0xFF : 0; }
-  public int payloadLength() { int o = __offset(8); return o != 0 ? __vector_len(o) : 0; }
+  public short channelType() { int o = __offset(6); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
+  public short queueSize() { int o = __offset(8); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
+  public int payload(int j) { int o = __offset(10); return o != 0 ? bb.get(__vector(o) + j * 1) & 0xFF : 0; }
+  public int payloadLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
   public ByteVector payloadVector() { return payloadVector(new ByteVector()); }
-  public ByteVector payloadVector(ByteVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
-  public ByteBuffer payloadAsByteBuffer() { return __vector_as_bytebuffer(8, 1); }
-  public ByteBuffer payloadInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 8, 1); }
+  public ByteVector payloadVector(ByteVector obj) { int o = __offset(10); return o != 0 ? obj.__assign(__vector(o), bb) : null; }
+  public ByteBuffer payloadAsByteBuffer() { return __vector_as_bytebuffer(10, 1); }
+  public ByteBuffer payloadInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 10, 1); }
 
   public static int createPacket(FlatBufferBuilder builder,
       long packet_count,
-      int channelType,
+      short channel_type,
+      short queue_size,
       int payloadOffset) {
-    builder.startTable(3);
+    builder.startTable(4);
     Packet.addPayload(builder, payloadOffset);
-    Packet.addChannelType(builder, channelType);
     Packet.addPacketCount(builder, packet_count);
+    Packet.addQueueSize(builder, queue_size);
+    Packet.addChannelType(builder, channel_type);
     return Packet.endPacket(builder);
   }
 
-  public static void startPacket(FlatBufferBuilder builder) { builder.startTable(3); }
+  public static void startPacket(FlatBufferBuilder builder) { builder.startTable(4); }
   public static void addPacketCount(FlatBufferBuilder builder, long packetCount) { builder.addInt(0, (int)packetCount, (int)0L); }
-  public static void addChannelType(FlatBufferBuilder builder, int channelType) { builder.addInt(1, channelType, 0); }
-  public static void addPayload(FlatBufferBuilder builder, int payloadOffset) { builder.addOffset(2, payloadOffset, 0); }
+  public static void addChannelType(FlatBufferBuilder builder, short channelType) { builder.addShort(1, channelType, 0); }
+  public static void addQueueSize(FlatBufferBuilder builder, short queueSize) { builder.addShort(2, queueSize, 0); }
+  public static void addPayload(FlatBufferBuilder builder, int payloadOffset) { builder.addOffset(3, payloadOffset, 0); }
   public static int createPayloadVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
   public static int createPayloadVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }
   public static void startPayloadVector(FlatBufferBuilder builder, int numElems) { builder.startVector(1, numElems, 1); }
   public static int endPacket(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 10);  // payload
     return o;
   }
   public static void finishPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "FPKT"); }

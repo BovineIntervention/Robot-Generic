@@ -34,6 +34,7 @@ public final class LogFileHeader extends Table {
   public static void addConfiguration(FlatBufferBuilder builder, int configurationOffset) { builder.addOffset(1, configurationOffset, 0); }
   public static int endLogFileHeader(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 6);  // configuration
     return o;
   }
   public static void finishLogFileHeaderBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "FLOG"); }

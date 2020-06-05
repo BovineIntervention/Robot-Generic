@@ -30,6 +30,7 @@ public class JoystickStatusTest {
 
     // values to store in flatbuffer
     double timestamp = 12345678.0;
+    int port = 99;
 
     float[] axes = new float[6];
     for (int k = 0; k < 6; k++) {
@@ -47,6 +48,7 @@ public class JoystickStatusTest {
 
     JoystickStatus.startJoystickStatus(builder);
     JoystickStatus.addTimestamp(builder, timestamp);
+    JoystickStatus.addPort(builder, port);    
     JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
     JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
     JoystickStatus.addPov(builder, pov);
@@ -69,6 +71,7 @@ public class JoystickStatusTest {
     if (optStatus.isPresent()) {
       JoystickStatus status = JoystickStatus.getRootAsJoystickStatus(optStatus.get());
       assertEquals(timestamp, status.timestamp(), eps);
+      assertEquals(port, status.port());
 
       AxisVector axesVector = status.axes();
       for (int k = 0; k < 6; k++) {

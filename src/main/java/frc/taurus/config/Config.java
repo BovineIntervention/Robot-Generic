@@ -13,24 +13,26 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public enum Config implements ChannelIntf {
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,    "joystick_driver.log" ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,      "joystick_driver.log" ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,    "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,      "joystick_operator.log" );
+    LOGGER_STATUS               (ChannelType.LoggerStatus,        "logger_status.log"),
+    DRIVER_STATION_STATUS       (ChannelType.DriverStationStatus, "driver_station.log"),
+    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,      "joystick_driver.log" ),
+    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,        "joystick_driver.log" ),
+    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,      "joystick_operator.log" ),
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" );
 
-    private final int num;
+    private final short num;
     private final String name;
     private final String logFilename;
     private final MessageQueue<ByteBuffer> queue;
 
-    Config(final int num, final String logFilename) {
+    Config(final short num, final String logFilename) {
         this.num = num;
         this.name = ChannelType.name(num);        
         this.logFilename = logFilename;
         this.queue = new MessageQueue<ByteBuffer>(){};
     }
 
-    public int getNum() { return num; }
+    public short getNum() { return num; }
     public String getName() { return name; }
     public String getLogFilename() { return logFilename; }
     public MessageQueue<ByteBuffer> getQueue() { return queue; }  

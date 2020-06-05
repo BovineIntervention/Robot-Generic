@@ -17,19 +17,23 @@ public final class JoystickStatus extends Table {
   public JoystickStatus __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public double timestamp() { int o = __offset(4); return o != 0 ? bb.getDouble(o + bb_pos) : 0.0; }
+  public int port() { int o = __offset(6); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
   public frc.taurus.joystick.generated.AxisVector axes() { return axes(new frc.taurus.joystick.generated.AxisVector()); }
-  public frc.taurus.joystick.generated.AxisVector axes(frc.taurus.joystick.generated.AxisVector obj) { int o = __offset(6); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
+  public frc.taurus.joystick.generated.AxisVector axes(frc.taurus.joystick.generated.AxisVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
   public frc.taurus.joystick.generated.ButtonVector buttons() { return buttons(new frc.taurus.joystick.generated.ButtonVector()); }
-  public frc.taurus.joystick.generated.ButtonVector buttons(frc.taurus.joystick.generated.ButtonVector obj) { int o = __offset(8); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
-  public int pov() { int o = __offset(10); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public frc.taurus.joystick.generated.ButtonVector buttons(frc.taurus.joystick.generated.ButtonVector obj) { int o = __offset(10); return o != 0 ? obj.__assign(o + bb_pos, bb) : null; }
+  public int pov() { int o = __offset(12); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
 
-  public static void startJoystickStatus(FlatBufferBuilder builder) { builder.startTable(4); }
+  public static void startJoystickStatus(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addTimestamp(FlatBufferBuilder builder, double timestamp) { builder.addDouble(0, timestamp, 0.0); }
-  public static void addAxes(FlatBufferBuilder builder, int axesOffset) { builder.addStruct(1, axesOffset, 0); }
-  public static void addButtons(FlatBufferBuilder builder, int buttonsOffset) { builder.addStruct(2, buttonsOffset, 0); }
-  public static void addPov(FlatBufferBuilder builder, int pov) { builder.addInt(3, pov, 0); }
+  public static void addPort(FlatBufferBuilder builder, int port) { builder.addInt(1, port, 0); }
+  public static void addAxes(FlatBufferBuilder builder, int axesOffset) { builder.addStruct(2, axesOffset, 0); }
+  public static void addButtons(FlatBufferBuilder builder, int buttonsOffset) { builder.addStruct(3, buttonsOffset, 0); }
+  public static void addPov(FlatBufferBuilder builder, int pov) { builder.addInt(4, pov, 0); }
   public static int endJoystickStatus(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 8);  // axes
+    builder.required(o, 10);  // buttons
     return o;
   }
   public static void finishJoystickStatusBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "JOYS"); }

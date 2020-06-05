@@ -12,19 +12,25 @@ import frc.taurus.config.ChannelIntf;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.logger.generated.LogFileHeader;
+import frc.taurus.messages.MessageQueue;
+
+// TODO: separate single thread for LoggerManager and Loggers
 
 public class LoggerManager {
 
   SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();
-  ArrayList<ChannelIntf> channels = new ArrayList<ChannelIntf>();
+  ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
+  MessageQueue<ByteBuffer> statusQueue;
 
-  public LoggerManager() {
+  public LoggerManager(ChannelIntf loggerStatusChannel) {
+    statusQueue = loggerStatusChannel.getQueue();
+    register(loggerStatusChannel);
   }
 
   // TODO: add timestamp to filename or folder
   public void register(ChannelIntf channel) {
-    if (!channels.contains(channel)) {
-      channels.add(channel);
+    if (!channelList.contains(channel)) {
+      channelList.add(channel);
       createLogger(channel);
     }
   }
@@ -50,6 +56,7 @@ public class LoggerManager {
     }
   }
 
+ 
   public void close() {
     for (var logger : loggerMap.values()) {
       logger.close();
@@ -58,17 +65,21 @@ public class LoggerManager {
 
   public void reset() {
     close();
-    channels.clear();
+    channelList.clear();
     loggerMap.clear();
   }
 
+
+  int bufferSize = 0;
+
   public ByteBuffer getFileHeader() {
-    FlatBufferBuilder builder = new FlatBufferBuilder(256);
+  
+    FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
 
     // create Channels
-    int[] channelOffsets = new int[channels.size()];
-    for (int k = 0; k < channels.size(); k++) {
-      ChannelIntf channel = channels.get(k);
+    int[] channelOffsets = new int[channelList.size()];
+    for (int k = 0; k < channelList.size(); k++) {
+      ChannelIntf channel = channelList.get(k);
       channelOffsets[k] = Channel.createChannel(builder, channel.getNum(), builder.createString(channel.getName()),
           builder.createString(channel.getLogFilename()));
     }
@@ -79,17 +90,13 @@ public class LoggerManager {
     int configOffset = Configuration.createConfiguration(builder, channelVectorOffset);
 
     // create LogFileHeader
-    double timestamp = Timer.getFPGATimestamp();
-    int offset = LogFileHeader.createLogFileHeader(builder, timestamp, configOffset);
+    int offset = LogFileHeader.createLogFileHeader(builder, Timer.getFPGATimestamp(), configOffset);
     LogFileHeader.finishSizePrefixedLogFileHeaderBuffer(builder, offset);
     ByteBuffer fileHeader = builder.dataBuffer();
 
-    return fileHeader;
-  }
+    bufferSize = Math.max(bufferSize, fileHeader.remaining());
 
-  public String getLogFilename(ChannelIntf channel) {
-    FlatBuffersLogger logger = loggerMap.get(channel.getLogFilename());
-    return logger.getBasePath() + "/" + channel.getLogFilename();
+    return fileHeader;
   }
 
 }

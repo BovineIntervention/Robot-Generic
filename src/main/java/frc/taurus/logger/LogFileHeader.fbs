@@ -16,7 +16,7 @@ namespace frc.taurus.logger.generated;
 
 table LogFileHeader {
   timestamp : double;             // timestamp the log file was opened
-  configuration : frc.taurus.config.generated.Configuration;  // configuration of channels
+  configuration : frc.taurus.config.generated.Configuration (required);  // configuration of channels
 }
 
 root_type LogFileHeader;

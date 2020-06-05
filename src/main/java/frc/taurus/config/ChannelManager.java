@@ -9,9 +9,10 @@ import frc.taurus.messages.MessageQueue;
 public class ChannelManager {
 
   HashSet<ChannelIntf> channelList = new HashSet<ChannelIntf>(); // HashSet has high performance contains() and get(), needed by fetch()
-  LoggerManager loggerManager = new LoggerManager();
+  LoggerManager loggerManager;
 
   public ChannelManager() {
+    loggerManager = new LoggerManager(Config.LOGGER_STATUS);
   }
 
   private void register(ChannelIntf channel) {
@@ -38,10 +39,6 @@ public class ChannelManager {
 
   public void close() {
     loggerManager.close();
-  }
-
-  public String getLogFilename(ChannelIntf channel) {
-    return loggerManager.getLogFilename(channel);
   }
 
 }
