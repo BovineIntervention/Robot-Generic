@@ -4,12 +4,11 @@ package frc.taurus.config.generated;
 
 public final class ChannelType {
   private ChannelType() { }
-  public static final short LoggerStatus = 0;
-  public static final short DriverStationStatus = 1;
-  public static final short JoystickStatus = 2;
-  public static final short JoystickGoal = 3;
+  public static final short DriverStationStatus = 0;
+  public static final short JoystickStatus = 1;
+  public static final short JoystickGoal = 2;
 
-  public static final String[] names = { "LoggerStatus", "DriverStationStatus", "JoystickStatus", "JoystickGoal", };
+  public static final String[] names = { "DriverStationStatus", "JoystickStatus", "JoystickGoal", };
 
   public static String name(int e) { return names[e]; }
 }

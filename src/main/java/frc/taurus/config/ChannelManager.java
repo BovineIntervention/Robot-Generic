@@ -11,8 +11,8 @@ public class ChannelManager {
   HashSet<ChannelIntf> channelList = new HashSet<ChannelIntf>(); // HashSet has high performance contains() and get(), needed by fetch()
   LoggerManager loggerManager;
 
-  public ChannelManager() {
-    loggerManager = new LoggerManager(Config.LOGGER_STATUS);
+  public ChannelManager(ChannelIntf driverStationStatusChannel) {
+    loggerManager = new LoggerManager(driverStationStatusChannel);
   }
 
   private void register(ChannelIntf channel) {

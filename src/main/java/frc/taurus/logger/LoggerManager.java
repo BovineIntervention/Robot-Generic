@@ -2,6 +2,7 @@ package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelIntf;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
+import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.messages.MessageQueue;
 
@@ -20,22 +22,21 @@ public class LoggerManager {
 
   SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
-  MessageQueue<ByteBuffer> statusQueue;
+  MessageQueue<ByteBuffer> dsStatusQueue;
 
-  public LoggerManager(ChannelIntf loggerStatusChannel) {
-    statusQueue = loggerStatusChannel.getQueue();
-    register(loggerStatusChannel);
+  public LoggerManager(ChannelIntf driverStationStatusChannel) {
+    dsStatusQueue = driverStationStatusChannel.getQueue();
   }
 
-  // TODO: add timestamp to filename or folder
+  // called when ChannelManager.fetch() is called by robot code
   public void register(ChannelIntf channel) {
     if (!channelList.contains(channel)) {
       channelList.add(channel);
-      createLogger(channel);
+      openLogger(channel);
     }
   }
 
-  void createLogger(ChannelIntf channel) {
+  private void openLogger(ChannelIntf channel) {
     // get the filename listed in Config
     String filename = channel.getLogFilename();
 
@@ -50,7 +51,18 @@ public class LoggerManager {
     }
   }
 
+  // called when we switch folders between auto/teleop/test
+  private void reOpenLoggers() {
+    loggerMap.clear();
+
+    for (var channel : channelList) {
+      openLogger(channel);
+    }
+  }  
+
   public void update() {
+    updateLogFolderTimestamp();
+
     for (var logger : loggerMap.values()) {
       logger.update();
     }
@@ -68,6 +80,42 @@ public class LoggerManager {
     channelList.clear();
     loggerMap.clear();
   }
+
+
+  boolean autoLast = false;
+  boolean teleopLast = false;
+  boolean testLast = false;
+
+  public void updateLogFolderTimestamp() {
+    Optional<ByteBuffer> obb = dsStatusQueue.readLast();
+    if (obb.isPresent()) {
+      DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
+  
+      boolean enabled = dsStatus.enabled();
+      boolean auto = dsStatus.autonomous();
+      boolean teleop = dsStatus.teleop();
+      boolean test = dsStatus.test();
+
+      // if we start autonomous, teleop, or test, create a new folder
+      if (!enabled) {
+        close();
+      } else if (auto && !autoLast) {
+        LogFileWriterBase.updateLogFolderTimestamp("auto");
+        reOpenLoggers();
+      } else if (teleop && !teleopLast) {
+        LogFileWriterBase.updateLogFolderTimestamp("teleop");
+        reOpenLoggers();
+      } else if (test && !testLast) {
+        LogFileWriterBase.updateLogFolderTimestamp("test");
+        reOpenLoggers();
+      }
+
+      autoLast = auto;
+      teleopLast = teleop;
+      testLast = test;
+    }
+  }
+
 
 
   int bufferSize = 0;

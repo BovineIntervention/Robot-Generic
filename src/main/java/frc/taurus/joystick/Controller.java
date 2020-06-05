@@ -86,7 +86,7 @@ public class Controller {
       button.update();
     }
 
-    log();
+    sendStatus();
 
     Optional<ByteBuffer> obb = mGoalReader.readLast();
     if (obb.isPresent()) {
@@ -129,15 +129,22 @@ public class Controller {
     return (Math.abs(value) > Math.abs(deadband)) ? value : 0;
   }
 
-  int bufferSize = 0;
-  public void log() {
+  public void sendStatus() {
+    writeStatusQueue();
+    writeSmartDashboard();
+  }
 
-    float[] axes = new float[6];
+  final int maxNumAxes = 6;
+  final int maxNumButtons = 16;
+  int bufferSize = 0;
+  public void writeStatusQueue() {
+
+    float[] axes = new float[maxNumAxes];
     for (int k = 0; k < axes.length; k++) {
       axes[k] = (float) getAxis(k);   // axis IDs are base 0
     }
 
-    boolean[] buttons = new boolean[16];
+    boolean[] buttons = new boolean[maxNumButtons];
     for (int k = 0; k < buttons.length; k++) {
       buttons[k] = getButton(k + 1);  // button IDs are base 1, not base 0
     }
@@ -159,6 +166,9 @@ public class Controller {
   }
 
 
+  public void writeSmartDashboard() {
+    // SmartDashboard.putNumber()
+  }
 
 
 
