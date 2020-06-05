@@ -1,8 +1,8 @@
-namespace frc.taurus.joystick;
+namespace frc.taurus.joystick.generated;
 
 table JoystickGoal {
-  timestamp:double;
-  rumble:bool;
+  timestamp : double;
+  rumble : bool;
 }
 
 root_type JoystickGoal;

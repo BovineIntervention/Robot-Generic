@@ -1,50 +1,44 @@
 package frc.taurus.config;
 
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
 
 import frc.taurus.logger.LoggerManager;
 import frc.taurus.messages.MessageQueue;
 
 public class ChannelManager {
-	// singleton class
-	private static ChannelManager instance = null;
-	public static ChannelManager getInstance() {
-		if (instance == null) {
-			instance = new ChannelManager();
-		}
-		return instance;
-	}
 
-    ArrayList<ChannelIntf> channels = new ArrayList<ChannelIntf>();
-    LoggerManager loggerManager = new LoggerManager();
+  HashSet<ChannelIntf> channelList = new HashSet<ChannelIntf>(); // HashSet has high performance contains() and get(), needed by fetch()
+  LoggerManager loggerManager;
 
-    private ChannelManager() {}    
+  public ChannelManager() {
+    loggerManager = new LoggerManager(Config.LOGGER_STATUS);
+  }
 
-    void register(ChannelIntf channel) {
-        if (!channels.contains(channel)) {
-            this.channels.add(channel);
-        }
+  private void register(ChannelIntf channel) {
+    // important: need to reset queues before use (otherwise you will read last session's data)
+    channel.getQueue().clear();     
+
+    // add the new channel to our list
+    if (!channelList.contains(channel)) {
+      this.channelList.add(channel);
     }
+  }
 
-    public MessageQueue<?> fetch(ChannelIntf channel) {
-        if (!channels.contains(channel)) {
-            this.register(channel);
-            loggerManager.register(channel);
-        }
-        return channel.getQueue();
+  public MessageQueue<ByteBuffer> fetch(ChannelIntf channel) {
+    if (!channelList.contains(channel)) {
+      this.register(channel);
+      loggerManager.register(channel);
     }
+    return channel.getQueue();
+  }
 
-    public void update() {
-        loggerManager.update();
-    }
+  public void update() {
+    loggerManager.update();
+  }
 
-    public void close() {
-        loggerManager.close();
-    }
-
-    public String getLogFilename(ChannelIntf channel) {
-        return loggerManager.getLogFilename(channel);
-    }
-
+  public void close() {
+    loggerManager.close();
+  }
 
 }

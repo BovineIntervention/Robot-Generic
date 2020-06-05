@@ -1,4 +1,4 @@
-namespace frc.taurus.drivetrain;
+namespace frc.taurus.drivetrain.generated;
 
 table DrivetrainGoal {
   // Timestamp is the first element of every message

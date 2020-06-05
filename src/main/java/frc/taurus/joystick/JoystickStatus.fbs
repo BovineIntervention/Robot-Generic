@@ -1,42 +1,25 @@
-namespace frc.taurus.joystick;
+namespace frc.taurus.joystick.generated;
 
 
  // TODO: include all joysticks plus DriverStation data
  // enabled, autnomous, teamId, test, fmsAttached
  // like 971's aos/robot_state/joystick_state.fbs
 
+struct AxisVector {
+  axes : [float:6];
+}
+struct ButtonVector {
+  buttons : [bool:16];
+}
+
 table JoystickStatus {
   // Timestamp is the first element of every message
-  timestamp:double;
+  timestamp : double;
 
-  // Axes
-  axis0:float;
-  axis1:float;
-  axis2:float;
-  axis3:float;
-  axis4:float;
-  axis5:float;
-
-  // Buttons
-  button1:bool;
-  button2:bool;
-  button3:bool;
-  button4:bool;
-  button5:bool;
-  button6:bool;
-  button7:bool;
-  button8:bool;
-  button9:bool;
-  button10:bool;
-  button11:bool;
-  button12:bool;
-  button13:bool;
-  button14:bool;
-  button15:bool;
-  button16:bool;
-
-  // POV
-  pov:int;
+  port : int;
+  axes : AxisVector (required);
+  buttons : ButtonVector (required);
+  pov : int;
 }
 
 root_type JoystickStatus;

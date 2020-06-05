@@ -8,18 +8,14 @@
 package frc.robot;
 
 
-import java.util.Optional;
-
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.TimedRobot;
-import frc.robot.joystick.OperatorControls;
-import frc.robot.joystick.User1DriveControls;
+import frc.robot.joystick.DriverControlsXboxExample;
+import frc.robot.joystick.SuperstructureControlsExample;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
-import frc.taurus.drivetrain.DrivetrainGoal;
-import frc.taurus.joystick.JoystickGoal;
-import frc.taurus.joystick.JoystickStatus;
-import frc.taurus.messages.MessageQueue;
+import frc.taurus.drivetrain.generated.DrivetrainGoal;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -30,15 +26,17 @@ import frc.taurus.messages.MessageQueue;
  */
 public class Robot extends TimedRobot {
 
+  ChannelManager channelManager = new ChannelManager();
 
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
-  @SuppressWarnings("unchecked")
-  User1DriveControls user1DriveControls = new User1DriveControls(Optional.of((MessageQueue<JoystickStatus>) Config.DRIVER_JOYSTICK_STATUS.getQueue()), 
-                                                                 Optional.of((MessageQueue<JoystickGoal>)   Config.DRIVER_JOYSTICK_GOAL.getQueue()));  
-  @SuppressWarnings("unchecked") 
-  OperatorControls operatorControls = new OperatorControls(Optional.of((MessageQueue<JoystickStatus>) Config.OPERATOR_JOYSTICK_STATUS.getQueue()), 
-                                                           Optional.of((MessageQueue<JoystickGoal>)   Config.OPERATOR_JOYSTICK_GOAL.getQueue()));  
+  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
+          channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS), 
+          channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL));  
+  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
+          driverControls.getDriverController(),
+          channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
+          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL));  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -84,10 +82,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    float throttle = (float)user1DriveControls.getThrottle();
-    float steering = (float)user1DriveControls.getSteering();
-    boolean quickTurn = user1DriveControls.getQuickTurn();
-    boolean lowGear = user1DriveControls.getLowGear();    
+    float throttle = (float)driverControls.getThrottle();
+    float steering = (float)driverControls.getSteering();
+    boolean quickTurn = driverControls.getQuickTurn();
+    boolean lowGear = driverControls.getLowGear();    
 
     FlatBufferBuilder builder = new FlatBufferBuilder(1024);
     long timestamp = 123;

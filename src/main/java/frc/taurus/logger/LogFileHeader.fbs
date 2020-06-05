@@ -1,6 +1,6 @@
 include "../config/Configuration.fbs";
 
-namespace frc.taurus.logger;
+namespace frc.taurus.logger.generated;
 
 
 // A log file is a sequence of size prefixed flatbuffers.
@@ -16,7 +16,7 @@ namespace frc.taurus.logger;
 
 table LogFileHeader {
   timestamp : double;             // timestamp the log file was opened
-  configuration : frc.taurus.config.Configuration;  // configuration of channels
+  configuration : frc.taurus.config.generated.Configuration (required);  // configuration of channels
 }
 
 root_type LogFileHeader;
