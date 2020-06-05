@@ -123,7 +123,7 @@ public class MessageQueueTest {
 
     // check that queue reader reads several values correctly
     @Test
-    public void readerreadTest() {
+    public void readerReadTest() {
         MessageQueue<ByteBuffer> queue = new MessageQueue<ByteBuffer>(10){};
         MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
 
@@ -176,7 +176,7 @@ public class MessageQueueTest {
     
     // check that queue reader reads the last value correctly
     @Test
-    public void readerreadLastTest() {
+    public void readerReadLastTest() {
         MessageQueue<ByteBuffer> queue = new MessageQueue<ByteBuffer>(10){};
         MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
         

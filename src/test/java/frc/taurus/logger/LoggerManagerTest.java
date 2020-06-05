@@ -1,6 +1,8 @@
 package frc.taurus.logger;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
 
@@ -8,6 +10,7 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
@@ -29,7 +32,11 @@ public class LoggerManagerTest {
   @Test
   public void writeOneMessageTest() {
 
-    ChannelManager channelManager = new ChannelManager();
+    // we only log when enabled, so we must mock enable during unit tests
+    DriverStation mockDriverStation = mock(DriverStation.class);
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    
+    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
     FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
@@ -50,14 +57,9 @@ public class LoggerManagerTest {
                                                                          // seconds of it being started
 
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(1+1, configuration.channelsLength());
+    assertEquals(1, configuration.channelsLength());
 
     Channel channel = configuration.channels(0);
-    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
-    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
-    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
-
-    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -77,8 +79,12 @@ public class LoggerManagerTest {
 
   @Test
   public void writeTwoMessagesTest() {
-
-    ChannelManager channelManager = new ChannelManager();
+    
+    // we only log when enabled, so we must mock enable during unit tests
+    DriverStation mockDriverStation = mock(DriverStation.class);
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    
+    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
 
@@ -106,22 +112,16 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2+1, configuration.channelsLength());
+    assertEquals(2, configuration.channelsLength());
 
-    // 1st channel in configuration is LOGGER_STATUS
+    // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
-    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
-    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
-    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
-
-    // 2nd channel in configuration is TEST_MESSAGE_1
-    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 3rd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(2);
+    // 2nd channel in configuration is TEST_MESSAGE_2
+    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -159,8 +159,12 @@ public class LoggerManagerTest {
 
     final int numMessages = 1000;
 
+    // we only log when enabled, so we must mock enable during unit tests
+    DriverStation mockDriverStation = mock(DriverStation.class);
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    
     // configure channels
-    ChannelManager channelManager = new ChannelManager();
+    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
     MessageQueue<ByteBuffer> queue3 = channelManager.fetch(TestConfig.TEST_MESSAGE_3);
@@ -267,34 +271,28 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(4+1, configuration.channelsLength());
+    assertEquals(4, configuration.channelsLength());
 
-    // 1st channel in configuration is LOGGER_STATUS
+    // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
-    assertEquals(Config.LOGGER_STATUS.getNum(), channel.channelType());
-    assertEquals(Config.LOGGER_STATUS.getName(), channel.name());
-    assertEquals(Config.LOGGER_STATUS.getLogFilename(), channel.logFilename());
-
-    // 2nd channel in configuration is TEST_MESSAGE_1
-    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 3rd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(2);
+    // 2nd channel in configuration is TEST_MESSAGE_2
+    channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_2.getLogFilename(), channel.logFilename());
 
-    // 4th channel in configuration is TEST_MESSAGE_3
-    channel = configuration.channels(3);
+    // 3rd channel in configuration is TEST_MESSAGE_3
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_3.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_3.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_3.getLogFilename(), channel.logFilename());
 
-    // 5th channel in configuration is TEST_MESSAGE_4
-    channel = configuration.channels(4);
+    // 4th channel in configuration is TEST_MESSAGE_4
+    channel = configuration.channels(3);
     assertEquals(TestConfig.TEST_MESSAGE_4.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_4.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_4.getLogFilename(), channel.logFilename());

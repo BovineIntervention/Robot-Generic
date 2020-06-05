@@ -1,13 +1,11 @@
 namespace frc.taurus.joystick.generated;
 
-
- // TODO: include all joysticks plus DriverStation data
- // enabled, autnomous, teamId, test, fmsAttached
- // like 971's aos/robot_state/joystick_state.fbs
-
+// up to 6 axes
 struct AxisVector {
   axes : [float:6];
 }
+
+// up to 16 buttons
 struct ButtonVector {
   buttons : [bool:16];
 }

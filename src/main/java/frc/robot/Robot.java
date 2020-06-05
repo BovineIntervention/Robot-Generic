@@ -26,7 +26,7 @@ import frc.taurus.drivetrain.generated.DrivetrainGoal;
  */
 public class Robot extends TimedRobot {
 
-  ChannelManager channelManager = new ChannelManager();
+  ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
 
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
