@@ -34,7 +34,7 @@ abstract class LogFileWriterBase {
       File path = new File(pathName);
       if (path.exists()) {
         basePath = new File(path.getAbsolutePath() + File.separator + "logs" + File.separator);
-        if (!basePath.exists()) {
+        if (basePath.exists()) {
           break;
         } else {
           // path doesn't exist yet -- make it
@@ -44,6 +44,8 @@ abstract class LogFileWriterBase {
           }
           success = false;  // breakpoint
           // TODO: what to do when fails to create a log folder?
+          System.err.println("Failed to mkdir " + logPath.getAbsolutePath());
+          System.exit(-1);          
         }
       }
     }
@@ -63,6 +65,8 @@ abstract class LogFileWriterBase {
         boolean success = logPath.mkdir();
         if (!success) {
           // TODO: what to do when fails to create a log folder?
+          System.err.println("Failed to mkdir " + logPath.getAbsolutePath());
+          System.exit(-1);
         }
       }
     }
