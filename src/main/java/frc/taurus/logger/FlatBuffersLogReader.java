@@ -14,8 +14,16 @@ public class FlatBuffersLogReader {
   RandomAccessFile file;
 
   public FlatBuffersLogReader(final String filename) {
+    this(filename, false);
+  }
+
+  public FlatBuffersLogReader(final String filename, boolean writeToBase) {
     try {
-      String fullPathFilename = LogFileWriterBase.logPath() + File.separator + filename;
+      File logPath = LogFileWriterBase.logPath();
+      if (writeToBase) {
+        logPath = LogFileWriterBase.basePath();
+      }
+      String fullPathFilename = logPath + File.separator + filename;
       file = new RandomAccessFile(new File(fullPathFilename), "r");
     } catch (final FileNotFoundException e) {
       e.printStackTrace();

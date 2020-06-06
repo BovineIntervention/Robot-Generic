@@ -5,14 +5,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-
 public class TextLogFileWriter extends LogFileWriterBase {
 
-  final String filename;
+  String filename;
   BufferedWriter writer;
   int BUFFER_SIZE = 16 * 1024; // 16 kB
 
   public TextLogFileWriter(final String filename) {
+    open(filename);
+  }
+
+  public void open(final String filename) {
     this.filename = filename;
     try {
       File file = new File(logPath() + File.separator + filename);
@@ -24,14 +27,14 @@ public class TextLogFileWriter extends LogFileWriterBase {
   }
 
   void write(final String s) {
-  try {
-    if (writer != null) {
-      writer.write(s);
+    try {
+      if (writer != null) {
+        writer.write(s);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-  } catch (IOException e) {
-    e.printStackTrace();
   }
-}
 
   public void flush() {
     try {
@@ -47,7 +50,7 @@ public class TextLogFileWriter extends LogFileWriterBase {
     try {
       if (writer != null) {
         writer.close();
-        writer = null;    // avoid problems if write() is called again
+        writer = null; // avoid problems if write() is called again
       }
 
     } catch (IOException e) {

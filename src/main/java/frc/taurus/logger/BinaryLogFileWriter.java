@@ -6,10 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-
 public class BinaryLogFileWriter extends LogFileWriterBase {
 
-  final String filename;
+  String filename;
   BufferedOutputStream writer;
   static final int BUFFER_SIZE = 16 * 1024; // 16 kB
 
@@ -54,7 +53,7 @@ public class BinaryLogFileWriter extends LogFileWriterBase {
     try {
       if (writer != null) {
         writer.close();
-        writer = null;    // avoid problems if write() is called again
+        writer = null; // avoid problems if write() is called again
       }
     } catch (IOException e) {
       e.printStackTrace();

@@ -19,4 +19,4 @@ table Packet {
 
 root_type Packet;
 
-file_identifier "FPKT";
+file_identifier "PCKT";

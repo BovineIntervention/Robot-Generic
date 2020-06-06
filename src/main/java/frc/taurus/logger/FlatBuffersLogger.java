@@ -22,7 +22,7 @@ import frc.taurus.messages.MessageQueue;
 
 public class FlatBuffersLogger {
 
-  final String filename;
+  String filename;
   final Supplier<ByteBuffer> getFileHeaderCallback;
   ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>> queueTypeReaderPair = new ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>>();
 
@@ -30,10 +30,19 @@ public class FlatBuffersLogger {
   int maxHeaderSize = 0;
   long packetCount = 0;
 
-  // TODO: add timestamp to filename or folder
   public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
-    this.filename = filename;
+    this.filename = filename;  
     this.getFileHeaderCallback = getFileHeaderCallback;
+    writer = new BinaryLogFileWriter(filename);
+  }
+
+  /**
+   * Used to open the same log filename in a new folder (when switching to auto, teleop, or test)
+   */
+  public void relocate(final String suffix) {
+    writer.close();     // close old file
+    packetCount = 0;    // make sure new file writes a header
+    LogFileWriterBase.updateLogFolderTimestamp(suffix);    
     writer = new BinaryLogFileWriter(filename);
   }
 
@@ -44,6 +53,7 @@ public class FlatBuffersLogger {
 
   public void update() {
     if (packetCount == 0) {
+      // write file header before writing first packet
       writer.write(getFileHeaderCallback.get());
     }
     for (var pair : queueTypeReaderPair) {
@@ -55,16 +65,18 @@ public class FlatBuffersLogger {
         writePacket(channelType, queueSize, bb); // write to file
       }
     }
-    writer.flush();
+    // writer.flush();
   }
 
-  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bb_payload) {
-    int payloadSize = bb_payload.remaining();
+  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bbPayload) {
+    int payloadSize = bbPayload.remaining();
 
     FlatBufferBuilder builder = new FlatBufferBuilder(maxHeaderSize + payloadSize);
 
     // Create Payload
-    int dataOffset = Packet.createPayloadVector(builder, bb_payload);
+    // important: need to make a read-only copy so the position of the 
+    // original buffer isn't modified
+    int dataOffset = Packet.createPayloadVector(builder, bbPayload.asReadOnlyBuffer());
 
     // Create Packet
     int offset = Packet.createPacket(builder, packetCount++, channelType, queueSize, dataOffset);

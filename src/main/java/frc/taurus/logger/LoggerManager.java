@@ -52,11 +52,9 @@ public class LoggerManager {
   }
 
   // called when we switch folders between auto/teleop/test
-  private void reOpenLoggers() {
-    loggerMap.clear();
-
-    for (var channel : channelList) {
-      openLogger(channel);
+  private void relocateLoggers(final String suffix) {
+    for (var logger : loggerMap.values()) {
+      logger.relocate(suffix);
     }
   }  
 
@@ -82,6 +80,7 @@ public class LoggerManager {
   }
 
 
+  boolean enabledLast = true; // set so that we will immediately detect being disabled
   boolean autoLast = false;
   boolean teleopLast = false;
   boolean testLast = false;
@@ -97,19 +96,18 @@ public class LoggerManager {
       boolean test = dsStatus.test();
 
       // if we start autonomous, teleop, or test, create a new folder
-      if (!enabled) {
+      if (!enabled && enabledLast) {
         close();
+        relocateLoggers("");
       } else if (auto && !autoLast) {
-        LogFileWriterBase.updateLogFolderTimestamp("auto");
-        reOpenLoggers();
+        relocateLoggers("auto");
       } else if (teleop && !teleopLast) {
-        LogFileWriterBase.updateLogFolderTimestamp("teleop");
-        reOpenLoggers();
+        relocateLoggers("teleop");
       } else if (test && !testLast) {
-        LogFileWriterBase.updateLogFolderTimestamp("test");
-        reOpenLoggers();
+        relocateLoggers("test");
       }
 
+      enabledLast = enabled;
       autoLast = auto;
       teleopLast = teleop;
       testLast = test;
