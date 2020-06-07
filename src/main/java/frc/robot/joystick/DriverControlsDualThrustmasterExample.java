@@ -24,7 +24,7 @@ public class DriverControlsDualThrustmasterExample extends DriverControlsBase {
     
     public DriverControlsDualThrustmasterExample(MessageQueue<ByteBuffer> joystickStatusQueue, MessageQueue<ByteBuffer> joystickGoalQueue) {
         // use Controller.addController() to add controllers to this control method
-        Joystick leftJoystick  = new Joystick(ControllerConfig2.kDriverLeftControllerPort);  
+        Joystick  leftJoystick = new Joystick(ControllerConfig2.kDriverLeftControllerPort);  
         Joystick rightJoystick = new Joystick(ControllerConfig2.kDriverRightControllerPort);  
         leftController  = new ThrustmasterController( leftJoystick, joystickStatusQueue, joystickGoalQueue);  // write both left and right joystick settings to the same queues 
         rightController = new ThrustmasterController(rightJoystick, joystickStatusQueue, joystickGoalQueue);  // (which is only used for logging) 
@@ -39,15 +39,17 @@ public class DriverControlsDualThrustmasterExample extends DriverControlsBase {
       return controllersList;
     }  
 
-    public double getThrottle() { return  leftController.getAxis(ThrustmasterController.Axis.Y_AXIS); };
-    public double getSteering() { return rightController.getAxis(ThrustmasterController.Axis.X_AXIS); };
+    public void update() {
+      double throttle =  leftController.getAxis(ThrustmasterController.Axis.Y_AXIS);
+      double steering = rightController.getAxis(ThrustmasterController.Axis.X_AXIS);
+      lrMotor = steeringMethods.arcadeDrive(throttle, steering);
+      writeDrivetrainGoalMessage();
+    }    
+
+    public double getLeft() { return lrMotor.left; };
+    public double getRight() { return lrMotor.right; };
     public boolean getQuickTurn() { return false; };
     public boolean getLowGear() { return false; };
     // don't add controls here for anything not related to simply moving the drivetrain around the field
-    // most controls (even if they are mapped to the driver's joystick) should be in SuperstructureControls
-
-    public void update() {
-      lrMotor = steeringMethods.arcadeDrive(getThrottle(), getSteering());
-      writeDrivetrainGoalMessage();
-    }    
+    // most controls (even if they are mapped to the driver's joystick) should be in SuperstructureControls    
 }

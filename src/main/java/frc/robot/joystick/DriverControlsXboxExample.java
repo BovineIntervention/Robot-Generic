@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.robot.Constants;
 import frc.robot.Constants.ControllerConstants.ControllerConfig1;
 import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.DriverControlsBase;
@@ -37,12 +36,14 @@ public class DriverControlsXboxExample extends DriverControlsBase {
   }
 
   public void update() {
-    lrMotor = steeringMethods.arcadeDrive(getThrottle(), getSteering());
+    double throttle = driverController.getAxis(XboxController.Axis.L_STICK_Y_AXIS);
+    double steering = driverController.getAxis(XboxController.Axis.L_STICK_X_AXIS);
+    lrMotor = steeringMethods.arcadeDrive(throttle, steering);
     writeDrivetrainGoalMessage();
   }
   
-  public double getThrottle() { return driverController.getAxis(XboxController.Axis.L_STICK_Y_AXIS); };
-  public double getSteering() { return driverController.getAxis(XboxController.Axis.L_STICK_X_AXIS); };
+  public double getLeft() { return lrMotor.left; };
+  public double getRight() { return lrMotor.right; };
   public boolean getQuickTurn() { return false; };
   public boolean getLowGear() { return false; };
 }

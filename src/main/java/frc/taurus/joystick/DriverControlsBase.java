@@ -22,8 +22,8 @@ public abstract class DriverControlsBase implements IDriverControls {
 
   public void writeDrivetrainGoalMessage() {
     // send a DrivetrainGoal message
-    float lMotor = (float)lrMotor.left;
-    float rMotor = (float)lrMotor.right;
+    float lMotor = (float)getLeft();
+    float rMotor = (float)getRight();
     boolean quickTurn = getQuickTurn();
     boolean lowGear = getLowGear();    
 

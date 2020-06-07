@@ -6,8 +6,8 @@ package frc.taurus.joystick;
  */
 
 public interface IDriverControls {
-    double getThrottle();
-    double getSteering();
+    double getLeft();
+    double getRight();
     boolean getQuickTurn();
     boolean getLowGear();
     // don't add controls here for anything not related to simply moving the drivetrain around the field
