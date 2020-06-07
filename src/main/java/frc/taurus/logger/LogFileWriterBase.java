@@ -43,7 +43,7 @@ abstract class LogFileWriterBase {
             break;
           }
           success = false;  // breakpoint
-          // TODO: what to do when fails to create a log folder?
+          // TODO: what to do when we fail to create a log folder?
           System.err.println("Failed to mkdir " + logPath.getAbsolutePath());
           System.exit(-1);          
         }

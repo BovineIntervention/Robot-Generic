@@ -2,34 +2,71 @@ package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 import frc.taurus.config.ChannelIntf;
+import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.messages.MessageQueue;
 
-// TODO: separate single thread for LoggerManager and Loggers
-
 public class LoggerManager {
+  // singleton pattern
+  private static LoggerManager instance = null;
+  public static LoggerManager getInstance() {
+    if (instance == null) {
+      instance = new LoggerManager();
+    }
+    return instance;
+  }
 
-  SortedMap<String, FlatBuffersLogger> loggerMap = new TreeMap<>();
+  // synchronized methods in this class to protect channelList and loggerMap
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
-  MessageQueue<ByteBuffer> dsStatusQueue;
+  HashMap<String, FlatBuffersLogger> loggerMap = new HashMap<>();
 
-  public LoggerManager(ChannelIntf driverStationStatusChannel) {
-    dsStatusQueue = driverStationStatusChannel.getQueue();
+  private final Notifier notifier;  // notifier will execute run() with a period of kPeriod
+  private boolean running;
+  public final double kPeriod = Constants.kLoopDt;
+
+  private final Runnable runnable = new Runnable() {
+    @Override
+    public void run() {
+      if (running) {
+        update();
+      }
+    }
+  };
+
+  public synchronized void start() {
+    if (!running) {
+      running = true;
+      notifier.startPeriodic(kPeriod);
+    }
+  }
+
+  public synchronized void stop() {
+    if (running) {
+      notifier.stop();
+      running = false;
+    }
+  }
+
+  private LoggerManager() {
+    notifier = new Notifier(runnable);
+    running = false;
   }
 
   // called when ChannelManager.fetch() is called by robot code
-  public void register(ChannelIntf channel) {
+  public synchronized void register(ChannelIntf channel) {
     if (!channelList.contains(channel)) {
       channelList.add(channel);
       openLogger(channel);
@@ -58,7 +95,7 @@ public class LoggerManager {
     }
   }  
 
-  public void update() {
+  public synchronized void update() {
     updateLogFolderTimestamp();
 
     for (var logger : loggerMap.values()) {
@@ -67,13 +104,13 @@ public class LoggerManager {
   }
 
  
-  public void close() {
+  public synchronized void close() {
     for (var logger : loggerMap.values()) {
       logger.close();
     }
   }
 
-  public void reset() {
+  public synchronized void reset() {
     close();
     channelList.clear();
     loggerMap.clear();
@@ -86,7 +123,8 @@ public class LoggerManager {
   boolean testLast = false;
 
   public void updateLogFolderTimestamp() {
-    Optional<ByteBuffer> obb = dsStatusQueue.readLast();
+    MessageQueue<ByteBuffer> driverStationStatusQueue = ChannelManager.getInstance().fetch(Config.DRIVER_STATION_STATUS);
+    Optional<ByteBuffer> obb = driverStationStatusQueue.readLast();
     if (obb.isPresent()) {
       DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
   
@@ -118,7 +156,7 @@ public class LoggerManager {
 
   int bufferSize = 0;
 
-  public ByteBuffer getFileHeader() {
+  public synchronized ByteBuffer getFileHeader() {
   
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
 

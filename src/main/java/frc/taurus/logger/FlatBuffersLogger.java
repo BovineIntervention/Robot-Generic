@@ -1,15 +1,14 @@
 package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import frc.taurus.config.ChannelIntf;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.logger.generated.Packet;
 import frc.taurus.messages.MessageQueue;
 
@@ -24,7 +23,7 @@ public class FlatBuffersLogger {
 
   String filename;
   final Supplier<ByteBuffer> getFileHeaderCallback;
-  ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>> queueTypeReaderPair = new ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>>();
+  SortedMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader> channelReaderMap = new TreeMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader>();
 
   BinaryLogFileWriter writer;
   int maxHeaderSize = 0;
@@ -47,8 +46,9 @@ public class FlatBuffersLogger {
   }
 
   public void register(ChannelIntf channel) {
-    var pair = new ImmutablePair<>(channel.getNum(), channel.getQueue().makeReader());
-    queueTypeReaderPair.add(pair);
+    MessageQueue<ByteBuffer> queue = ChannelManager.getInstance().fetch(channel);
+    MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
+    channelReaderMap.put(channel, reader);
   }
 
   public void update() {
@@ -56,9 +56,9 @@ public class FlatBuffersLogger {
       // write file header before writing first packet
       writer.write(getFileHeaderCallback.get());
     }
-    for (var pair : queueTypeReaderPair) {
-      var channelType = pair.getKey();
-      var reader = pair.getValue();
+    for (var channel : channelReaderMap.keySet()) {
+      var channelType = channel.getNum();
+      var reader = channelReaderMap.get(channel);
       while (!reader.isEmpty()) {
         short queueSize = (short)reader.size();
         ByteBuffer bb = reader.read().get(); // we know Optional::isPresent() is true because of earlier !isEmpty()

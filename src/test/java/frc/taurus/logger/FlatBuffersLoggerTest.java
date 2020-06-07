@@ -11,11 +11,13 @@ import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelIntf;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
 import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.logger.generated.Packet;
+import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.generated.TestMessage1;
 import frc.taurus.messages.generated.TestMessage2;
 
@@ -59,47 +61,33 @@ public class FlatBuffersLoggerTest {
   @Test
   public void writeOneMessageTest() {
 
-    // configure channels
-    ChannelIntf channel1 = TestConfig.TEST_MESSAGE_1;
-    channelList.clear();
-    channelList.add(channel1);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
 
-    for (var channel : channelList) {
-      channel.getQueue().clear();  // important: need to reset queues between tests (usually done by ChannelManager)
-    }
-
-    // configure logger
-    String filename = channel1.getLogFilename();
-
-
-    // configure logger
-    FlatBuffersLogger logger = new FlatBuffersLogger(filename, this::getFileHeader);
-    logger.register(channel1);
-
-    // configure reader
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(filename);
+    MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
+    FlatBuffersLogReader reader1 = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
 
     // sent data over queue
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
-    channel1.getQueue().write(builder1.dataBuffer());
+    queue1.write(builder1.dataBuffer());
 
     // log data
-    logger.update(); // write to file
-    logger.close(); // close file so we can read it
+    channelManager.update(); // write to file
+    channelManager.close(); // close file so we can read it
 
 
     // Read log file and check its contents
-    ByteBuffer bb = reader.getNextTable();
+    ByteBuffer bb = reader1.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
                                                                          // seconds of it being started
 
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(1, configuration.channelsLength());
+    assertEquals(1+1, configuration.channelsLength());
 
     int k = 0;
     Channel channel = configuration.channels(k);
@@ -107,7 +95,7 @@ public class FlatBuffersLoggerTest {
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    bb = reader.getNextTable();
+    bb = reader1.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
     assertEquals(1, packet.queueSize());
@@ -117,52 +105,35 @@ public class FlatBuffersLoggerTest {
     TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
     assertEquals(686, testMessage1.intValue());
 
-    reader.close();
+    reader1.close();
   }
 
   @Test
   public void writeTwoMessagesTest() {
 
-    // configure channels
-    ChannelIntf channel1 = TestConfig.TEST_MESSAGE_1;
-    ChannelIntf channel2 = TestConfig.TEST_MESSAGE_2;
-    channelList.clear();
-    channelList.add(channel1);
-    channelList.add(channel2);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
 
-    for (var channel : channelList) {
-      channel.getQueue().clear();  // important: need to reset queues between tests (usually done by ChannelManager)
-    }
-
-    // configure logger
-    String filename = channel1.getLogFilename();
-    
-
-    // configure logger
-    FlatBuffersLogger logger = new FlatBuffersLogger(filename, this::getFileHeader);
-    logger.register(channel1);
-    logger.register(channel2);
-
-    // configure reader
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(filename);
-
+    MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
+    MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
+    FlatBuffersLogReader reader12 = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
     // sent data over queue
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
-    channel1.getQueue().write(builder1.dataBuffer());
+    queue1.write(builder1.dataBuffer());
 
     FlatBufferBuilder builder2 = new FlatBufferBuilder(64);
     int offset2 = TestMessage2.createTestMessage2(builder2, 686.0);
     TestMessage2.finishTestMessage2Buffer(builder2, offset2);
-    channel2.getQueue().write(builder2.dataBuffer());
+    queue2.write(builder2.dataBuffer());
 
-    logger.update(); // write to file
-    logger.close(); // close file so we can read it
+    channelManager.update(); // write to file
+    channelManager.close(); // close file so we can read it
 
     // Read log file and check its contents
-    ByteBuffer bb = reader.getNextTable();
+    ByteBuffer bb = reader12.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
@@ -170,7 +141,7 @@ public class FlatBuffersLoggerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -185,7 +156,7 @@ public class FlatBuffersLoggerTest {
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
     // 1st packet is TEST_MESSAGE_1
-    bb = reader.getNextTable();
+    bb = reader12.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(0, packet.packetCount());
     assertEquals(1, packet.queueSize());
@@ -196,7 +167,7 @@ public class FlatBuffersLoggerTest {
     assertEquals(686, testMessage1.intValue());
 
     // 2nd packet is TEST_MESSAGE_2
-    bb = reader.getNextTable();
+    bb = reader12.getNextTable();
     packet = Packet.getRootAsPacket(bb);
     assertEquals(1, packet.packetCount());
     assertEquals(1, packet.queueSize());
@@ -206,7 +177,7 @@ public class FlatBuffersLoggerTest {
     TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
     assertEquals(686.0, testMessage2.dblValue(), eps);
 
-    reader.close();
+    reader12.close();
 
   }
 
@@ -217,48 +188,31 @@ public class FlatBuffersLoggerTest {
 
     final int numMessages = 1000;
 
-    // configure channels
-    ChannelIntf channel1 = TestConfig.TEST_MESSAGE_1;
-    ChannelIntf channel2 = TestConfig.TEST_MESSAGE_2;
-    channelList.clear();
-    channelList.add(channel1);
-    channelList.add(channel2);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
 
-    for (var channel : channelList) {
-      channel.getQueue().clear();  // important: need to reset queues between tests (usually done by ChannelManager)
-    }
-
-    // configure logger
-    String filename = channel1.getLogFilename();
-    
-
-    // configure logger
-    FlatBuffersLogger logger = new FlatBuffersLogger(filename, this::getFileHeader);
-    logger.register(channel1);
-    logger.register(channel2);
-
-    // configure reader
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(filename);
-
+    MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
+    MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
+    FlatBuffersLogReader reader12 = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
     for (int k=0; k<numMessages; k++) {
       // sent data over queue
       FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
       int offset1 = TestMessage1.createTestMessage1(builder1, k);
       TestMessage1.finishTestMessage1Buffer(builder1, offset1);
-      channel1.getQueue().write(builder1.dataBuffer());
+      queue1.write(builder1.dataBuffer());
 
       FlatBufferBuilder builder2 = new FlatBufferBuilder(64);
       int offset2 = TestMessage2.createTestMessage2(builder2, k);
       TestMessage2.finishTestMessage2Buffer(builder2, offset2);
-      channel2.getQueue().write(builder2.dataBuffer());
+      queue2.write(builder2.dataBuffer());
 
-      logger.update(); // write to file
+      channelManager.update(); // write to file
     }
-    logger.close(); // close file so we can read it
+    channelManager.close(); // close file so we can read it
 
     // Read log file and check its contents
-    ByteBuffer bb = reader.getNextTable();
+    ByteBuffer bb = reader12.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
@@ -266,7 +220,7 @@ public class FlatBuffersLoggerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -282,7 +236,7 @@ public class FlatBuffersLoggerTest {
 
     for (int k=0; k<numMessages; k++) {
       // 1st packet is TEST_MESSAGE_1
-      bb = reader.getNextTable();
+      bb = reader12.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(2*k, packet.packetCount());
       assertEquals(1, packet.queueSize());
@@ -293,7 +247,7 @@ public class FlatBuffersLoggerTest {
       assertEquals(k, testMessage1.intValue());
 
       // 2nd packet is TEST_MESSAGE_2
-      bb = reader.getNextTable();
+      bb = reader12.getNextTable();
       packet = Packet.getRootAsPacket(bb);
       assertEquals(2*k+1, packet.packetCount());
       assertEquals(1, packet.queueSize());
@@ -304,7 +258,7 @@ public class FlatBuffersLoggerTest {
       assertEquals(k, testMessage2.dblValue(), eps);
     }
     
-    reader.close();
+    reader12.close();
 
   }
   
@@ -313,28 +267,12 @@ public class FlatBuffersLoggerTest {
   @Test
   public void queueSizeTest() {
 
-    // configure channels
-    ChannelIntf channel1 = TestConfig.TEST_MESSAGE_1;
-    ChannelIntf channel2 = TestConfig.TEST_MESSAGE_2;
-    channelList.clear();
-    channelList.add(channel1);
-    channelList.add(channel2);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
 
-    for (var channel : channelList) {
-      channel.getQueue().clear();  // important: need to reset queues between tests (usually done by ChannelManager)
-    }
-
-    // configure logger
-    String filename = channel1.getLogFilename();
-    
-
-    // configure logger
-    FlatBuffersLogger logger = new FlatBuffersLogger(filename, this::getFileHeader);
-    logger.register(channel1);
-    logger.register(channel2);
-
-    // configure reader
-    FlatBuffersLogReader reader = new FlatBuffersLogReader(filename);
+    MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
+    MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
+    FlatBuffersLogReader reader12 = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
 
 
     // sent data over queue
@@ -342,34 +280,34 @@ public class FlatBuffersLoggerTest {
       FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
       int offset1 = TestMessage1.createTestMessage1(builder1, 686);
       TestMessage1.finishTestMessage1Buffer(builder1, offset1);
-      channel1.getQueue().write(builder1.dataBuffer());
+      queue1.write(builder1.dataBuffer());
     }
 
     for (int k=0; k<3; k++) {
       FlatBufferBuilder builder2 = new FlatBufferBuilder(64);
       int offset2 = TestMessage2.createTestMessage2(builder2, 686.0);
       TestMessage2.finishTestMessage2Buffer(builder2, offset2);
-      channel2.getQueue().write(builder2.dataBuffer());
+      queue2.write(builder2.dataBuffer());
     }
 
-    logger.update(); // write to file
+    channelManager.update(); // write to file
 
     // sent data over queue
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
-    channel1.getQueue().write(builder1.dataBuffer());
+    queue1.write(builder1.dataBuffer());
 
     FlatBufferBuilder builder2 = new FlatBufferBuilder(64);
     int offset2 = TestMessage2.createTestMessage2(builder2, 686.0);
     TestMessage2.finishTestMessage2Buffer(builder2, offset2);
-    channel2.getQueue().write(builder2.dataBuffer());
+    queue2.write(builder2.dataBuffer());
 
-    logger.update(); // write to file
-    logger.close(); // close file so we can read it
+    channelManager.update(); // write to file
+    channelManager.close(); // close file so we can read it
 
     // Read log file and check its contents
-    ByteBuffer bb = reader.getNextTable();
+    ByteBuffer bb = reader12.getNextTable();
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
@@ -377,7 +315,7 @@ public class FlatBuffersLoggerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -394,7 +332,7 @@ public class FlatBuffersLoggerTest {
     // 1st 2 packets are TEST_MESSAGE_1
     int packetCnt = 0;
     for (int k=2; k>0; k--) {
-      bb = reader.getNextTable();
+      bb = reader12.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(packetCnt++, packet.packetCount());
       assertEquals(k, packet.queueSize());
@@ -407,7 +345,7 @@ public class FlatBuffersLoggerTest {
     
     // next 3 packets are TEST_MESSAGE_2
     for (int k=3; k>0; k--) {
-      bb = reader.getNextTable();
+      bb = reader12.getNextTable();
       Packet packet = Packet.getRootAsPacket(bb);
       assertEquals(packetCnt++, packet.packetCount());
       assertEquals(k, packet.queueSize());
@@ -418,7 +356,7 @@ public class FlatBuffersLoggerTest {
       assertEquals(686.0, testMessage2.dblValue(), eps);
     }
 
-    bb = reader.getNextTable();
+    bb = reader12.getNextTable();
     Packet packet = Packet.getRootAsPacket(bb);
     assertEquals(packetCnt++, packet.packetCount());
     assertEquals(1, packet.queueSize());
@@ -429,7 +367,7 @@ public class FlatBuffersLoggerTest {
     assertEquals(686, testMessage1.intValue());
     
     // next 3 packets are TEST_MESSAGE_2
-    bb = reader.getNextTable();
+    bb = reader12.getNextTable();
     packet = Packet.getRootAsPacket(bb);
     assertEquals(packetCnt++, packet.packetCount());
     assertEquals(1, packet.queueSize());
@@ -439,7 +377,7 @@ public class FlatBuffersLoggerTest {
     TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
     assertEquals(686.0, testMessage2.dblValue(), eps);
 
-    reader.close();
+    reader12.close();
 
   }
 

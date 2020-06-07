@@ -38,7 +38,8 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
     FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
@@ -59,7 +60,7 @@ public class LoggerManagerTest {
                                                                          // seconds of it being started
 
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(1, configuration.channelsLength());
+    assertEquals(1+1, configuration.channelsLength());
 
     Channel channel = configuration.channels(0);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
@@ -86,7 +87,8 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
 
@@ -114,7 +116,7 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -128,27 +130,30 @@ public class LoggerManagerTest {
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 1st packet is TEST_MESSAGE_1
-    bb = reader.getNextTable();
-    Packet packet = Packet.getRootAsPacket(bb);
-    assertEquals(0, packet.packetCount());
-    assertEquals(1, packet.queueSize());
-    assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+    // can't make any predictions about what order the queues were written
+    for (int k=0; k<2; k++) {
+      bb = reader.getNextTable();
+      Packet packet = Packet.getRootAsPacket(bb);
+      assertEquals(k, packet.packetCount());
+      assertEquals(1, packet.queueSize());
+      
+      switch (TestConfig.findTestConfig(packet.channelType())) {
+        case TEST_MESSAGE_1:
+          bb = packet.payloadAsByteBuffer();
+          TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+          assertEquals(686, testMessage1.intValue());
+          break;
 
-    bb = packet.payloadAsByteBuffer();
-    TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
-    assertEquals(686, testMessage1.intValue());
+        case TEST_MESSAGE_2:
+          bb = packet.payloadAsByteBuffer();
+          TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
+          assertEquals(686.0, testMessage2.dblValue(), eps);          
+          break;
 
-    // 2nd packet is TEST_MESSAGE_2
-    bb = reader.getNextTable();
-    packet = Packet.getRootAsPacket(bb);
-    assertEquals(1, packet.packetCount());
-    assertEquals(1, packet.queueSize());
-    assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
-
-    bb = packet.payloadAsByteBuffer();
-    TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
-    assertEquals(686.0, testMessage2.dblValue(), eps);
+        default:
+          assert(false);
+      }
+    }
 
     reader.close();
 
@@ -166,7 +171,8 @@ public class LoggerManagerTest {
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
     // configure channels
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
     MessageQueue<ByteBuffer> queue3 = channelManager.fetch(TestConfig.TEST_MESSAGE_3);
@@ -203,33 +209,38 @@ public class LoggerManagerTest {
     }
     channelManager.close(); // close file so we can read it
 
+    System.out.println(reader12.getAbsolutePath());
+
     threeFilesConfigCheck(reader12);
     threeFilesConfigCheck(reader3);
     threeFilesConfigCheck(reader4);
 
 
     for (int k=0; k<numMessages; k++) {
-      // 1st packet is TEST_MESSAGE_1
-      ByteBuffer bb = reader12.getNextTable();
-      Packet packet = Packet.getRootAsPacket(bb);
-      assertEquals(2*k, packet.packetCount());
-      assertEquals(1, packet.queueSize());
-      assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+      // can't make any predictions about what order the queues were written
+      for (int j=0; j<2; j++) {
+        ByteBuffer bb = reader12.getNextTable();
+        Packet packet = Packet.getRootAsPacket(bb);
+        assertEquals(2*k+j, packet.packetCount());
+        assertEquals(1, packet.queueSize());
+        
+        switch (TestConfig.findTestConfig(packet.channelType())) {
+          case TEST_MESSAGE_1:
+            bb = packet.payloadAsByteBuffer();
+            TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+            assertEquals(k, testMessage1.intValue());
+            break;
 
-      bb = packet.payloadAsByteBuffer();
-      TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
-      assertEquals(k, testMessage1.intValue());
-
-      // 2nd packet is TEST_MESSAGE_2
-      bb = reader12.getNextTable();
-      packet = Packet.getRootAsPacket(bb);
-      assertEquals(2*k+1, packet.packetCount());
-      assertEquals(1, packet.queueSize());
-      assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
-
-      bb = packet.payloadAsByteBuffer();
-      TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
-      assertEquals(k, testMessage2.dblValue(), eps);
+          case TEST_MESSAGE_2:
+            bb = packet.payloadAsByteBuffer();
+            TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
+            assertEquals(k, testMessage2.dblValue(), eps);          
+            break;
+            
+          default:
+            assert(false);
+        }
+      }
     }
     
     for (int k=0; k<numMessages; k++) {
@@ -273,7 +284,7 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(4, configuration.channelsLength());
+    assertEquals(4+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -319,7 +330,9 @@ public class LoggerManagerTest {
     when(mockDriverStation.getGameSpecificMessage()).thenReturn("");
     when(mockDriverStation.getMatchTime()).thenReturn(123.0);
 
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
+
     MessageQueue<ByteBuffer> testQueue = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> dsStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     
