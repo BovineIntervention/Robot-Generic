@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
-import frc.robot.Constants;
+import frc.robot.Constants.ControllerConstants.ControllerConfig1;
 import frc.taurus.joystick.ButtonBoardController;
 import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.XboxController;
@@ -29,10 +29,10 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
 
     public SuperstructureControlsExample(XboxController driverController, MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> goalQueue) {
         // use Controller.addController() to add controllers to this control method
-        Joystick operatorJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort);
+        Joystick operatorJoystick = new Joystick(ControllerConfig1.kOperatorControllerPort);
 
         mDriverController = driverController;
-        mButtonBoard = new ButtonBoardController( operatorJoystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue );
+        mButtonBoard = new ButtonBoardController( operatorJoystick, statusQueue, goalQueue );
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
         mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);

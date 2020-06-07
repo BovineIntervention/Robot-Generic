@@ -16,21 +16,21 @@ public final class DrivetrainGoal extends Table {
   public DrivetrainGoal __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public double timestamp() { int o = __offset(4); return o != 0 ? bb.getDouble(o + bb_pos) : 0.0; }
-  public float throttle() { int o = __offset(6); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public float steering() { int o = __offset(8); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
+  public float leftSpeed() { int o = __offset(6); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
+  public float rightSpeed() { int o = __offset(8); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
   public boolean highGear() { int o = __offset(10); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
   public boolean quickTurn() { int o = __offset(12); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
 
   public static int createDrivetrainGoal(FlatBufferBuilder builder,
       double timestamp,
-      float throttle,
-      float steering,
+      float left_speed,
+      float right_speed,
       boolean high_gear,
       boolean quick_turn) {
     builder.startTable(5);
     DrivetrainGoal.addTimestamp(builder, timestamp);
-    DrivetrainGoal.addSteering(builder, steering);
-    DrivetrainGoal.addThrottle(builder, throttle);
+    DrivetrainGoal.addRightSpeed(builder, right_speed);
+    DrivetrainGoal.addLeftSpeed(builder, left_speed);
     DrivetrainGoal.addQuickTurn(builder, quick_turn);
     DrivetrainGoal.addHighGear(builder, high_gear);
     return DrivetrainGoal.endDrivetrainGoal(builder);
@@ -38,8 +38,8 @@ public final class DrivetrainGoal extends Table {
 
   public static void startDrivetrainGoal(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addTimestamp(FlatBufferBuilder builder, double timestamp) { builder.addDouble(0, timestamp, 0.0); }
-  public static void addThrottle(FlatBufferBuilder builder, float throttle) { builder.addFloat(1, throttle, 0.0f); }
-  public static void addSteering(FlatBufferBuilder builder, float steering) { builder.addFloat(2, steering, 0.0f); }
+  public static void addLeftSpeed(FlatBufferBuilder builder, float leftSpeed) { builder.addFloat(1, leftSpeed, 0.0f); }
+  public static void addRightSpeed(FlatBufferBuilder builder, float rightSpeed) { builder.addFloat(2, rightSpeed, 0.0f); }
   public static void addHighGear(FlatBufferBuilder builder, boolean highGear) { builder.addBoolean(3, highGear, false); }
   public static void addQuickTurn(FlatBufferBuilder builder, boolean quickTurn) { builder.addBoolean(4, quickTurn, false); }
   public static int endDrivetrainGoal(FlatBufferBuilder builder) {

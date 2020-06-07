@@ -4,12 +4,10 @@ table DrivetrainGoal {
   // Timestamp is the first element of every message
   timestamp:double;
 
-  // Position of the throttle (positive forwards).
-  throttle:float;
+  // Desired left and right motor speeds 
+   left_speed : float;
+  right_speed : float;
 
-  // Position of the steering wheel (positive = turning left when going forwards).
-  steering:float;
- 
   // True to shift into high, false to shift into low.
   high_gear:bool;
 

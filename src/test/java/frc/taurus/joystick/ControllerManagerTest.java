@@ -19,14 +19,13 @@ public class ControllerManagerTest {
   // check that the same controller type can be used on different ports
   @Test
   public void sameJoystickTest() {
-    double deadband = 0.05;
     var dummyStatusQueue = new MessageQueue<ByteBuffer>();
     var dummyGoalQueue = new MessageQueue<ByteBuffer>();
 
-    XboxController xbox1 = new XboxController(new Joystick(0), deadband, dummyStatusQueue, dummyGoalQueue);
-    XboxController xbox2 = new XboxController(new Joystick(1), deadband, dummyStatusQueue, dummyGoalQueue);
-    XboxController xbox3 = new XboxController(new Joystick(2), deadband, dummyStatusQueue, dummyGoalQueue);
-    XboxController xbox4 = new XboxController(new Joystick(3), deadband, dummyStatusQueue, dummyGoalQueue);
+    XboxController xbox1 = new XboxController(new Joystick(0), dummyStatusQueue, dummyGoalQueue);
+    XboxController xbox2 = new XboxController(new Joystick(1), dummyStatusQueue, dummyGoalQueue);
+    XboxController xbox3 = new XboxController(new Joystick(2), dummyStatusQueue, dummyGoalQueue);
+    XboxController xbox4 = new XboxController(new Joystick(3), dummyStatusQueue, dummyGoalQueue);
 
     ArrayList<Controller> controllerList = new ArrayList<Controller>();
     controllerList.add(xbox1);
@@ -45,7 +44,6 @@ public class ControllerManagerTest {
 
   // check that controllers are updated (mock the joysticks)
   public void updateTest() {
-    double deadband = 0.05;
     var dummyStatusQueue = new MessageQueue<ByteBuffer>();
     var dummyGoalQueue = new MessageQueue<ByteBuffer>();
     ControllerManager manager = new ControllerManager();
@@ -60,9 +58,9 @@ public class ControllerManagerTest {
     when(mockJoystick3.getPort()).thenReturn(3);
 
     // create 3 controllers
-    Controller ctrlr1 = new XboxController(mockJoystick1, deadband, dummyStatusQueue, dummyGoalQueue);
-    Controller ctrlr2 = new ThrustmasterController(mockJoystick2, deadband, dummyStatusQueue, dummyGoalQueue);
-    Controller ctrlr3 = new ButtonBoardController(mockJoystick3, deadband, dummyStatusQueue, dummyGoalQueue);
+    Controller ctrlr1 = new XboxController(mockJoystick1, dummyStatusQueue, dummyGoalQueue);
+    Controller ctrlr2 = new ThrustmasterController(mockJoystick2, dummyStatusQueue, dummyGoalQueue);
+    Controller ctrlr3 = new ButtonBoardController(mockJoystick3, dummyStatusQueue, dummyGoalQueue);
 
     int id = 13; // the button we are testing
 

@@ -16,26 +16,28 @@ import frc.taurus.drivetrain.generated.DrivetrainGoal;
 
 public abstract class DriverControlsBase implements IDriverControls {
 
-    int bufferSize = 0;
+  protected SteeringMethods.LeftRightMotor lrMotor;
 
-    public void update() {
-      // send a DrivetrainGoal message
-      float throttle = (float)getThrottle();
-      float steering = (float)getSteering();
-      boolean quickTurn = getQuickTurn();
-      boolean lowGear = getLowGear();    
-  
-      FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
-      double timestamp = Timer.getFPGATimestamp();
-      int offset = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, throttle, steering, !lowGear, quickTurn);
-      builder.finish(offset);
+  int bufferSize = 0;
 
-      ChannelManager.getInstance().fetch(Config.DRIVETRAIN_GOAL).write(builder.dataBuffer()); 
-    }
+  public void writeDrivetrainGoalMessage() {
+    // send a DrivetrainGoal message
+    float lMotor = (float)lrMotor.left;
+    float rMotor = (float)lrMotor.right;
+    boolean quickTurn = getQuickTurn();
+    boolean lowGear = getLowGear();    
 
-    /**
-     * List of controllers to be registered with the ControllerManager
-     * @return list of all physical controllers utilized by this Driver/Operator control scheme
-     */
-    abstract public ArrayList<Controller> getControllersList();
+    FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
+    double timestamp = Timer.getFPGATimestamp();
+    int offset = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, lMotor, rMotor, !lowGear, quickTurn);
+    builder.finish(offset);
+
+    ChannelManager.getInstance().fetch(Config.DRIVETRAIN_GOAL).write(builder.dataBuffer()); 
+  }
+
+  /**
+   * List of controllers to be registered with the ControllerManager
+   * @return list of all physical controllers utilized by this Driver/Operator control scheme
+   */
+  abstract public ArrayList<Controller> getControllersList();
 }

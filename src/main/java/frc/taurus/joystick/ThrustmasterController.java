@@ -7,8 +7,6 @@ import frc.taurus.messages.MessageQueue;
 
 public class ThrustmasterController extends Controller
 {
-    public final double mDeadband;
-
     public enum Axis {
         X_AXIS(0), Y_AXIS(1), Z_ROTATE_AXIS(2), SLIDER_AXIS(3);  
 
@@ -30,11 +28,10 @@ public class ThrustmasterController extends Controller
         }
     }
 
-    public ThrustmasterController(Joystick joystick, double deadband, 
+    public ThrustmasterController(Joystick joystick,
                                   MessageQueue<ByteBuffer> joystickStatusQueue,
                                   MessageQueue<ByteBuffer> joystickGoalQueue) {
         super(joystick, joystickStatusQueue, joystickGoalQueue);
-        mDeadband = deadband;
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
@@ -48,7 +45,7 @@ public class ThrustmasterController extends Controller
          // invert the y-axis
         boolean invert = (axis == Axis.X_AXIS);
         double value = (invert ? -1 : 1) * this.wpilibJoystick.getRawAxis(axis.id);
-        return applyDeadband(value, mDeadband);
+        return value;
     }
 
     // setRumble(boolean) available from base class

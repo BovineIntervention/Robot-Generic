@@ -7,8 +7,6 @@ import frc.taurus.messages.MessageQueue;
 
 public class XboxController extends Controller
 {
-    public final double mDeadband;
-    
     public enum Axis {
         L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_TRIGGER_AXIS(2), 
         R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_TRIGGER_AXIS(3);  
@@ -28,11 +26,10 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(Joystick joystick, double deadband, 
+    public XboxController(Joystick joystick, 
                           MessageQueue<ByteBuffer> joystickStausQueue,
                           MessageQueue<ByteBuffer> joystickGoalQueue) {
         super(joystick, joystickStausQueue, joystickGoalQueue);
-        mDeadband = deadband;
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
@@ -45,7 +42,7 @@ public class XboxController extends Controller
          // invert the y-axis
         boolean invert = (axis == Axis.L_STICK_Y_AXIS) || (axis == Axis.R_STICK_Y_AXIS);
         double value = (invert ? -1 : 1) * getAxis(axis.id);
-        return applyDeadband(value, mDeadband);
+        return value;
     }
 
     public int getPOV() {
