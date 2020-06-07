@@ -20,15 +20,15 @@ public class DriverControlsDualThrustmasterExample extends DriverControlsBase {
     private final ThrustmasterController leftController;
     private final ThrustmasterController rightController;
 
-    public DriverControlsDualThrustmasterExample(MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> goalQueue) {
+    public DriverControlsDualThrustmasterExample(MessageQueue<ByteBuffer> joystickStatusQueue, MessageQueue<ByteBuffer> joystickGoalQueue) {
         // use Controller.addController() to add controllers to this control method
         Joystick leftJoystick  = new Joystick(Constants.ControllerConstants.ControllerConfig2.kDriverLeftControllerPort);  
         Joystick rightJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig2.kDriverRightControllerPort);  
-        leftController  = new ThrustmasterController(leftJoystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue);      
-        rightController = new ThrustmasterController(rightJoystick, Constants.ControllerConstants.kDriveDeadband, statusQueue, goalQueue);      
+        leftController  = new ThrustmasterController( leftJoystick, Constants.ControllerConstants.kDriveDeadband, joystickStatusQueue, joystickGoalQueue);  // write both left and right joystick settings to the same queues 
+        rightController = new ThrustmasterController(rightJoystick, Constants.ControllerConstants.kDriveDeadband, joystickStatusQueue, joystickGoalQueue);  // (which is only used for logging) 
     }
 
-    public double getThrottle() { return leftController.getAxis(ThrustmasterController.Axis.Y_AXIS); };
+    public double getThrottle() { return  leftController.getAxis(ThrustmasterController.Axis.Y_AXIS); };
     public double getSteering() { return rightController.getAxis(ThrustmasterController.Axis.X_AXIS); };
     public boolean getQuickTurn() { return false; };
     public boolean getLowGear() { return false; };

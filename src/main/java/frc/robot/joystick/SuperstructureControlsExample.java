@@ -59,4 +59,8 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
       controllersList.add(mButtonBoard);
       return controllersList;
     }      
+
+    public void update() {
+      // TODO: generate one or several Goal messages based on user controls
+    }
 }

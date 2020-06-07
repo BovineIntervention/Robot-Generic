@@ -10,12 +10,12 @@ import frc.taurus.config.generated.ChannelType;
  */
 
 public enum Config implements ChannelIntf {
-    DRIVER_STATION_STATUS       (ChannelType.DriverStationStatus, "driver_station.log"),
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,      "joystick_driver.log" ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,        "joystick_driver.log" ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,      "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" ),
-    DRIVETRAIN_GOAL             (ChannelType.DrivetrainGoal,      "drivetrain.log");
+    DRIVER_STATION_STATUS           (ChannelType.DriverStationStatus, "driver_station.log"),
+    DRIVER_JOYSTICK_STATUS          (ChannelType.JoystickStatus,      "joystick_driver.log" ),
+    DRIVER_JOYSTICK_GOAL            (ChannelType.JoystickGoal,        "joystick_driver.log" ),
+    OPERATOR_JOYSTICK_STATUS        (ChannelType.JoystickStatus,      "joystick_operator.log" ),
+    OPERATOR_JOYSTICK_GOAL          (ChannelType.JoystickGoal,        "joystick_operator.log" ),
+    DRIVETRAIN_GOAL                 (ChannelType.DrivetrainGoal,      "drivetrain.log");
 
     private final short num;
     private final String name;

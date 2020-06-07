@@ -8,19 +8,15 @@
 package frc.robot;
 
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.joystick.DriverControlsXboxExample;
 import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
-import frc.taurus.joystick.Controller;
+import frc.taurus.driverstation.DriverStationData;
 import frc.taurus.joystick.ControllerManager;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.MessageQueue;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -33,7 +29,7 @@ public class Robot extends TimedRobot {
 
   // Get the ChannelManager instance for fetching the various queues
   ChannelManager channelManager = ChannelManager.getInstance();
-
+  DriverStationData driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager.fetch(Config.DRIVER_STATION_STATUS));
   
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
@@ -55,7 +51,9 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Register all physical controllers with ControllerManager
     controllerManager.register(driverControls.getControllersList());
-    controllerManager.register(superstructureControls.getControllersList());    
+    controllerManager.register(superstructureControls.getControllersList());   
+    
+
   }
 
   /**
@@ -95,8 +93,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    
-    driverControls.update();    // generates DrivetrainGoal message
+    driverStationData.update();   // get driverstation inputs
+    controllerManager.update();   // get joystick inputs
+
+    driverControls.update();          // generates DrivetrainGoal message
+    superstructureControls.update();  // generate ... messages
   }
 
   /**

@@ -31,9 +31,9 @@ public class ThrustmasterController extends Controller
     }
 
     public ThrustmasterController(Joystick joystick, double deadband, 
-                                  MessageQueue<ByteBuffer> joystickStausQueue,
+                                  MessageQueue<ByteBuffer> joystickStatusQueue,
                                   MessageQueue<ByteBuffer> joystickGoalQueue) {
-        super(joystick, joystickStausQueue, joystickGoalQueue);
+        super(joystick, joystickStatusQueue, joystickGoalQueue);
         mDeadband = deadband;
 
         // add all enumerated buttons to button list
