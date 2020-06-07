@@ -7,8 +7,9 @@ public final class ChannelType {
   public static final short DriverStationStatus = 0;
   public static final short JoystickStatus = 1;
   public static final short JoystickGoal = 2;
+  public static final short DrivetrainGoal = 3;
 
-  public static final String[] names = { "DriverStationStatus", "JoystickStatus", "JoystickGoal", };
+  public static final String[] names = { "DriverStationStatus", "JoystickStatus", "JoystickGoal", "DrivetrainGoal", };
 
   public static String name(int e) { return names[e]; }
 }

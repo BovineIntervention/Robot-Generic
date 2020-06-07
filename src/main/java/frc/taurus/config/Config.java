@@ -1,9 +1,6 @@
 package frc.taurus.config;
 
-import java.nio.ByteBuffer;
-
 import frc.taurus.config.generated.ChannelType;
-import frc.taurus.messages.MessageQueue;
 
 /**
  * Channels used in the code need to be listed here.  
@@ -17,7 +14,8 @@ public enum Config implements ChannelIntf {
     DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,      "joystick_driver.log" ),
     DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,        "joystick_driver.log" ),
     OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,      "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" );
+    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" ),
+    DRIVETRAIN_GOAL             (ChannelType.DrivetrainGoal,      "drivetrain.log");
 
     private final short num;
     private final String name;

@@ -6,5 +6,6 @@ enum ChannelType : short {
   DriverStationStatus,
   JoystickStatus, 
   JoystickGoal,
+  DrivetrainGoal,
   }
 

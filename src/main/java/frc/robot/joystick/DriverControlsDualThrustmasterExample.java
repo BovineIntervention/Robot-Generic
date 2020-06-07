@@ -1,9 +1,12 @@
 package frc.robot.joystick;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.taurus.joystick.Controller;
+import frc.taurus.joystick.DriverControlsBase;
 import frc.taurus.joystick.ThrustmasterController;
 import frc.taurus.messages.MessageQueue;
 
@@ -11,7 +14,7 @@ import frc.taurus.messages.MessageQueue;
  * This file defines the user controls / button mappings
  */
 
-public class DriverControlsDualThrustmasterExample implements IDriverControls {
+public class DriverControlsDualThrustmasterExample extends DriverControlsBase {
 
     // define the physical controllers that will be used
     private final ThrustmasterController leftController;
@@ -32,4 +35,10 @@ public class DriverControlsDualThrustmasterExample implements IDriverControls {
     // don't add controls here for anything not related to simply moving the drivetrain around the field
     // most controls (even if they are mapped to the driver's joystick) should be in SuperstructureControls
 
+    public ArrayList<Controller> getControllersList() {
+      ArrayList<Controller> controllersList = new ArrayList<Controller>();
+      controllersList.add(leftController);
+      controllersList.add(rightController);
+      return controllersList;
+    }    
 }

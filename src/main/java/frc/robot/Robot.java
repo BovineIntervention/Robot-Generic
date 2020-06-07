@@ -8,14 +8,19 @@
 package frc.robot;
 
 
-import com.google.flatbuffers.FlatBufferBuilder;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.joystick.DriverControlsXboxExample;
 import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
-import frc.taurus.drivetrain.generated.DrivetrainGoal;
+import frc.taurus.joystick.Controller;
+import frc.taurus.joystick.ControllerManager;
+import frc.taurus.joystick.XboxController;
+import frc.taurus.messages.MessageQueue;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,23 +31,31 @@ import frc.taurus.drivetrain.generated.DrivetrainGoal;
  */
 public class Robot extends TimedRobot {
 
+  // Get the ChannelManager instance for fetching the various queues
   ChannelManager channelManager = ChannelManager.getInstance();
 
+  
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
+  ControllerManager controllerManager = new ControllerManager();
   DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
           channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS), 
           channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL));  
   SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
-          driverControls.getDriverController(),
+          (XboxController)driverControls.getControllersList().get(0),
           channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
-          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL));  
+          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)); 
+
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
   @Override
   public void robotInit() {
+    // Register all physical controllers with ControllerManager
+    controllerManager.register(driverControls.getControllersList());
+    controllerManager.register(superstructureControls.getControllersList());    
   }
 
   /**
@@ -82,14 +95,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    float throttle = (float)driverControls.getThrottle();
-    float steering = (float)driverControls.getSteering();
-    boolean quickTurn = driverControls.getQuickTurn();
-    boolean lowGear = driverControls.getLowGear();    
-
-    FlatBufferBuilder builder = new FlatBufferBuilder(1024);
-    long timestamp = 123;
-    int drivetrainGoal = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, throttle, steering, !lowGear, quickTurn);
+    
+    driverControls.update();    // generates DrivetrainGoal message
   }
 
   /**

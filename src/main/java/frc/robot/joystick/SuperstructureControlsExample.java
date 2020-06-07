@@ -1,6 +1,7 @@
 package frc.robot.joystick;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
@@ -52,4 +53,10 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
     public boolean getTurnNorth()   { return mTurnNorthPovButton.posEdge(); }
     public boolean getTurnSouth()   { return mTurnSouthPovButton.posEdge(); }
 
+    public ArrayList<Controller> getControllersList() {
+      ArrayList<Controller> controllersList = new ArrayList<Controller>();
+      controllersList.add(mDriverController);
+      controllersList.add(mButtonBoard);
+      return controllersList;
+    }      
 }

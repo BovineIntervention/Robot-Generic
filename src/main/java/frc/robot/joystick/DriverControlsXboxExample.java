@@ -1,9 +1,12 @@
 package frc.robot.joystick;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants;
+import frc.taurus.joystick.Controller;
+import frc.taurus.joystick.DriverControlsBase;
 import frc.taurus.joystick.XboxController;
 import frc.taurus.messages.MessageQueue;
 
@@ -11,7 +14,7 @@ import frc.taurus.messages.MessageQueue;
  * This file defines the user controls / button mappings
  */
 
-public class DriverControlsXboxExample implements IDriverControls {
+public class DriverControlsXboxExample extends DriverControlsBase {
 
     // define the physical controllers that will be used
     private final XboxController driverController;
@@ -27,7 +30,9 @@ public class DriverControlsXboxExample implements IDriverControls {
     public boolean getQuickTurn() { return false; };
     public boolean getLowGear() { return false; };
 
-    public XboxController getDriverController() {
-      return driverController;
+    public ArrayList<Controller> getControllersList() {
+      ArrayList<Controller> controllersList = new ArrayList<Controller>();
+      controllersList.add(driverController);
+      return controllersList;
     }
 }

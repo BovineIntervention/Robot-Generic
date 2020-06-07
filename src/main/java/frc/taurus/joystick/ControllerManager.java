@@ -1,48 +1,40 @@
 package frc.taurus.joystick;
 
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashSet;
 
-import edu.wpi.first.wpilibj.Joystick;
-import frc.taurus.messages.MessageQueue;
-
-
 public class ControllerManager {
-  HashSet<Controller> controllerList = new HashSet<Controller>();
-  
-  public Controller getController(ControllerType type, Joystick joystick, double deadband, 
-                                  MessageQueue<ByteBuffer> joystickStausQueue, 
-                                  MessageQueue<ByteBuffer> joystickGoalQueue) {
 
-    // check if port is already in use
-    for (var controller : controllerList) {
-      if (controller.wpilibJoystick.getPort() == joystick.getPort()) {
-          // different controllers trying to use the same port ==> error
-          throw new RuntimeException("Controller is trying to use a previously reserved port");
-      }
-    }
+  // a Set does not allow duplicates, which is what we want
+  HashSet<Controller> controllerSet;
 
-    Controller controller;
-    switch (type) {
-      default:
-      case XBOX:
-        controller = new XboxController(joystick, deadband, joystickStausQueue, joystickGoalQueue);
-        break;
-      case THRUSTMASTER:
-        controller = new ThrustmasterController(joystick, deadband, joystickStausQueue, joystickGoalQueue);
-        break;
-      case BUTTON_BOARD:
-        controller = new ButtonBoardController(joystick, deadband, joystickStausQueue, joystickGoalQueue);
-        break;
-    }
-
-    controllerList.add(controller); // keep list of all instantiated controllers
-    return controller;
+  public ControllerManager() {
+    controllerSet = new HashSet<Controller>();
   }
 
-  // update all controllers that were instantiated
+  public int size() { return controllerSet.size(); }
+  
+  public void register(Controller controller) {
+    controllerSet.add(controller);
+  }
+
+  /**
+   * Register all physical controllers used by driver and operator control schemes
+   * Usage:
+   *   controllerManager.register( driverControls.getControllersList() );
+   *   controllerManager.register( superstructureControls.getControllersList() );
+   * @param controllers ArrayList of all controllers used by user control scheme
+   */
+  public void register(ArrayList<Controller> controllers) {
+    controllerSet.addAll(controllers);
+  }
+
+  /**
+   * Update all Controllers that were registered
+   * (Update all axis and button values, then create JoystickStatus message)
+   */
   public void update() {
-    for (var controller : controllerList) {
+    for (var controller : controllerSet) {
       controller.update();
     }
   }
