@@ -6,20 +6,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-
 public class BinaryLogFileWriter extends LogFileWriterBase {
 
-  final String filename;
+  String filename;
   BufferedOutputStream writer;
   static final int BUFFER_SIZE = 16 * 1024; // 16 kB
 
   public BinaryLogFileWriter(final String filename) {
     this.filename = filename;
+    File file = new File(logPath() + File.separator + filename);
     try {
-      File file = new File(logPath() + File.separator + filename);
       file.createNewFile();
       writer = new BufferedOutputStream(new FileOutputStream(file), BUFFER_SIZE);
     } catch (IOException e) {
+      System.err.println("Can't open " + file.getAbsolutePath() + " to write");
+      System.exit(-1);
       e.printStackTrace();
     }
   }
@@ -54,7 +55,7 @@ public class BinaryLogFileWriter extends LogFileWriterBase {
     try {
       if (writer != null) {
         writer.close();
-        writer = null;    // avoid problems if write() is called again
+        writer = null; // avoid problems if write() is called again
       }
     } catch (IOException e) {
       e.printStackTrace();

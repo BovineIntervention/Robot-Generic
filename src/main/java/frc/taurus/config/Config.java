@@ -22,18 +22,15 @@ public enum Config implements ChannelIntf {
     private final short num;
     private final String name;
     private final String logFilename;
-    private final MessageQueue<ByteBuffer> queue;
 
     Config(final short num, final String logFilename) {
         this.num = num;
         this.name = ChannelType.name(num);        
         this.logFilename = logFilename;
-        this.queue = new MessageQueue<ByteBuffer>(){};
     }
 
     public short getNum() { return num; }
     public String getName() { return name; }
     public String getLogFilename() { return logFilename; }
-    public MessageQueue<ByteBuffer> getQueue() { return queue; }  
 }
 

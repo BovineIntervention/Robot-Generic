@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 
 import com.google.flatbuffers.FlatBufferBuilder;
@@ -17,6 +18,7 @@ import frc.taurus.config.Config;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
+import frc.taurus.driverstation.DriverStationData;
 import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.logger.generated.Packet;
 import frc.taurus.messages.MessageQueue;
@@ -36,7 +38,8 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
     FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
@@ -57,7 +60,7 @@ public class LoggerManagerTest {
                                                                          // seconds of it being started
 
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(1, configuration.channelsLength());
+    assertEquals(1+1, configuration.channelsLength());
 
     Channel channel = configuration.channels(0);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
@@ -84,7 +87,8 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
 
@@ -112,7 +116,7 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(2, configuration.channelsLength());
+    assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -126,27 +130,30 @@ public class LoggerManagerTest {
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
-    // 1st packet is TEST_MESSAGE_1
-    bb = reader.getNextTable();
-    Packet packet = Packet.getRootAsPacket(bb);
-    assertEquals(0, packet.packetCount());
-    assertEquals(1, packet.queueSize());
-    assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+    // can't make any predictions about what order the queues were written
+    for (int k=0; k<2; k++) {
+      bb = reader.getNextTable();
+      Packet packet = Packet.getRootAsPacket(bb);
+      assertEquals(k, packet.packetCount());
+      assertEquals(1, packet.queueSize());
+      
+      switch (TestConfig.findTestConfig(packet.channelType())) {
+        case TEST_MESSAGE_1:
+          bb = packet.payloadAsByteBuffer();
+          TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+          assertEquals(686, testMessage1.intValue());
+          break;
 
-    bb = packet.payloadAsByteBuffer();
-    TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
-    assertEquals(686, testMessage1.intValue());
+        case TEST_MESSAGE_2:
+          bb = packet.payloadAsByteBuffer();
+          TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
+          assertEquals(686.0, testMessage2.dblValue(), eps);          
+          break;
 
-    // 2nd packet is TEST_MESSAGE_2
-    bb = reader.getNextTable();
-    packet = Packet.getRootAsPacket(bb);
-    assertEquals(1, packet.packetCount());
-    assertEquals(1, packet.queueSize());
-    assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
-
-    bb = packet.payloadAsByteBuffer();
-    TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
-    assertEquals(686.0, testMessage2.dblValue(), eps);
+        default:
+          assert(false);
+      }
+    }
 
     reader.close();
 
@@ -164,7 +171,8 @@ public class LoggerManagerTest {
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
     // configure channels
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
     MessageQueue<ByteBuffer> queue3 = channelManager.fetch(TestConfig.TEST_MESSAGE_3);
@@ -201,33 +209,38 @@ public class LoggerManagerTest {
     }
     channelManager.close(); // close file so we can read it
 
+    System.out.println(reader12.getAbsolutePath());
+
     threeFilesConfigCheck(reader12);
     threeFilesConfigCheck(reader3);
     threeFilesConfigCheck(reader4);
 
 
     for (int k=0; k<numMessages; k++) {
-      // 1st packet is TEST_MESSAGE_1
-      ByteBuffer bb = reader12.getNextTable();
-      Packet packet = Packet.getRootAsPacket(bb);
-      assertEquals(2*k, packet.packetCount());
-      assertEquals(1, packet.queueSize());
-      assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+      // can't make any predictions about what order the queues were written
+      for (int j=0; j<2; j++) {
+        ByteBuffer bb = reader12.getNextTable();
+        Packet packet = Packet.getRootAsPacket(bb);
+        assertEquals(2*k+j, packet.packetCount());
+        assertEquals(1, packet.queueSize());
+        
+        switch (TestConfig.findTestConfig(packet.channelType())) {
+          case TEST_MESSAGE_1:
+            bb = packet.payloadAsByteBuffer();
+            TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+            assertEquals(k, testMessage1.intValue());
+            break;
 
-      bb = packet.payloadAsByteBuffer();
-      TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
-      assertEquals(k, testMessage1.intValue());
-
-      // 2nd packet is TEST_MESSAGE_2
-      bb = reader12.getNextTable();
-      packet = Packet.getRootAsPacket(bb);
-      assertEquals(2*k+1, packet.packetCount());
-      assertEquals(1, packet.queueSize());
-      assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), packet.channelType());
-
-      bb = packet.payloadAsByteBuffer();
-      TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
-      assertEquals(k, testMessage2.dblValue(), eps);
+          case TEST_MESSAGE_2:
+            bb = packet.payloadAsByteBuffer();
+            TestMessage2 testMessage2 = TestMessage2.getRootAsTestMessage2(bb);
+            assertEquals(k, testMessage2.dblValue(), eps);          
+            break;
+            
+          default:
+            assert(false);
+        }
+      }
     }
     
     for (int k=0; k<numMessages; k++) {
@@ -271,7 +284,7 @@ public class LoggerManagerTest {
 
     // Check Configuration
     Configuration configuration = logFileHdr.configuration();
-    assertEquals(4, configuration.channelsLength());
+    assertEquals(4+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
     Channel channel = configuration.channels(0);
@@ -298,4 +311,187 @@ public class LoggerManagerTest {
     assertEquals(TestConfig.TEST_MESSAGE_4.getLogFilename(), channel.logFilename());
   }
 
+
+  // cycle through the operational modes
+  // DISABLED --> AUTO --> DISABLED --> TELEOP --> DISABLED --> TEST --> DISABLED
+  // make sure folders are created correctly and files written to the right place
+  @Test
+  public void relocateLogFolders() {
+
+    // DISABLED
+    DriverStation mockDriverStation = mock(DriverStation.class);
+    when(mockDriverStation.isEnabled()).thenReturn(false);
+    when(mockDriverStation.isAutonomous()).thenReturn(false);
+    when(mockDriverStation.isOperatorControl()).thenReturn(false);
+    when(mockDriverStation.isTest()).thenReturn(false);
+    // fill out a few more parameters to make sure logging is successful
+    when(mockDriverStation.isDSAttached()).thenReturn(false);
+    when(mockDriverStation.isFMSAttached()).thenReturn(false);
+    when(mockDriverStation.getGameSpecificMessage()).thenReturn("");
+    when(mockDriverStation.getMatchTime()).thenReturn(123.0);
+
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
+
+    MessageQueue<ByteBuffer> testQueue = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
+    MessageQueue<ByteBuffer> dsStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
+    
+    DriverStationData driverStationData = new DriverStationData(mockDriverStation, dsStatusQueue);
+
+    FlatBufferBuilder builder = new FlatBufferBuilder(64);
+    int offset = TestMessage1.createTestMessage1(builder, 001);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update(); // update to DriverStation status queue
+    channelManager.update();    // write to file (won't happen when DISABLED)
+ 
+    // AUTO
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    when(mockDriverStation.isAutonomous()).thenReturn(true);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 002);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (in "unit_test_auto" folder)
+
+    // DISABLED
+    when(mockDriverStation.isEnabled()).thenReturn(false);
+    when(mockDriverStation.isAutonomous()).thenReturn(false);
+    when(mockDriverStation.isOperatorControl()).thenReturn(false);
+    when(mockDriverStation.isTest()).thenReturn(false);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 003);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (won't happen when DISABLED)
+ 
+    // TELEOP
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    when(mockDriverStation.isOperatorControl()).thenReturn(true);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 004);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (in "unit_test_auto" folder)
+
+    // DISABLED
+    when(mockDriverStation.isEnabled()).thenReturn(false);
+    when(mockDriverStation.isAutonomous()).thenReturn(false);
+    when(mockDriverStation.isOperatorControl()).thenReturn(false);
+    when(mockDriverStation.isTest()).thenReturn(false);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 005);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (won't happen when DISABLED) 
+
+    // TEST
+    when(mockDriverStation.isEnabled()).thenReturn(true);
+    when(mockDriverStation.isTest()).thenReturn(true);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 006);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (in "unit_test_teleop" folder)
+
+    // DISABLED
+    when(mockDriverStation.isEnabled()).thenReturn(false);
+    when(mockDriverStation.isAutonomous()).thenReturn(false);
+    when(mockDriverStation.isOperatorControl()).thenReturn(false);
+    when(mockDriverStation.isTest()).thenReturn(false);
+
+    builder = new FlatBufferBuilder(64);
+    offset = TestMessage1.createTestMessage1(builder, 007);
+    TestMessage1.finishTestMessage1Buffer(builder, offset);
+    testQueue.write(builder.dataBuffer());
+
+    driverStationData.update();
+    channelManager.update(); // write to file (won't happen when DISABLED)
+    channelManager.close();
+
+
+
+    // Check AUTO file (Test Message 1 contains the number 2)
+    FlatBuffersLogReader reader = new FlatBuffersLogReader("unit_test_auto" + File.separator + TestConfig.TEST_MESSAGE_1.getLogFilename(), true);
+
+    // Read log file and check its contents
+    ByteBuffer bb = reader.getNextTable();
+
+    LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
+    assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
+                                                                         // seconds of it being started
+    // skip checking configuration
+
+    bb = reader.getNextTable();
+    Packet packet = Packet.getRootAsPacket(bb);
+    assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+
+    bb = packet.payloadAsByteBuffer();
+    TestMessage1 testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+    assertEquals(002, testMessage1.intValue());
+
+    reader.close();
+
+
+    // Check TELEOP file (Test Message 1 contains the number 4)
+    reader = new FlatBuffersLogReader("unit_test_teleop" + File.separator + TestConfig.TEST_MESSAGE_1.getLogFilename(), true);
+
+    // Read log file and check its contents
+    bb = reader.getNextTable();
+
+    logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
+    assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
+                                                                          // seconds of it being started
+    // skip checking configuration
+
+    bb = reader.getNextTable();
+    packet = Packet.getRootAsPacket(bb);
+    assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+
+    bb = packet.payloadAsByteBuffer();
+    testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+    assertEquals(004, testMessage1.intValue());
+
+    reader.close();
+
+    
+
+    // Check TEST file (Test Message 1 contains the number 6)
+    reader = new FlatBuffersLogReader("unit_test_test" + File.separator + TestConfig.TEST_MESSAGE_1.getLogFilename(), true);
+
+    // Read log file and check its contents
+    bb = reader.getNextTable();
+
+    logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
+    assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100
+                                                                         // seconds of it being started
+    // skip checking configuration
+
+    bb = reader.getNextTable();
+    packet = Packet.getRootAsPacket(bb);
+    assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), packet.channelType());
+
+    bb = packet.payloadAsByteBuffer();
+    testMessage1 = TestMessage1.getRootAsTestMessage1(bb);
+    assertEquals(006, testMessage1.intValue());
+
+    reader.close();
+
+  }
 }

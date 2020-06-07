@@ -12,7 +12,7 @@ public final class Packet extends Table {
   public static void ValidateVersion() { Constants.FLATBUFFERS_1_12_0(); }
   public static Packet getRootAsPacket(ByteBuffer _bb) { return getRootAsPacket(_bb, new Packet()); }
   public static Packet getRootAsPacket(ByteBuffer _bb, Packet obj) { _bb.order(ByteOrder.LITTLE_ENDIAN); return (obj.__assign(_bb.getInt(_bb.position()) + _bb.position(), _bb)); }
-  public static boolean PacketBufferHasIdentifier(ByteBuffer _bb) { return __has_identifier(_bb, "FPKT"); }
+  public static boolean PacketBufferHasIdentifier(ByteBuffer _bb) { return __has_identifier(_bb, "PCKT"); }
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public Packet __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
@@ -52,8 +52,8 @@ public final class Packet extends Table {
     builder.required(o, 10);  // payload
     return o;
   }
-  public static void finishPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "FPKT"); }
-  public static void finishSizePrefixedPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finishSizePrefixed(offset, "FPKT"); }
+  public static void finishPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset, "PCKT"); }
+  public static void finishSizePrefixedPacketBuffer(FlatBufferBuilder builder, int offset) { builder.finishSizePrefixed(offset, "PCKT"); }
 
   public static final class Vector extends BaseVector {
     public Vector __assign(int _vector, int _element_size, ByteBuffer _bb) { __reset(_vector, _element_size, _bb); return this; }

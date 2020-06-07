@@ -1,27 +1,26 @@
 package frc.robot;
 
-public class Constants
-{
-    static public class ControllerConstants
-    {
-        static public double kDriveDeadband = 0.05;
+public class Constants {
+  public static double kLoopDt = 0.010; // 100x per second
 
-        // example joystick config when driver uses single Xbox controller
-        static public class ControllerConfig1 {
-            static public int kDriveControllerPort = 0;
-            static public int kOperatorControllerPort = 1;
-        }
-        
-        // example joystick config when driver uses dual Thrustmaster controllers
-        static public class ControllerConfig2 {
-            static public int kDriverLeftControllerPort = 0;
-            static public int kDriverRightControllerPort = 1;
-            static public int kOperatorControllerPort = 2;
-        }
+  public static class ControllerConstants {
+    public static double kDriveDeadband = 0.05;
+
+    // example joystick config when driver uses single Xbox controller
+    public static class ControllerConfig1 {
+      public static int kDriveControllerPort = 0;
+      public static int kOperatorControllerPort = 1;
     }
 
-    static public class DriveConstants
-    {
-
+    // example joystick config when driver uses dual Thrustmaster controllers
+    public static class ControllerConfig2 {
+      public static int kDriverLeftControllerPort = 0;
+      public static int kDriverRightControllerPort = 1;
+      public static int kOperatorControllerPort = 2;
     }
+  }
+
+  public static class DriveConstants {
+
+  }
 }

@@ -23,7 +23,8 @@ public class DriverStationStatusTest {
   @Test
   public void driverStationStatusTest() {
 
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
     var statusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     var statusReader = statusQueue.makeReader();
 

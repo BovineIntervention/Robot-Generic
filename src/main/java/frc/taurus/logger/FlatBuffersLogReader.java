@@ -11,12 +11,22 @@ import com.google.flatbuffers.ByteBufferUtil;
 
 public class FlatBuffersLogReader {
 
-  RandomAccessFile file;
+  File file;
+  RandomAccessFile raFile;
 
   public FlatBuffersLogReader(final String filename) {
+    this(filename, false);
+  }
+
+  public FlatBuffersLogReader(final String filename, boolean writeToBase) {
     try {
-      String fullPathFilename = LogFileWriterBase.logPath() + File.separator + filename;
-      file = new RandomAccessFile(new File(fullPathFilename), "r");
+      File logPath = LogFileWriterBase.logPath();
+      if (writeToBase) {
+        logPath = LogFileWriterBase.basePath();
+      }
+      String fullPathFilename = logPath + File.separator + filename;
+      file = new File(fullPathFilename);
+      raFile = new RandomAccessFile(file, "r");
     } catch (final FileNotFoundException e) {
       e.printStackTrace();
     }
@@ -25,11 +35,11 @@ public class FlatBuffersLogReader {
   public ByteBuffer getNextTable() {
     byte bytes[] = new byte[0];
     try {
-      final byte[] prefix = new byte[4]; // prefix is always 4 bytes
-      file.readFully(prefix); // get prefix
+      final byte[] prefix = new byte[4];  // prefix is always 4 bytes
+      raFile.readFully(prefix);           // get prefix
       final int tableSize = ByteBufferUtil.getSizePrefix(ByteBuffer.wrap(prefix).order(ByteOrder.LITTLE_ENDIAN));
       bytes = new byte[tableSize];
-      file.readFully(bytes);
+      raFile.readFully(bytes);
     } catch (final IOException e) {
       e.printStackTrace();
     }
@@ -38,9 +48,17 @@ public class FlatBuffersLogReader {
 
   public void close() {
     try {
-      file.close();
+      raFile.close();
     } catch (final IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public String getName() {
+    return file.getName();
+  }
+
+  public String getAbsolutePath() {
+    return file.getAbsolutePath();
   }
 }

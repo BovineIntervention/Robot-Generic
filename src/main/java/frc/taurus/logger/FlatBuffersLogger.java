@@ -1,15 +1,14 @@
 package frc.taurus.logger;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
 import frc.taurus.config.ChannelIntf;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.logger.generated.Packet;
 import frc.taurus.messages.MessageQueue;
 
@@ -22,49 +21,62 @@ import frc.taurus.messages.MessageQueue;
 
 public class FlatBuffersLogger {
 
-  final String filename;
+  String filename;
   final Supplier<ByteBuffer> getFileHeaderCallback;
-  ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>> queueTypeReaderPair = new ArrayList<Pair<Short, MessageQueue<ByteBuffer>.QueueReader>>();
+  SortedMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader> channelReaderMap = new TreeMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader>();
 
   BinaryLogFileWriter writer;
   int maxHeaderSize = 0;
   long packetCount = 0;
 
-  // TODO: add timestamp to filename or folder
   public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
-    this.filename = filename;
+    this.filename = filename;  
     this.getFileHeaderCallback = getFileHeaderCallback;
     writer = new BinaryLogFileWriter(filename);
   }
 
+  /**
+   * Used to open the same log filename in a new folder (when switching to auto, teleop, or test)
+   */
+  public void relocate(final String suffix) {
+    writer.close();     // close old file
+    packetCount = 0;    // make sure new file writes a header
+    LogFileWriterBase.updateLogFolderTimestamp(suffix);    
+    writer = new BinaryLogFileWriter(filename);
+  }
+
   public void register(ChannelIntf channel) {
-    var pair = new ImmutablePair<>(channel.getNum(), channel.getQueue().makeReader());
-    queueTypeReaderPair.add(pair);
+    MessageQueue<ByteBuffer> queue = ChannelManager.getInstance().fetch(channel);
+    MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
+    channelReaderMap.put(channel, reader);
   }
 
   public void update() {
     if (packetCount == 0) {
+      // write file header before writing first packet
       writer.write(getFileHeaderCallback.get());
     }
-    for (var pair : queueTypeReaderPair) {
-      var channelType = pair.getKey();
-      var reader = pair.getValue();
+    for (var channel : channelReaderMap.keySet()) {
+      var channelType = channel.getNum();
+      var reader = channelReaderMap.get(channel);
       while (!reader.isEmpty()) {
         short queueSize = (short)reader.size();
         ByteBuffer bb = reader.read().get(); // we know Optional::isPresent() is true because of earlier !isEmpty()
         writePacket(channelType, queueSize, bb); // write to file
       }
     }
-    writer.flush();
+    // writer.flush();
   }
 
-  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bb_payload) {
-    int payloadSize = bb_payload.remaining();
+  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bbPayload) {
+    int payloadSize = bbPayload.remaining();
 
     FlatBufferBuilder builder = new FlatBufferBuilder(maxHeaderSize + payloadSize);
 
     // Create Payload
-    int dataOffset = Packet.createPayloadVector(builder, bb_payload);
+    // important: need to make a read-only copy so the position of the 
+    // original buffer isn't modified
+    int dataOffset = Packet.createPayloadVector(builder, bbPayload.asReadOnlyBuffer());
 
     // Create Packet
     int offset = Packet.createPacket(builder, packetCount++, channelType, queueSize, dataOffset);

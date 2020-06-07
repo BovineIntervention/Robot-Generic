@@ -24,7 +24,9 @@ public class JoystickStatusTest {
   @Test
   public void writeSingleMessageTest() {
 
-    ChannelManager channelManager = new ChannelManager(Config.DRIVER_STATION_STATUS);
+    ChannelManager channelManager = ChannelManager.getInstance();
+    channelManager.reset();   // reset at the start of every unit test
+
     var statusQueue = channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS);
     var statusReader = statusQueue.makeReader();
 
