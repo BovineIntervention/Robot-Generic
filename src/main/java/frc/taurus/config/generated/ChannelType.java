@@ -7,9 +7,12 @@ public final class ChannelType {
   public static final byte DriverStationStatus = 0;
   public static final byte JoystickStatus = 1;
   public static final byte JoystickGoal = 2;
-  public static final byte DrivetrainGoal = 3;
+  public static final byte DrivetrainInput = 3;
+  public static final byte DrivetrainGoal = 4;
+  public static final byte DrivetrainStatus = 5;
+  public static final byte DrivetrainOutput = 6;
 
-  public static final String[] names = { "DriverStationStatus", "JoystickStatus", "JoystickGoal", "DrivetrainGoal", };
+  public static final String[] names = { "DriverStationStatus", "JoystickStatus", "JoystickGoal", "DrivetrainInput", "DrivetrainGoal", "DrivetrainStatus", "DrivetrainOutput", };
 
   public static String name(int e) { return names[e]; }
 }

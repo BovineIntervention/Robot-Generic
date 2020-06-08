@@ -4,8 +4,13 @@ namespace frc.taurus.config.generated;
 
 enum ChannelType : byte {
   DriverStationStatus,
+
   JoystickStatus, 
   JoystickGoal,
+
+  DrivetrainInput,
   DrivetrainGoal,
+  DrivetrainStatus,
+  DrivetrainOutput
   }
 

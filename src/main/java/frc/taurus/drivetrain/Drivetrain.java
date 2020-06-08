@@ -3,18 +3,31 @@ package frc.taurus.drivetrain;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 
+import com.google.flatbuffers.FlatBufferBuilder;
+
+import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.drivetrain.generated.DriveControlMode;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
+import frc.taurus.drivetrain.generated.DrivetrainOutput;
 import frc.taurus.drivetrain.generated.GoalType;
+import frc.taurus.drivetrain.generated.TalonControlMode;
 import frc.taurus.drivetrain.generated.TeleopGoal;
 import frc.taurus.messages.MessageQueue;
 import frc.taurus.messages.QueueListener;
 
 public class Drivetrain implements QueueListener {
 
-  MessageQueue<ByteBuffer>.QueueReader goalReader;
-
-  public Drivetrain(MessageQueue<ByteBuffer> goalQueue) {
-    goalReader = goalQueue.makeReader();
+  final MessageQueue<ByteBuffer>.QueueReader goalReader;
+  final MessageQueue<ByteBuffer> inputQueue;
+  final MessageQueue<ByteBuffer> statusQueue;
+  final MessageQueue<ByteBuffer> outputQueue;
+  
+  public Drivetrain(MessageQueue<ByteBuffer> inputQueue,  MessageQueue<ByteBuffer> goalQueue,
+                    MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> outputQueue) {
+    this.inputQueue = inputQueue;
+    this.goalReader = goalQueue.makeReader();
+    this.statusQueue = statusQueue;
+    this.outputQueue = outputQueue;
   }
 
   public void newMessage() {
@@ -44,8 +57,28 @@ public class Drivetrain implements QueueListener {
     }
   }
 
+  int outputBufferSize = 0;
   private void openLoop(double left, double right, boolean highGear, boolean quickTurn) {
 
+    FlatBufferBuilder builder = new FlatBufferBuilder(outputBufferSize);
+
+    DrivetrainOutput.startDrivetrainOutput(builder);
+    DrivetrainOutput.addTimestamp(builder, Timer.getFPGATimestamp());
+    DrivetrainOutput.addDriveControlMode(builder, DriveControlMode.OPEN_LOOP);
+    DrivetrainOutput.addTalonControlMode(builder, TalonControlMode.PercentOutput);
+    DrivetrainOutput.addLeftSetpoint(builder, (float)left);
+    DrivetrainOutput.addRightSetpoint(builder, (float)right);
+    // skip left_setpoint_ff
+    // skip right_setpoint_ff
+    DrivetrainOutput.addHighGear(builder, highGear);
+    int offset = DrivetrainOutput.endDrivetrainOutput(builder);
+    DrivetrainOutput.finishDrivetrainOutputBuffer(builder, offset); // add size prefix to files
+    ByteBuffer bb = builder.dataBuffer();
+
+    outputBufferSize = Math.max(outputBufferSize, bb.remaining());
+
+    // write Packet to file
+    outputQueue.write(bb);
   }
 
 }

@@ -43,8 +43,13 @@ public class Robot extends TimedRobot {
           channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
           channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)); 
 
-  Drivetrain drivetrain = new Drivetrain(channelManager.fetch(Config.DRIVETRAIN_GOAL));
-
+  Drivetrain drivetrain = new Drivetrain(channelManager.fetch(Config.DRIVETRAIN_INPUT),
+                                         channelManager.fetch(Config.DRIVETRAIN_GOAL),
+                                         channelManager.fetch(Config.DRIVETRAIN_STATUS),
+                                         channelManager.fetch(Config.DRIVETRAIN_OUTPUT));
+  
+  
+  
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.

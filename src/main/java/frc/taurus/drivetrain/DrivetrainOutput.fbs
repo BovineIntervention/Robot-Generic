@@ -2,22 +2,28 @@ namespace frc.taurus.drivetrain.generated;
 
 enum DriveControlMode : byte {
   OPEN_LOOP,
-  PATH_FOLLOWING,
-  POINT_TURN,
-  DISTANCE,
-  LINEAR_ANGULAR_VELOCITY,
-  VISION_ARC,
-  BASE_LOCKED,
-  VELOCITY_SETPOINT,
-  VELOCITY_HEADING
+  // PATH_FOLLOWING,
+  // POINT_TURN,
+  // DISTANCE,
+  // LINEAR_ANGULAR_VELOCITY,
+  // VISION_ARC,
+  // BASE_LOCKED,
+  // VELOCITY_SETPOINT,
+  // VELOCITY_HEADING
 }
 
+// follows com.ctre.phoenix.motorcontrol.ControlMode
 enum TalonControlMode : byte {
-  DISABLED=0,
-  PERCENT_OUTPUT,
-  POSITION,
-  VELOCITY,
-  ARC
+  PercentOutput=0,
+  Position=1,
+  Velocity=2,
+  Current=3,
+  Follower=5,
+  MotionProfile=6,
+  MotionMagic=7,
+  MotionProfileArc=10,
+  MusicTone=13,
+  Disabled=15
 }
 
 table DrivetrainOutput {

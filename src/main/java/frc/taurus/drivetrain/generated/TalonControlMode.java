@@ -4,13 +4,18 @@ package frc.taurus.drivetrain.generated;
 
 public final class TalonControlMode {
   private TalonControlMode() { }
-  public static final byte DISABLED = 0;
-  public static final byte PERCENT_OUTPUT = 1;
-  public static final byte POSITION = 2;
-  public static final byte VELOCITY = 3;
-  public static final byte ARC = 4;
+  public static final byte PercentOutput = 0;
+  public static final byte Position = 1;
+  public static final byte Velocity = 2;
+  public static final byte Current = 3;
+  public static final byte Follower = 5;
+  public static final byte MotionProfile = 6;
+  public static final byte MotionMagic = 7;
+  public static final byte MotionProfileArc = 10;
+  public static final byte MusicTone = 13;
+  public static final byte Disabled = 15;
 
-  public static final String[] names = { "DISABLED", "PERCENT_OUTPUT", "POSITION", "VELOCITY", "ARC", };
+  public static final String[] names = { "PercentOutput", "Position", "Velocity", "Current", "", "Follower", "MotionProfile", "MotionMagic", "", "", "MotionProfileArc", "", "", "MusicTone", "", "Disabled", };
 
   public static String name(int e) { return names[e]; }
 }
