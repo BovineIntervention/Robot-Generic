@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
+import frc.taurus.drivetrain.generated.GoalType;
+import frc.taurus.drivetrain.generated.TeleopGoal;
 
 /**
  * The user controls required for drivetrain motion.
@@ -28,8 +30,9 @@ public abstract class DriverControlsBase implements IDriverControls {
     boolean lowGear = getLowGear();    
 
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
+    int teleopGoalOffset = TeleopGoal.createTeleopGoal(builder, lMotor, rMotor);
     double timestamp = Timer.getFPGATimestamp();
-    int offset = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, lMotor, rMotor, !lowGear, quickTurn);
+    int offset = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, GoalType.TeleopGoal, teleopGoalOffset, !lowGear, quickTurn);
     builder.finish(offset);
 
     ChannelManager.getInstance().fetch(Config.DRIVETRAIN_GOAL).write(builder.dataBuffer()); 

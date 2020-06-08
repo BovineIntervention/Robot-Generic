@@ -15,6 +15,7 @@ import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
 import frc.taurus.driverstation.DriverStationData;
+import frc.taurus.drivetrain.Drivetrain;
 import frc.taurus.joystick.ControllerManager;
 import frc.taurus.joystick.XboxController;
 
@@ -42,6 +43,7 @@ public class Robot extends TimedRobot {
           channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
           channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)); 
 
+  Drivetrain drivetrain = Drivetrain.getInstance();
 
   /**
    * This function is run when the robot is first started up and should be used
@@ -53,7 +55,7 @@ public class Robot extends TimedRobot {
     controllerManager.register(driverControls.getControllersList());
     controllerManager.register(superstructureControls.getControllersList());   
     
-
+    channelManager.fetch(Config.DRIVETRAIN_GOAL).subscribe(drivetrain);
   }
 
   /**

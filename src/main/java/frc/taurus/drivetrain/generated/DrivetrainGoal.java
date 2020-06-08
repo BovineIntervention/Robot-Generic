@@ -16,34 +16,35 @@ public final class DrivetrainGoal extends Table {
   public DrivetrainGoal __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public double timestamp() { int o = __offset(4); return o != 0 ? bb.getDouble(o + bb_pos) : 0.0; }
-  public float leftSpeed() { int o = __offset(6); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public float rightSpeed() { int o = __offset(8); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
+  public byte goalType() { int o = __offset(6); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  public Table goal(Table obj) { int o = __offset(8); return o != 0 ? __union(obj, o + bb_pos) : null; }
   public boolean highGear() { int o = __offset(10); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
   public boolean quickTurn() { int o = __offset(12); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
 
   public static int createDrivetrainGoal(FlatBufferBuilder builder,
       double timestamp,
-      float left_speed,
-      float right_speed,
+      byte goal_type,
+      int goalOffset,
       boolean high_gear,
       boolean quick_turn) {
     builder.startTable(5);
     DrivetrainGoal.addTimestamp(builder, timestamp);
-    DrivetrainGoal.addRightSpeed(builder, right_speed);
-    DrivetrainGoal.addLeftSpeed(builder, left_speed);
+    DrivetrainGoal.addGoal(builder, goalOffset);
     DrivetrainGoal.addQuickTurn(builder, quick_turn);
     DrivetrainGoal.addHighGear(builder, high_gear);
+    DrivetrainGoal.addGoalType(builder, goal_type);
     return DrivetrainGoal.endDrivetrainGoal(builder);
   }
 
   public static void startDrivetrainGoal(FlatBufferBuilder builder) { builder.startTable(5); }
   public static void addTimestamp(FlatBufferBuilder builder, double timestamp) { builder.addDouble(0, timestamp, 0.0); }
-  public static void addLeftSpeed(FlatBufferBuilder builder, float leftSpeed) { builder.addFloat(1, leftSpeed, 0.0f); }
-  public static void addRightSpeed(FlatBufferBuilder builder, float rightSpeed) { builder.addFloat(2, rightSpeed, 0.0f); }
+  public static void addGoalType(FlatBufferBuilder builder, byte goalType) { builder.addByte(1, goalType, 0); }
+  public static void addGoal(FlatBufferBuilder builder, int goalOffset) { builder.addOffset(2, goalOffset, 0); }
   public static void addHighGear(FlatBufferBuilder builder, boolean highGear) { builder.addBoolean(3, highGear, false); }
   public static void addQuickTurn(FlatBufferBuilder builder, boolean quickTurn) { builder.addBoolean(4, quickTurn, false); }
   public static int endDrivetrainGoal(FlatBufferBuilder builder) {
     int o = builder.endTable();
+    builder.required(o, 8);  // goal
     return o;
   }
   public static void finishDrivetrainGoalBuffer(FlatBufferBuilder builder, int offset) { builder.finish(offset); }

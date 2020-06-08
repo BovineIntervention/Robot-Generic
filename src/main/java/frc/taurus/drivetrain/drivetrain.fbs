@@ -1,18 +1,24 @@
 namespace frc.taurus.drivetrain.generated;
 
-table DrivetrainGoal {
-  // Timestamp is the first element of every message
-  timestamp:double;
-
+table TeleopGoal {
   // Desired left and right motor speeds 
    left_speed : float;
   right_speed : float;
+}
+
+union GoalType { TeleopGoal }
+
+table DrivetrainGoal {
+  // Timestamp is the first element of every message
+  timestamp :  double;
+
+  goal : GoalType (required);    
 
   // True to shift into high, false to shift into low.
-  high_gear:bool;
+  high_gear : bool;
 
   // True to activate quickturn.
-  quick_turn:bool;
+  quick_turn : bool;
 }
 
 root_type DrivetrainGoal;
