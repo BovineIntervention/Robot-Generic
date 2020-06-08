@@ -15,7 +15,7 @@ public final class Channel extends Table {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public Channel __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public short channelType() { int o = __offset(4); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
+  public byte channelType() { int o = __offset(4); return o != 0 ? bb.get(o + bb_pos) : 0; }
   public String name() { int o = __offset(6); return o != 0 ? __string(o + bb_pos) : null; }
   public ByteBuffer nameAsByteBuffer() { return __vector_as_bytebuffer(6, 1); }
   public ByteBuffer nameInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 6, 1); }
@@ -24,7 +24,7 @@ public final class Channel extends Table {
   public ByteBuffer logFilenameInByteBuffer(ByteBuffer _bb) { return __vector_in_bytebuffer(_bb, 8, 1); }
 
   public static int createChannel(FlatBufferBuilder builder,
-      short channelType,
+      byte channelType,
       int nameOffset,
       int log_filenameOffset) {
     builder.startTable(3);
@@ -35,7 +35,7 @@ public final class Channel extends Table {
   }
 
   public static void startChannel(FlatBufferBuilder builder) { builder.startTable(3); }
-  public static void addChannelType(FlatBufferBuilder builder, short channelType) { builder.addShort(0, channelType, 0); }
+  public static void addChannelType(FlatBufferBuilder builder, byte channelType) { builder.addByte(0, channelType, 0); }
   public static void addName(FlatBufferBuilder builder, int nameOffset) { builder.addOffset(1, nameOffset, 0); }
   public static void addLogFilename(FlatBufferBuilder builder, int logFilenameOffset) { builder.addOffset(2, logFilenameOffset, 0); }
   public static int endChannel(FlatBufferBuilder builder) {

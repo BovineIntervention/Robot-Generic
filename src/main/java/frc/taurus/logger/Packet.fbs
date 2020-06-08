@@ -11,7 +11,7 @@ table Packet {
   // data type enum
   channel_type : frc.taurus.config.generated.ChannelType; // name of the FlatBuffer that defines the payload
 
-  queue_size : short; // number of messages in queue before read
+  queue_size : ubyte; // number of messages in queue before read
 
   // Nested flatbuffer.
   payload : [ubyte] (required);

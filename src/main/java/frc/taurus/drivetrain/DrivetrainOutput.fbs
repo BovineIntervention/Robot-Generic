@@ -1,0 +1,41 @@
+namespace frc.taurus.drivetrain.generated;
+
+enum DriveControlMode : byte {
+  OPEN_LOOP,
+  PATH_FOLLOWING,
+  POINT_TURN,
+  DISTANCE,
+  LINEAR_ANGULAR_VELOCITY,
+  VISION_ARC,
+  BASE_LOCKED,
+  VELOCITY_SETPOINT,
+  VELOCITY_HEADING
+}
+
+enum TalonControlMode : byte {
+  DISABLED=0,
+  PERCENT_OUTPUT,
+  POSITION,
+  VELOCITY,
+  ARC
+}
+
+table DrivetrainOutput {
+  // Timestamp is the first element of every message
+  timestamp :  double;
+
+  drive_control_mode : DriveControlMode;
+  talon_control_mode : TalonControlMode;    
+
+   left_setpoint : float;
+  right_setpoint : float;
+
+   left_setpoint_ff : float;
+  right_setpoint_ff : float;
+  
+  high_gear : bool;
+}
+
+root_type DrivetrainOutput;
+
+file_identifier "DRVO";

@@ -17,17 +17,17 @@ public enum Config implements ChannelIntf {
     OPERATOR_JOYSTICK_GOAL          (ChannelType.JoystickGoal,        "joystick_operator.log" ),
     DRIVETRAIN_GOAL                 (ChannelType.DrivetrainGoal,      "drivetrain.log");
 
-    private final short num;
+    private final byte num;
     private final String name;
     private final String logFilename;
 
-    Config(final short num, final String logFilename) {
+    Config(final byte num, final String logFilename) {
         this.num = num;
         this.name = ChannelType.name(num);        
         this.logFilename = logFilename;
     }
 
-    public short getNum() { return num; }
+    public byte getNum() { return num; }
     public String getName() { return name; }
     public String getLogFilename() { return logFilename; }
 }

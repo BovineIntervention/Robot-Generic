@@ -22,3 +22,5 @@ table DrivetrainGoal {
 }
 
 root_type DrivetrainGoal;
+
+file_identifier "DRVG";
