@@ -30,7 +30,7 @@ public class DriverStationStatusTest {
 
     DriverStation mockDriverStation = mock(DriverStation.class);
     
-    DriverStationData dsData = new DriverStationData(mockDriverStation, statusQueue);
+    DriverStationData dsData = new DriverStationData(mockDriverStation, channelManager);
     
     when(mockDriverStation.isEnabled()).thenReturn(true);
     when(mockDriverStation.isAutonomous()).thenReturn(false);

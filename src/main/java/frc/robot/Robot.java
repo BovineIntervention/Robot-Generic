@@ -32,26 +32,17 @@ public class Robot extends TimedRobot {
 
   // Get the ChannelManager instance for fetching the various queues
   ChannelManager channelManager = ChannelManager.getInstance();
-  DriverStationData driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager.fetch(Config.DRIVER_STATION_STATUS));
+  DriverStationData driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
   
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
   ControllerManager controllerManager = new ControllerManager();
-  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
-          channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS), 
-          channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL));  
-  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
-          (XboxController)driverControls.getControllersList().get(0),
-          channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
-          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)); 
+  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(channelManager);
+  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(channelManager, (XboxController)driverControls.getControllersList().get(0));
 
-  Drivetrain drivetrain = new Drivetrain(channelManager.fetch(Config.DRIVETRAIN_GOAL),
-                                         channelManager.fetch(Config.DRIVETRAIN_STATUS),
-                                         channelManager.fetch(Config.DRIVETRAIN_OUTPUT));
+  Drivetrain drivetrain = new Drivetrain(channelManager);
   
-  DrivetrainHAL drivetrainHAL = new DrivetrainHAL(channelManager.fetch(Config.DRIVETRAIN_INPUT),
-                                                  channelManager.fetch(Config.DRIVETRAIN_OUTPUT),
-                                                  channelManager.fetch(Config.DRIVER_STATION_STATUS));
+  DrivetrainHAL drivetrainHAL = new DrivetrainHAL(channelManager);
   SuperstructureHAL superstructureHAL = new SuperstructureHAL();
 
 

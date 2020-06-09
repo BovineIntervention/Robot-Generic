@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
+import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.drivetrain.generated.DrivetrainInput;
 import frc.taurus.drivetrain.generated.DrivetrainOutput;
@@ -56,9 +58,9 @@ public class DrivetrainHAL implements IHAL {
   //-----------------------------------
   // Message Queues & Readers
   //-----------------------------------
-  MessageQueue<ByteBuffer> inputQueue; // to store sensor values
-  MessageQueue<ByteBuffer>.QueueReader driverStationReader; // to store sensor values
-  MessageQueue<ByteBuffer>.QueueReader outputReader; // to read actuator values
+  final MessageQueue<ByteBuffer> inputQueue; // to store sensor values
+  final MessageQueue<ByteBuffer>.QueueReader driverStationReader; // to store sensor values
+  final MessageQueue<ByteBuffer>.QueueReader outputReader; // to read actuator values
 
   //-----------------------------------
   // Driver Motor Controllers
@@ -117,12 +119,10 @@ public class DrivetrainHAL implements IHAL {
 
 
 
-  public DrivetrainHAL(MessageQueue<ByteBuffer> dsQueue, 
-                       MessageQueue<ByteBuffer> inputQueue, 
-                       MessageQueue<ByteBuffer> outputQueue) {
-
-    this.inputQueue = inputQueue;
-    this.outputReader = outputQueue.makeReader();
+  public DrivetrainHAL(ChannelManager channelManager) {
+    inputQueue   = channelManager.fetch(Config.DRIVETRAIN_INPUT);
+    outputReader = channelManager.fetch(Config.DRIVETRAIN_OUTPUT).makeReader();
+    driverStationReader = channelManager.fetch(Config.DRIVER_STATION_STATUS).makeReader();
 
     ArrayList<TalonSRX> masters = new ArrayList<>();
     masters.add(lMaster);

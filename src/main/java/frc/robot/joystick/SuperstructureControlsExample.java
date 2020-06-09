@@ -1,14 +1,14 @@
 package frc.robot.joystick;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.Joystick;
 import frc.robot.Constants.ControllerConstants.ControllerConfig1;
+import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.joystick.ButtonBoardController;
 import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.XboxController;
-import frc.taurus.messages.MessageQueue;
 
 /**
  * The user controls beyond basic drivetrain motion. These will change for every
@@ -27,12 +27,12 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
     private final Controller.PovButton mTurnSouthPovButton;
     private final Controller.AxisButton mIntakeAxisButton;
 
-    public SuperstructureControlsExample(XboxController driverController, MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> goalQueue) {
+    public SuperstructureControlsExample(ChannelManager channelManager, XboxController driverController) {
         // use Controller.addController() to add controllers to this control method
         Joystick operatorJoystick = new Joystick(ControllerConfig1.kOperatorControllerPort);
 
         mDriverController = driverController;
-        mButtonBoard = new ButtonBoardController( operatorJoystick, statusQueue, goalQueue );
+        mButtonBoard = new ButtonBoardController( operatorJoystick, channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL) );
 
         mShootButton = mDriverController.addButton(XboxController.Button.X.id);
         mAutoAimButton = mDriverController.addButton(XboxController.Button.Y.id);

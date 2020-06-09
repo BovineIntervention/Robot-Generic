@@ -6,6 +6,8 @@ import java.util.Optional;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.drivetrain.generated.DriveControlMode;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
 import frc.taurus.drivetrain.generated.DrivetrainOutput;
@@ -21,14 +23,12 @@ public class Drivetrain implements QueueListener {
   final MessageQueue<ByteBuffer> statusQueue;
   final MessageQueue<ByteBuffer> outputQueue;
   
-  public Drivetrain(MessageQueue<ByteBuffer> goalQueue,
-                    MessageQueue<ByteBuffer> statusQueue, 
-                    MessageQueue<ByteBuffer> outputQueue) {
-    this.goalReader = goalQueue.makeReader();
-    this.statusQueue = statusQueue;
-    this.outputQueue = outputQueue;
+  public Drivetrain(ChannelManager channelManager) {
+    goalReader  = channelManager.fetch(Config.DRIVETRAIN_GOAL).makeReader();
+    statusQueue = channelManager.fetch(Config.DRIVETRAIN_STATUS);
+    outputQueue = channelManager.fetch(Config.DRIVETRAIN_OUTPUT);
   }
-
+  
   public void newMessage() {
     // wait for both Drivetrain Status and Drivetrain Goal messages 
     // Drivetrain Status: robot pose, sensor readings
