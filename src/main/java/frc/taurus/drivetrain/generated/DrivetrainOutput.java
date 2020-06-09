@@ -21,8 +21,8 @@ public final class DrivetrainOutput extends Table {
   public byte talonControlMode() { int o = __offset(8); return o != 0 ? bb.get(o + bb_pos) : 0; }
   public float leftSetpoint() { int o = __offset(10); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
   public float rightSetpoint() { int o = __offset(12); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public float leftSetpointFf() { int o = __offset(14); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
-  public float rightSetpointFf() { int o = __offset(16); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
+  public float leftSetpointFeedForward() { int o = __offset(14); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
+  public float rightSetpointFeedForward() { int o = __offset(16); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
   public boolean highGear() { int o = __offset(18); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
 
   public static int createDrivetrainOutput(FlatBufferBuilder builder,
@@ -31,13 +31,13 @@ public final class DrivetrainOutput extends Table {
       byte talon_control_mode,
       float left_setpoint,
       float right_setpoint,
-      float left_setpoint_ff,
-      float right_setpoint_ff,
+      float left_setpoint_feed_forward,
+      float right_setpoint_feed_forward,
       boolean high_gear) {
     builder.startTable(8);
     DrivetrainOutput.addTimestamp(builder, timestamp);
-    DrivetrainOutput.addRightSetpointFf(builder, right_setpoint_ff);
-    DrivetrainOutput.addLeftSetpointFf(builder, left_setpoint_ff);
+    DrivetrainOutput.addRightSetpointFeedForward(builder, right_setpoint_feed_forward);
+    DrivetrainOutput.addLeftSetpointFeedForward(builder, left_setpoint_feed_forward);
     DrivetrainOutput.addRightSetpoint(builder, right_setpoint);
     DrivetrainOutput.addLeftSetpoint(builder, left_setpoint);
     DrivetrainOutput.addHighGear(builder, high_gear);
@@ -52,8 +52,8 @@ public final class DrivetrainOutput extends Table {
   public static void addTalonControlMode(FlatBufferBuilder builder, byte talonControlMode) { builder.addByte(2, talonControlMode, 0); }
   public static void addLeftSetpoint(FlatBufferBuilder builder, float leftSetpoint) { builder.addFloat(3, leftSetpoint, 0.0f); }
   public static void addRightSetpoint(FlatBufferBuilder builder, float rightSetpoint) { builder.addFloat(4, rightSetpoint, 0.0f); }
-  public static void addLeftSetpointFf(FlatBufferBuilder builder, float leftSetpointFf) { builder.addFloat(5, leftSetpointFf, 0.0f); }
-  public static void addRightSetpointFf(FlatBufferBuilder builder, float rightSetpointFf) { builder.addFloat(6, rightSetpointFf, 0.0f); }
+  public static void addLeftSetpointFeedForward(FlatBufferBuilder builder, float leftSetpointFeedForward) { builder.addFloat(5, leftSetpointFeedForward, 0.0f); }
+  public static void addRightSetpointFeedForward(FlatBufferBuilder builder, float rightSetpointFeedForward) { builder.addFloat(6, rightSetpointFeedForward, 0.0f); }
   public static void addHighGear(FlatBufferBuilder builder, boolean highGear) { builder.addBoolean(7, highGear, false); }
   public static int endDrivetrainOutput(FlatBufferBuilder builder) {
     int o = builder.endTable();

@@ -68,8 +68,8 @@ public class Drivetrain implements QueueListener {
     DrivetrainOutput.addTalonControlMode(builder, TalonControlMode.PercentOutput);
     DrivetrainOutput.addLeftSetpoint(builder, (float)left);
     DrivetrainOutput.addRightSetpoint(builder, (float)right);
-    // skip left_setpoint_ff
-    // skip right_setpoint_ff
+    // skip  leftSetpointFeedForward
+    // skip rightSetpointFeedForward
     DrivetrainOutput.addHighGear(builder, highGear);
     int offset = DrivetrainOutput.endDrivetrainOutput(builder);
     DrivetrainOutput.finishDrivetrainOutputBuffer(builder, offset); // add size prefix to files

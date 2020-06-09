@@ -36,8 +36,8 @@ table DrivetrainOutput {
    left_setpoint : float;
   right_setpoint : float;
 
-   left_setpoint_ff : float;
-  right_setpoint_ff : float;
+   left_setpoint_feed_forward : float;
+  right_setpoint_feed_forward : float;
   
   high_gear : bool;
 }
