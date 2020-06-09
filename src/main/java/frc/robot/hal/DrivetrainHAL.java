@@ -15,11 +15,13 @@ import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMUConfiguration;
+import com.ctre.phoenix.sensors.PigeonIMU_StatusFrame;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.drivetrain.generated.DrivetrainInput;
@@ -91,31 +93,33 @@ public class DrivetrainHAL implements IHAL {
   private static final double kOpenLoopRampRate = 0.5;  // min time from neutral to max velocity
   private static final double kClosedLoopRampRate = 0;  // ramp rate controlled by velocity profile
 
-  //-----------------------------------
-  // Shifter
-  //-----------------------------------
-  final int kShifterForwardChannel = 0;
-  Solenoid shifter = new Solenoid(kShifterForwardChannel);
-
+  
   //-----------------------------------
   // Gyro
   //-----------------------------------
   final int kDeviceIdPigeon = 0;
   PigeonIMU pigeon = new PigeonIMU(kDeviceIdPigeon);
   double pigeonCalOffset = 0;
+  
+  //-----------------------------------
+  // Shifter
+  //-----------------------------------
+  final int kShifterForwardChannel = 0;
+  Solenoid shifter = new Solenoid(kShifterForwardChannel);
+  boolean shifterIsHighGear = false;
 
   //-----------------------------------
   // Air compressor
+  // (enabled/disabled based on drive mode)
   //-----------------------------------
   Compressor compressor = new Compressor();
-
-
-  private static final int kSetupTimeoutMs = 100;
+  boolean compressorIsOn = false;
 
 
 
-  public DrivetrainHAL(MessageQueue<ByteBuffer> dsQueue, MessageQueue<ByteBuffer> inputQueue,
-      MessageQueue<ByteBuffer> outputQueue) {
+  public DrivetrainHAL(MessageQueue<ByteBuffer> dsQueue, 
+                       MessageQueue<ByteBuffer> inputQueue, 
+                       MessageQueue<ByteBuffer> outputQueue) {
 
     this.inputQueue = inputQueue;
     this.outputReader = outputQueue.makeReader();
@@ -141,36 +145,36 @@ public class DrivetrainHAL implements IHAL {
       master.configAllSettings(config);        
 
       // encoders used for drivtrain feedback
-      master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kPositionSlot, kSetupTimeoutMs);      
-      master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kVelocitySlot, kSetupTimeoutMs);      
+      master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kPositionSlot, Constants.kLongCANTimeoutMs);      
+      master.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, kVelocitySlot, Constants.kLongCANTimeoutMs);      
       // no limit switches for drivetrain
       master.overrideLimitSwitchesEnable(false);
 
       // enable voltage compensation
       master.enableVoltageCompensation(true);
-      master.configVoltageCompSaturation(12.0, kSetupTimeoutMs);
+      master.configVoltageCompSaturation(12.0, Constants.kLongCANTimeoutMs);
       master.configVoltageMeasurementFilter(32);  // samples
 
       // rampm rates
-      master.configOpenloopRamp(kOpenLoopRampRate, kSetupTimeoutMs);
-      master.configClosedloopRamp(kClosedLoopRampRate, kSetupTimeoutMs);  // controlled by profile
+      master.configOpenloopRamp(kOpenLoopRampRate, Constants.kLongCANTimeoutMs);
+      master.configClosedloopRamp(kClosedLoopRampRate, Constants.kLongCANTimeoutMs);  // controlled by profile
 
       // Motion Magic
-      master.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kCruiseVelocity), kSetupTimeoutMs);
-      master.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kMaxAcceleration), kSetupTimeoutMs);
+      master.configMotionCruiseVelocity(inchesPerSecondToEncoderUnitsPerFrame(kCruiseVelocity), Constants.kLongCANTimeoutMs);
+      master.configMotionAcceleration(inchesPerSecondToEncoderUnitsPerFrame(kMaxAcceleration), Constants.kLongCANTimeoutMs);
 
-      master.configPeakCurrentLimit(35, kSetupTimeoutMs);       // amps
-      master.configPeakCurrentDuration(200, kSetupTimeoutMs);   // ms
-      master.configContinuousCurrentLimit(35, kSetupTimeoutMs); // amps
+      master.configPeakCurrentLimit(35, Constants.kLongCANTimeoutMs);       // amps
+      master.configPeakCurrentDuration(200, Constants.kLongCANTimeoutMs);   // ms
+      master.configContinuousCurrentLimit(35, Constants.kLongCANTimeoutMs); // amps
 
       // auxiliary PID for point turns
-      master.configAuxPIDPolarity(false, kSetupTimeoutMs);
-      master.configClosedLoopPeakOutput(kTurningSlot, 1.0, kSetupTimeoutMs);
+      master.configAuxPIDPolarity(false, Constants.kLongCANTimeoutMs);
+      master.configClosedLoopPeakOutput(kTurningSlot, 1.0, Constants.kLongCANTimeoutMs);
 
       // increase status update rate to 100Hz (default 50 Hz)
-      master.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 10, kSetupTimeoutMs);
-      // master.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, kSetupTimeoutMs);
-      // master.configVelocityMeasurementWindow(32, kSetupTimeoutMs);
+      master.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, (int)(Constants.kLoopDt*1000), Constants.kLongCANTimeoutMs);
+      // master.configVelocityMeasurementPeriod(VelocityMeasPeriod.Period_100Ms, Constants.kLongCANTimeoutMs);
+      // master.configVelocityMeasurementWindow(32, Constants.kLongCANTimeoutMs);
 
       loadGains(master);
     }
@@ -207,7 +211,7 @@ public class DrivetrainHAL implements IHAL {
     //-----------------------------------
     PigeonIMUConfiguration pigeonConfig = new PigeonIMUConfiguration();
     pigeon.configAllSettings(pigeonConfig);
-
+    pigeon.setStatusFramePeriod(PigeonIMU_StatusFrame.CondStatus_9_SixDeg_YPR, (int)(Constants.kLoopDt*1000), Constants.kLongCANTimeoutMs);
 
 
     //-----------------------------------
@@ -218,11 +222,23 @@ public class DrivetrainHAL implements IHAL {
     //-----------------------------------
     // Initial Actuator Settings
     //-----------------------------------
+    // motors
     setBrakeMode(false);
     stop();
+
+    // shifter: force a solenoid control, synchronize shifterIsHighGear with hardware
+    shifterIsHighGear = false;
+    setHighGear(true);
+
+    // compressor: force a control, synchronize compressorIsOn with hardware
+    // pneumatics should be pre-charged before a match
+    compressorIsOn = true;
+    runCompressor(false);
   }
 
 
+
+  // Position PID gains
   private static final double kHighGearPositionP = 1.0;
   private static final double kHighGearPositionI = 0;
   private static final double kHighGearPositionD = 0;
@@ -230,6 +246,7 @@ public class DrivetrainHAL implements IHAL {
   private static final int kPositionIZone = 0;
   private static final int kPositionAllowableError = 0;
 
+  // Velocity PID gains
   private static final double kHighGearVelocityP = 1.0;
   private static final double kHighGearVelocityI = 0;
   private static final double kHighGearVelocityD = 0;
@@ -237,6 +254,7 @@ public class DrivetrainHAL implements IHAL {
   private static final int kVelocityIZone = 0;
   private static final int kVelocityAllowableError = 0;
 
+  // Turning PID gains
   private static final double kHighGearTurningP = 1.0;
   private static final double kHighGearTurningI = 0;
   private static final double kHighGearTurningD = 0;
@@ -245,29 +263,26 @@ public class DrivetrainHAL implements IHAL {
   private static final int kTurningAllowableError = 0;
 
   public void loadGains(TalonSRX master) {
-    // Position PID gains
-    master.config_kP(kPositionSlot, kHighGearPositionP, kSetupTimeoutMs);
-    master.config_kI(kPositionSlot, kHighGearPositionI, kSetupTimeoutMs);
-    master.config_kD(kPositionSlot, kHighGearPositionD, kSetupTimeoutMs);
-    master.config_kF(kPositionSlot, kHighGearPositionF, kSetupTimeoutMs);
-    master.config_IntegralZone(kPositionSlot, kPositionIZone, kSetupTimeoutMs);
-    master.configAllowableClosedloopError(kPositionSlot, kPositionAllowableError, kSetupTimeoutMs);
+    master.config_kP(kPositionSlot, kHighGearPositionP, Constants.kLongCANTimeoutMs);
+    master.config_kI(kPositionSlot, kHighGearPositionI, Constants.kLongCANTimeoutMs);
+    master.config_kD(kPositionSlot, kHighGearPositionD, Constants.kLongCANTimeoutMs);
+    master.config_kF(kPositionSlot, kHighGearPositionF, Constants.kLongCANTimeoutMs);
+    master.config_IntegralZone(kPositionSlot, kPositionIZone, Constants.kLongCANTimeoutMs);
+    master.configAllowableClosedloopError(kPositionSlot, kPositionAllowableError, Constants.kLongCANTimeoutMs);
 
-    // Velocity PID gains
-    master.config_kP(kVelocitySlot, kHighGearVelocityP, kSetupTimeoutMs);
-    master.config_kI(kVelocitySlot, kHighGearVelocityI, kSetupTimeoutMs);
-    master.config_kD(kVelocitySlot, kHighGearVelocityD, kSetupTimeoutMs);
-    master.config_kF(kVelocitySlot, kHighGearVelocityF, kSetupTimeoutMs);
-    master.config_IntegralZone(kVelocitySlot, kVelocityIZone, kSetupTimeoutMs);
-    master.configAllowableClosedloopError(kVelocitySlot, kVelocityAllowableError, kSetupTimeoutMs);
+    master.config_kP(kVelocitySlot, kHighGearVelocityP, Constants.kLongCANTimeoutMs);
+    master.config_kI(kVelocitySlot, kHighGearVelocityI, Constants.kLongCANTimeoutMs);
+    master.config_kD(kVelocitySlot, kHighGearVelocityD, Constants.kLongCANTimeoutMs);
+    master.config_kF(kVelocitySlot, kHighGearVelocityF, Constants.kLongCANTimeoutMs);
+    master.config_IntegralZone(kVelocitySlot, kVelocityIZone, Constants.kLongCANTimeoutMs);
+    master.configAllowableClosedloopError(kVelocitySlot, kVelocityAllowableError, Constants.kLongCANTimeoutMs);
 
-    // Turning PID gains
-    master.config_kP(kTurningSlot, kHighGearTurningP, kSetupTimeoutMs);
-    master.config_kI(kTurningSlot, kHighGearTurningI, kSetupTimeoutMs);
-    master.config_kD(kTurningSlot, kHighGearTurningD, kSetupTimeoutMs);
-    master.config_kF(kTurningSlot, kHighGearTurningF, kSetupTimeoutMs);
-    master.config_IntegralZone(kTurningSlot, kTurningIZone, kSetupTimeoutMs);
-    master.configAllowableClosedloopError(kTurningSlot, kTurningAllowableError, kSetupTimeoutMs);
+    master.config_kP(kTurningSlot, kHighGearTurningP, Constants.kLongCANTimeoutMs);
+    master.config_kI(kTurningSlot, kHighGearTurningI, Constants.kLongCANTimeoutMs);
+    master.config_kD(kTurningSlot, kHighGearTurningD, Constants.kLongCANTimeoutMs);
+    master.config_kF(kTurningSlot, kHighGearTurningF, Constants.kLongCANTimeoutMs);
+    master.config_IntegralZone(kTurningSlot, kTurningIZone, Constants.kLongCANTimeoutMs);
+    master.configAllowableClosedloopError(kTurningSlot, kTurningAllowableError, Constants.kLongCANTimeoutMs);
   }
 
 
@@ -277,11 +292,12 @@ public class DrivetrainHAL implements IHAL {
   //-----------------------------------
 
   public void zeroSensors() {
-    lMaster.setSelectedSensorPosition(0, kPrimaryPidIdx, kSetupTimeoutMs);
-    rMaster.setSelectedSensorPosition(0, kPrimaryPidIdx, kSetupTimeoutMs);
-    lMaster.setSelectedSensorPosition(0, kAuxiliaryPidIdx, kSetupTimeoutMs);    
-    rMaster.setSelectedSensorPosition(0, kAuxiliaryPidIdx, kSetupTimeoutMs);
-    pigeon.setYaw(0, kSetupTimeoutMs);    
+    lMaster.setSelectedSensorPosition(0, kPrimaryPidIdx, Constants.kCANTimeoutMs);
+    rMaster.setSelectedSensorPosition(0, kPrimaryPidIdx, Constants.kCANTimeoutMs);
+    lMaster.setSelectedSensorPosition(0, kAuxiliaryPidIdx, Constants.kCANTimeoutMs);    
+    rMaster.setSelectedSensorPosition(0, kAuxiliaryPidIdx, Constants.kCANTimeoutMs);
+
+    pigeon.setYaw(0, Constants.kCANTimeoutMs);    
     pigeonCalOffset = pigeon.getFusedHeading();
   }
 
@@ -291,6 +307,8 @@ public class DrivetrainHAL implements IHAL {
   int bufferSize = 0;
 
   public void readSensors() {
+    // read sensors and create DrivetrainInput message
+
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
 
     float gyroAngleRad = (float)(-(pigeon.getFusedHeading() - pigeonCalOffset) * Math.PI / 180);
@@ -336,64 +354,77 @@ public class DrivetrainHAL implements IHAL {
 
     // read the output queue to see what setting the core robot code wants
     obb = outputReader.readLast();
-    if (obb.isPresent()) {
-      // found a message. unpack it.
-      DrivetrainOutput msg = DrivetrainOutput.getRootAsDrivetrainOutput(obb.get());
-      byte talonControlMode = msg.talonControlMode();
-      float lSetpoint = msg.leftSetpoint();
-      float rSetpoint = msg.rightSetpoint();
-      boolean highGear = msg.highGear();
-
-      switch (talonControlMode) {
-      case TalonControlMode.PercentOutput:
-        // Mode used for joystick control
-        compressorOn(); // compressor only on during driver control
-        setBrakeMode(false);
-        lMaster.set(ControlMode.PercentOutput, lSetpoint);
-        rMaster.set(ControlMode.PercentOutput, rSetpoint);
-        break;
-
-      case TalonControlMode.Position:
-        // This mode can be used to hold a certain position,
-        // execute point turns, or drive a fixed distance
-        compressorOff(); // compressor off during autonomous
-        setBrakeMode(true);
-        lMaster.selectProfileSlot(kPositionSlot, kPrimaryPidIdx);
-        rMaster.selectProfileSlot(kPositionSlot, kPrimaryPidIdx);
-        lMaster.set(ControlMode.Position, inchesToEncoderUnits(lSetpoint));
-        rMaster.set(ControlMode.Position, inchesToEncoderUnits(rSetpoint));
-        break;
-
-      case TalonControlMode.Velocity:
-        compressorOff(); // compressor off during autonomous
-        setBrakeMode(true);
-        lMaster.selectProfileSlot(kVelocitySlot, kPrimaryPidIdx);
-        rMaster.selectProfileSlot(kVelocitySlot, kPrimaryPidIdx);
-        lMaster.set(ControlMode.Velocity, inchesPerSecondToEncoderUnitsPerFrame(lSetpoint));
-        rMaster.set(ControlMode.Velocity, inchesPerSecondToEncoderUnitsPerFrame(rSetpoint));
-        break;
-
-      // TODO: work on zero-point turn
-      // case TalonControlMode.MotionProfileArc:
-      // compressorOff(); // compressor off during autonomous
-      // setBrakeMode(true);
-      // lMaster.selectProfileSlot(kPositionSlot, kTalonPidIdx);
-      // lMaster.selectProfileSlot(kTurningSlot, kAuxiliaryPidIdx);
-      // lMaster.set(ControlMode.PercentOutput,
-      // inchesPerSecondToEncoderUnitsPerFrame(lSetpoint));
-      // rMaster.follow(lMaster, FollowerType.AuxOutput1);
-      // break;
-
-      default:
-        break;
-      }
-
-
-      shifter.set( !highGear );
-
+    if (obb.isEmpty()) {
+      stop();
+      return;
     }
+
+    // found a message. unpack it.
+    DrivetrainOutput msg = DrivetrainOutput.getRootAsDrivetrainOutput(obb.get());
+    byte talonControlMode = msg.talonControlMode();
+    float lSetpoint = msg.leftSetpoint();
+    float rSetpoint = msg.rightSetpoint();
+    boolean highGear = msg.highGear();
+
+    // execute drive command based on control mode
+    switch (talonControlMode) {
+    case TalonControlMode.PercentOutput:
+      // Mode used for joystick control
+      runCompressor(true); // compressor only on during driver control
+      setBrakeMode(false);
+      lMaster.set(ControlMode.PercentOutput, lSetpoint);
+      rMaster.set(ControlMode.PercentOutput, rSetpoint);
+      break;
+
+    case TalonControlMode.Position:
+      // This mode can be used to hold a certain position,
+      // execute point turns, or drive a fixed distance
+      runCompressor(false); // compressor off during autonomous
+      setBrakeMode(true);
+      lMaster.selectProfileSlot(kPositionSlot, kPrimaryPidIdx);
+      rMaster.selectProfileSlot(kPositionSlot, kPrimaryPidIdx);
+      lMaster.set(ControlMode.Position, inchesToEncoderUnits(lSetpoint));
+      rMaster.set(ControlMode.Position, inchesToEncoderUnits(rSetpoint));
+      break;
+
+    case TalonControlMode.Velocity:
+      runCompressor(false); // compressor off during autonomous
+      setBrakeMode(true);
+      lMaster.selectProfileSlot(kVelocitySlot, kPrimaryPidIdx);
+      rMaster.selectProfileSlot(kVelocitySlot, kPrimaryPidIdx);
+      lMaster.set(ControlMode.Velocity, inchesPerSecondToEncoderUnitsPerFrame(lSetpoint));
+      rMaster.set(ControlMode.Velocity, inchesPerSecondToEncoderUnitsPerFrame(rSetpoint));
+      break;
+
+    // TODO: work on zero-point turn
+    // case TalonControlMode.MotionProfileArc:
+    // runCompressor(false); // compressor off during autonomous
+    // setBrakeMode(true);
+    // lMaster.selectProfileSlot(kPositionSlot, kTalonPidIdx);
+    // lMaster.selectProfileSlot(kTurningSlot, kAuxiliaryPidIdx);
+    // lMaster.set(ControlMode.PercentOutput,
+    // inchesPerSecondToEncoderUnitsPerFrame(lSetpoint));
+    // rMaster.follow(lMaster, FollowerType.AuxOutput1);
+    // break;
+
+    default:
+      stop();
+      break;
+    }
+
+    // shift to desired gear
+    setHighGear(highGear);
   }
 
+
+
+  void setHighGear(boolean highGear) {
+      // reduce CAN traffic by only sending commands on changes
+      if (highGear != shifterIsHighGear) {
+        shifterIsHighGear = highGear;
+        shifter.set( !highGear );   // invert sign of highGear if necessary to match plumbing
+      }
+  }
 
 
   public void stop() {
@@ -438,17 +469,14 @@ public class DrivetrainHAL implements IHAL {
 
 
   
-  public void compressorOn() {
-    // do this checking to avoid extra JNI calls when not needed
-    if (!compressor.enabled()) {
+  public void runCompressor(boolean wantsOn) {
+    // avoid extra JNI calls by only sending on changes
+    if (!compressorIsOn && wantsOn) {
       compressor.start();
-    }
-  }
-
-  public void compressorOff() {
-    // do this checking to avoid extra JNI calls when not needed
-    if (compressor.enabled()) {
+      compressorIsOn = true;
+    } else if (compressorIsOn && !wantsOn) {
       compressor.stop();
+      compressorIsOn = false;
     }
   }
 

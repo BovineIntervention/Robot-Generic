@@ -2,6 +2,10 @@ package frc.robot.hal;
 
 public class SuperstructureHAL implements IHAL {
 
+  public SuperstructureHAL() {
+
+  }
+
   public void zeroSensors() {
 
   }

@@ -10,6 +10,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.hal.DrivetrainHAL;
+import frc.robot.hal.SuperstructureHAL;
 import frc.robot.joystick.DriverControlsXboxExample;
 import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
@@ -43,13 +45,16 @@ public class Robot extends TimedRobot {
           channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
           channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL)); 
 
-  Drivetrain drivetrain = new Drivetrain(channelManager.fetch(Config.DRIVETRAIN_INPUT),
-                                         channelManager.fetch(Config.DRIVETRAIN_GOAL),
+  Drivetrain drivetrain = new Drivetrain(channelManager.fetch(Config.DRIVETRAIN_GOAL),
                                          channelManager.fetch(Config.DRIVETRAIN_STATUS),
                                          channelManager.fetch(Config.DRIVETRAIN_OUTPUT));
   
-  
-  
+  DrivetrainHAL drivetrainHAL = new DrivetrainHAL(channelManager.fetch(Config.DRIVETRAIN_INPUT),
+                                                  channelManager.fetch(Config.DRIVETRAIN_OUTPUT),
+                                                  channelManager.fetch(Config.DRIVER_STATION_STATUS));
+  SuperstructureHAL superstructureHAL = new SuperstructureHAL();
+
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -100,11 +105,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    drivetrainHAL.readSensors();
+    superstructureHAL.readSensors();
+
     driverStationData.update();   // get driverstation inputs
     controllerManager.update();   // get joystick inputs
 
     driverControls.update();          // generates DrivetrainGoal message
     superstructureControls.update();  // generate ... messages
+
+    drivetrain.update();
+
+    drivetrainHAL.writeActuators();
+    superstructureHAL.writeActuators();
+
   }
 
   /**

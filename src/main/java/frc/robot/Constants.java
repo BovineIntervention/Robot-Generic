@@ -4,7 +4,9 @@ import frc.taurus.joystick.SteeringMethods;
 
 public class Constants {
   public static double kLoopDt = 0.010; // 100x per second
-  public static int kCANTimeoutMs = 5; // ms
+  
+  public static int kCANTimeoutMs = (int)(kLoopDt*1000); // ms  for real-time updates
+  public static int kLongCANTimeoutMs = 100; // ms              for constructors
 
   public static class ControllerConstants {
     // example joystick config when driver uses single Xbox controller

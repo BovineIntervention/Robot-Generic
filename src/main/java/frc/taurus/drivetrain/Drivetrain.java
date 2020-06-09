@@ -18,13 +18,12 @@ import frc.taurus.messages.QueueListener;
 public class Drivetrain implements QueueListener {
 
   final MessageQueue<ByteBuffer>.QueueReader goalReader;
-  final MessageQueue<ByteBuffer> inputQueue;
   final MessageQueue<ByteBuffer> statusQueue;
   final MessageQueue<ByteBuffer> outputQueue;
   
-  public Drivetrain(MessageQueue<ByteBuffer> inputQueue,  MessageQueue<ByteBuffer> goalQueue,
-                    MessageQueue<ByteBuffer> statusQueue, MessageQueue<ByteBuffer> outputQueue) {
-    this.inputQueue = inputQueue;
+  public Drivetrain(MessageQueue<ByteBuffer> goalQueue,
+                    MessageQueue<ByteBuffer> statusQueue, 
+                    MessageQueue<ByteBuffer> outputQueue) {
     this.goalReader = goalQueue.makeReader();
     this.statusQueue = statusQueue;
     this.outputQueue = outputQueue;
