@@ -6,6 +6,8 @@ import java.util.HashMap;
 import frc.taurus.logger.LoggerManager;
 import frc.taurus.messages.MessageQueue;
 
+// TODO: see if we can avoid making ChannelManager a singleton, since we are passing it to lots of classes in RobotInit()
+
 public class ChannelManager {
   // singleton pattern
   private static ChannelManager instance = null;

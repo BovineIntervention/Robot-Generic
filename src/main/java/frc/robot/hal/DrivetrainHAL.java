@@ -120,8 +120,8 @@ public class DrivetrainHAL implements IHAL {
 
 
   public DrivetrainHAL(ChannelManager channelManager) {
-    inputQueue   = channelManager.fetch(Config.DRIVETRAIN_INPUT);
-    outputReader = channelManager.fetch(Config.DRIVETRAIN_OUTPUT).makeReader();
+    inputQueue          = channelManager.fetch(Config.DRIVETRAIN_INPUT);
+    outputReader        = channelManager.fetch(Config.DRIVETRAIN_OUTPUT).makeReader();
     driverStationReader = channelManager.fetch(Config.DRIVER_STATION_STATUS).makeReader();
 
     ArrayList<TalonSRX> masters = new ArrayList<>();
