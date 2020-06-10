@@ -8,14 +8,18 @@
 package frc.robot;
 
 
-import com.google.flatbuffers.FlatBufferBuilder;
-
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.hal.DrivetrainHAL;
+import frc.robot.hal.SuperstructureHAL;
 import frc.robot.joystick.DriverControlsXboxExample;
 import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.Config;
-import frc.taurus.drivetrain.generated.DrivetrainGoal;
+import frc.taurus.driverstation.DriverStationData;
+import frc.taurus.drivetrain.Drivetrain;
+import frc.taurus.joystick.ControllerManager;
+import frc.taurus.joystick.XboxController;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,23 +30,33 @@ import frc.taurus.drivetrain.generated.DrivetrainGoal;
  */
 public class Robot extends TimedRobot {
 
+  // Get the ChannelManager instance for fetching the various queues
   ChannelManager channelManager = ChannelManager.getInstance();
-
+  DriverStationData driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
+  
   // User-Controls (joysticks & button boards)
   // TODO: allow selection of user drive control scheme
-  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(
-          channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS), 
-          channelManager.fetch(Config.DRIVER_JOYSTICK_GOAL));  
-  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(
-          driverControls.getDriverController(),
-          channelManager.fetch(Config.OPERATOR_JOYSTICK_STATUS), 
-          channelManager.fetch(Config.OPERATOR_JOYSTICK_GOAL));  
+  ControllerManager controllerManager = new ControllerManager();
+  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(channelManager);
+  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(channelManager, (XboxController)driverControls.getControllersList().get(0));
+
+  Drivetrain drivetrain = new Drivetrain(channelManager);
+  
+  DrivetrainHAL drivetrainHAL = new DrivetrainHAL(channelManager);
+  SuperstructureHAL superstructureHAL = new SuperstructureHAL();
+
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
   @Override
   public void robotInit() {
+    // Register all physical controllers with ControllerManager
+    controllerManager.register(driverControls.getControllersList());
+    controllerManager.register(superstructureControls.getControllersList());   
+    
+    channelManager.fetch(Config.DRIVETRAIN_GOAL).subscribe(drivetrain);
   }
 
   /**
@@ -82,14 +96,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    float throttle = (float)driverControls.getThrottle();
-    float steering = (float)driverControls.getSteering();
-    boolean quickTurn = driverControls.getQuickTurn();
-    boolean lowGear = driverControls.getLowGear();    
+    drivetrainHAL.readSensors();
+    superstructureHAL.readSensors();
 
-    FlatBufferBuilder builder = new FlatBufferBuilder(1024);
-    long timestamp = 123;
-    int drivetrainGoal = DrivetrainGoal.createDrivetrainGoal(builder, timestamp, throttle, steering, !lowGear, quickTurn);
+    driverStationData.update();   // get driverstation inputs
+    controllerManager.update();   // get joystick inputs
+
+    driverControls.update();          // generates DrivetrainGoal message
+    superstructureControls.update();  // generate ... messages
+
+    drivetrain.update();
+
+    drivetrainHAL.writeActuators();
+    superstructureHAL.writeActuators();
+
   }
 
   /**

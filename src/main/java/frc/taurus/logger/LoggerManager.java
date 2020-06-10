@@ -33,9 +33,8 @@ public class LoggerManager {
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
   HashMap<String, FlatBuffersLogger> loggerMap = new HashMap<>();
 
-  private final Notifier notifier;  // notifier will execute run() with a period of kPeriod
+  private final Notifier notifier;  // notifier will execute run() with a period of kLoopDt
   private boolean running;
-  public final double kPeriod = Constants.kLoopDt;
 
   private final Runnable runnable = new Runnable() {
     @Override
@@ -49,7 +48,7 @@ public class LoggerManager {
   public synchronized void start() {
     if (!running) {
       running = true;
-      notifier.startPeriodic(kPeriod);
+      notifier.startPeriodic(Constants.kLoopDt);
     }
   }
 

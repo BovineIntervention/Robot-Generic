@@ -6,6 +6,8 @@ import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.messages.MessageQueue;
 
@@ -16,9 +18,9 @@ public class DriverStationData {
   DriverStation ds;
   MessageQueue<ByteBuffer> statusQueue;
 
-  public DriverStationData(DriverStation driverStation, MessageQueue<ByteBuffer> statusQueue) {
+  public DriverStationData(DriverStation driverStation, ChannelManager channelManager) {
     this.ds = driverStation;
-    this.statusQueue = statusQueue;
+    this.statusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
   }
 
   

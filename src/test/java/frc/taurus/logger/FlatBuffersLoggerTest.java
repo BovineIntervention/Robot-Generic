@@ -3,14 +3,12 @@ package frc.taurus.logger;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Timer;
-import frc.taurus.config.ChannelIntf;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
@@ -23,39 +21,7 @@ import frc.taurus.messages.generated.TestMessage2;
 
 public class FlatBuffersLoggerTest {
 
-  ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
-
   static double eps = 1e-9;
-
-  public ByteBuffer getFileHeader() {
-    FlatBufferBuilder builder = new FlatBufferBuilder(256);
-
-    // NOTE: we assume that the Test functions are clearing() and add()ing to 
-    // the channelList array appropriately
-
-    // create Channels
-    int[] channelOffsets = new int[channelList.size()];
-    for (int k = 0; k < channelList.size(); k++) {
-      ChannelIntf channel = channelList.get(k);
-      channelOffsets[k] = Channel.createChannel(builder, channel.getNum(), builder.createString(channel.getName()),
-          builder.createString(channel.getLogFilename()));
-    }
-    // create Channel vector
-    int channelVectorOffset = Configuration.createChannelsVector(builder, channelOffsets);
-
-    // create Config
-    int configOffset = Configuration.createConfiguration(builder, channelVectorOffset);
-
-    // create LogFileHeader
-    double timestamp = Timer.getFPGATimestamp();
-    int offset = LogFileHeader.createLogFileHeader(builder, timestamp, configOffset);
-    LogFileHeader.finishSizePrefixedLogFileHeaderBuffer(builder, offset);
-    ByteBuffer fileHeader = builder.dataBuffer();
-
-    return fileHeader;
-  }
-
-
 
 
   @Test

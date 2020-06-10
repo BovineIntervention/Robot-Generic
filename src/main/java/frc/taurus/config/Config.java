@@ -1,9 +1,6 @@
 package frc.taurus.config;
 
-import java.nio.ByteBuffer;
-
 import frc.taurus.config.generated.ChannelType;
-import frc.taurus.messages.MessageQueue;
 
 /**
  * Channels used in the code need to be listed here.  
@@ -13,23 +10,29 @@ import frc.taurus.messages.MessageQueue;
  */
 
 public enum Config implements ChannelIntf {
-    DRIVER_STATION_STATUS       (ChannelType.DriverStationStatus, "driver_station.log"),
-    DRIVER_JOYSTICK_STATUS      (ChannelType.JoystickStatus,      "joystick_driver.log" ),
-    DRIVER_JOYSTICK_GOAL        (ChannelType.JoystickGoal,        "joystick_driver.log" ),
-    OPERATOR_JOYSTICK_STATUS    (ChannelType.JoystickStatus,      "joystick_operator.log" ),
-    OPERATOR_JOYSTICK_GOAL      (ChannelType.JoystickGoal,        "joystick_operator.log" );
+    DRIVER_STATION_STATUS           (ChannelType.DriverStationStatus, "driver_station.log"),
 
-    private final short num;
+    DRIVER_JOYSTICK_STATUS          (ChannelType.JoystickStatus,      "joystick_driver.log" ),
+    DRIVER_JOYSTICK_GOAL            (ChannelType.JoystickGoal,        "joystick_driver.log" ),
+    OPERATOR_JOYSTICK_STATUS        (ChannelType.JoystickStatus,      "joystick_operator.log" ),
+    OPERATOR_JOYSTICK_GOAL          (ChannelType.JoystickGoal,        "joystick_operator.log" ),
+
+    DRIVETRAIN_INPUT                (ChannelType.DrivetrainInput,     "drivetrain_input.log"),
+    DRIVETRAIN_GOAL                 (ChannelType.DrivetrainGoal,      "drivetrain_goal.log"),
+    DRIVETRAIN_STATUS               (ChannelType.DrivetrainStatus,    "drivetrain_status.log"),
+    DRIVETRAIN_OUTPUT               (ChannelType.DrivetrainOutput,    "drivetrain_output.log");
+
+    private final byte num;
     private final String name;
     private final String logFilename;
 
-    Config(final short num, final String logFilename) {
+    Config(final byte num, final String logFilename) {
         this.num = num;
         this.name = ChannelType.name(num);        
         this.logFilename = logFilename;
     }
 
-    public short getNum() { return num; }
+    public byte getNum() { return num; }
     public String getName() { return name; }
     public String getLogFilename() { return logFilename; }
 }

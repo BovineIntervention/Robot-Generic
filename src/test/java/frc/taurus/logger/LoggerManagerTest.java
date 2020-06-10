@@ -14,7 +14,6 @@ import org.junit.Test;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
-import frc.taurus.config.Config;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
@@ -334,9 +333,8 @@ public class LoggerManagerTest {
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> testQueue = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
-    MessageQueue<ByteBuffer> dsStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     
-    DriverStationData driverStationData = new DriverStationData(mockDriverStation, dsStatusQueue);
+    DriverStationData driverStationData = new DriverStationData(mockDriverStation, channelManager);
 
     FlatBufferBuilder builder = new FlatBufferBuilder(64);
     int offset = TestMessage1.createTestMessage1(builder, 001);
