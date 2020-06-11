@@ -33,7 +33,7 @@ public class ControllerManagerTest {
     controllerList.add(xbox3);
     controllerList.add(xbox4);
     
-    ControllerManager manager = new ControllerManager();
+    ControllerHAL manager = new ControllerHAL();
     manager.register(controllerList);
     assertEquals(4, manager.size());
     
@@ -46,7 +46,7 @@ public class ControllerManagerTest {
   public void updateTest() {
     var dummyStatusQueue = new MessageQueue<ByteBuffer>();
     var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-    ControllerManager manager = new ControllerManager();
+    ControllerHAL manager = new ControllerHAL();
 
     Joystick mockJoystick1 = mock(Joystick.class);
     Joystick mockJoystick2 = mock(Joystick.class);

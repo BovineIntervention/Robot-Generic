@@ -1,4 +1,4 @@
-package frc.robot.hal;
+package frc.taurus.hal;
 
 public interface IHAL {
   void zeroSensors();     // read from sensor hardware, write to input queue

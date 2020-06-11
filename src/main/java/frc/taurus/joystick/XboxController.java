@@ -2,7 +2,6 @@ package frc.taurus.joystick;
 
 import java.nio.ByteBuffer;
 
-import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.messages.MessageQueue;
 
 public class XboxController extends Controller
@@ -26,10 +25,10 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(Joystick joystick, 
-                          MessageQueue<ByteBuffer> joystickStausQueue,
-                          MessageQueue<ByteBuffer> joystickGoalQueue) {
-        super(joystick, joystickStausQueue, joystickGoalQueue);
+    public XboxController(final int port, 
+                          final MessageQueue<ByteBuffer> joystickStatusQueue, 
+                          final MessageQueue<ByteBuffer> joystickGoalQueue) {
+        super(port, joystickStatusQueue, joystickGoalQueue);
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
@@ -49,5 +48,5 @@ public class XboxController extends Controller
         return super.getPOV(0);
     }
 
-    // setRumble(boolean) available from base class
+    // setRumble(RumbleType, double) available from base class
 }
