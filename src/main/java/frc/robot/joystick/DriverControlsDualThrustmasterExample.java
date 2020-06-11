@@ -37,10 +37,10 @@ public class DriverControlsDualThrustmasterExample {
     portList.add(lPort);
     portList.add(rPort);
 
-     leftController = new ThrustmasterController(lPort, channelManager.fetchJoystickStatusQueue(lPort),
-                                                        channelManager.fetchJoystickGoalQueue(lPort));   
-    rightController = new ThrustmasterController(rPort, channelManager.fetchJoystickStatusQueue(rPort),
-                                                        channelManager.fetchJoystickGoalQueue(rPort));   
+     leftController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(lPort),
+                                                 channelManager.fetchJoystickGoalQueue(lPort));   
+    rightController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(rPort),
+                                                 channelManager.fetchJoystickGoalQueue(rPort));   
     steeringMethods = new SteeringMethods(ControllerConfig2.kDriveDeadband, ControllerConfig2.kDriveNonLinearity,
                                           ControllerConfig2.kDriveDeadband, ControllerConfig2.kDriveNonLinearity);
     drivetrainGoalQueue = channelManager.fetch(Config.DRIVETRAIN_GOAL);

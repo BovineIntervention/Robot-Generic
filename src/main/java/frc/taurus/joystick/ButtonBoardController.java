@@ -26,9 +26,9 @@ public class ButtonBoardController extends Controller {
     }
   }
 
-  public ButtonBoardController(final int port, final MessageQueue<ByteBuffer> joystickStatusQueue,
-      final MessageQueue<ByteBuffer> joystickGoalQueue) {
-    super(port, joystickStatusQueue, joystickGoalQueue);
+  public ButtonBoardController(final MessageQueue<ByteBuffer> joystickStatusQueue,
+                               final MessageQueue<ByteBuffer> joystickGoalQueue) {
+    super(joystickStatusQueue, joystickGoalQueue);
 
     // add all enumerated buttons to button list
     for (Button button : Button.values()) {

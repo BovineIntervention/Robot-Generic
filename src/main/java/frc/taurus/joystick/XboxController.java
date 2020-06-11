@@ -25,10 +25,9 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(final int port, 
-                          final MessageQueue<ByteBuffer> joystickStatusQueue, 
+    public XboxController(final MessageQueue<ByteBuffer> joystickStatusQueue, 
                           final MessageQueue<ByteBuffer> joystickGoalQueue) {
-        super(port, joystickStatusQueue, joystickGoalQueue);
+        super(joystickStatusQueue, joystickGoalQueue);
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {

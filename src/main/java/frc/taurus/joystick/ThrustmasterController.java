@@ -28,10 +28,9 @@ public class ThrustmasterController extends Controller {
     }
   }
 
-  public ThrustmasterController(final int port, 
-                                final MessageQueue<ByteBuffer> joystickStatusQueue, 
+  public ThrustmasterController(final MessageQueue<ByteBuffer> joystickStatusQueue, 
                                 final MessageQueue<ByteBuffer> joystickGoalQueue) {
-    super(port, joystickStatusQueue, joystickGoalQueue);
+    super( joystickStatusQueue, joystickGoalQueue);
 
     // add all enumerated buttons to button list
     for (Button button : Button.values()) {

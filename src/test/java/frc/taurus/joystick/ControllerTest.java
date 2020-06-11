@@ -22,10 +22,9 @@ public class ControllerTest {
 
     @Test
     public void addButtonTest() {
-        Joystick mockJoystick = mock(Joystick.class);
         var dummyStatusQueue = new MessageQueue<ByteBuffer>();
         var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
+        Controller controller = new Controller(dummyStatusQueue, dummyGoalQueue);
         Button button = controller.addButton(2);
         button.update();
         assertEquals(1, controller.buttons.size());

@@ -23,8 +23,6 @@ import frc.taurus.messages.MessageQueue;
 
 public class Controller {
 
-  int port;
-  
   final MessageQueue<ByteBuffer>.QueueReader reader;
   final MessageQueue<ByteBuffer> rumbleQueue; 
 
@@ -44,7 +42,7 @@ public class Controller {
    * @param statusQueue queue where axis and button values will be read from
    * @return new Controller
    */
-  public Controller(final int port, final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> rumbleQueue) {
+  public Controller(final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> rumbleQueue) {
     this.reader = statusQueue.makeReader();
     this.rumbleQueue = rumbleQueue;
     buttons = new ArrayList<>();
@@ -108,9 +106,6 @@ public class Controller {
     }
   }
 
-  public int getPort() {
-    return port;
-  }
 
   public double getAxis(int axisId) {
     return rawAxis[axisId];

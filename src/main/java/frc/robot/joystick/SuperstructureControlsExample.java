@@ -36,8 +36,8 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
     portList.add(operatorPort); 
 
     // do not create another XboxController for the driver -- it is only here to make buttons
-    buttonBoard = new ButtonBoardController(operatorPort, channelManager.fetchJoystickStatusQueue(operatorPort),
-                                                          channelManager.fetchJoystickGoalQueue(operatorPort));
+    buttonBoard = new ButtonBoardController(channelManager.fetchJoystickStatusQueue(operatorPort),
+                                            channelManager.fetchJoystickGoalQueue(operatorPort));
 
     shootButton = driverController.addButton(XboxController.Button.X.id);
     autoAimButton = driverController.addButton(XboxController.Button.Y.id);

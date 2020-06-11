@@ -27,20 +27,20 @@ public class JoystickStatusTest {
     ChannelManager channelManager = ChannelManager.getInstance();
     channelManager.reset();   // reset at the start of every unit test
 
-    var statusQueue = channelManager.fetch(Config.DRIVER_JOYSTICK_STATUS);
+    var statusQueue = channelManager.fetch(Config.JOYSTICK_PORT_1_STATUS);
     var statusReader = statusQueue.makeReader();
 
     // values to store in flatbuffer
     double timestamp = 12345678.0;
     int port = 99;
 
-    float[] axes = new float[6];
-    for (int k = 0; k < 6; k++) {
+    float[] axes = new float[Controller.maxNumAxes];
+    for (int k = 0; k < axes.length; k++) {
       axes[k] = (float) k / 10.0f;
     }
 
-    boolean[] buttons = new boolean[16];
-    for (int k = 0; k < 16; k++) {
+    boolean[] buttons = new boolean[Controller.maxNumButtons];
+    for (int k = 0; k < buttons.length; k++) {
       buttons[k] = (k & 1) == 0;
     }
     int pov = 45;
@@ -76,12 +76,12 @@ public class JoystickStatusTest {
       assertEquals(port, status.port());
 
       AxisVector axesVector = status.axes();
-      for (int k = 0; k < 6; k++) {
+      for (int k = 0; k < axes.length; k++) {
         assertEquals(axes[k], axesVector.axes(k), eps);
       }
 
       ButtonVector buttonVector = status.buttons();
-      for (int k = 0; k < 16; k++) {
+      for (int k = 0; k < buttons.length; k++) {
         assertEquals(buttons[k], buttonVector.buttons(k));
       }
 

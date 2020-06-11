@@ -35,8 +35,8 @@ public class DriverControlsXboxExample {
     int port = ControllerConfig1.kDriveControllerPort;
     portList.add(port);   
 
-    driverController = new XboxController(port, channelManager.fetchJoystickStatusQueue(port),
-                                                channelManager.fetchJoystickGoalQueue(port));  
+    driverController = new XboxController(channelManager.fetchJoystickStatusQueue(port),
+                                          channelManager.fetchJoystickGoalQueue(port));  
     steeringMethods = new SteeringMethods(ControllerConfig1.kDriveDeadband, ControllerConfig1.kDriveNonLinearity,
                                           ControllerConfig1.kDriveDeadband, ControllerConfig1.kDriveNonLinearity);
     drivetrainGoalQueue = channelManager.fetch(Config.DRIVETRAIN_GOAL);
