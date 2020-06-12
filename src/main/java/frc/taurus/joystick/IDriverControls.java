@@ -20,5 +20,5 @@ public interface IDriverControls {
    * List of controllers to be registered with the ControllerManager
    * @return list of all physical controllers utilized by this Driver/Operator control scheme
    */
-  abstract public ArrayList<Controller> getControllersList();    
+  abstract public ArrayList<Controller> getControllerPorts();    
 }

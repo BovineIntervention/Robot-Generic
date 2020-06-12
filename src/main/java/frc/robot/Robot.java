@@ -9,17 +9,16 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.hal.DrivetrainHAL;
 import frc.robot.hal.SuperstructureHAL;
 import frc.robot.joystick.DriverControlsXboxExample;
 import frc.robot.joystick.SuperstructureControlsExample;
 import frc.taurus.config.ChannelManager;
-import frc.taurus.config.Config;
 import frc.taurus.driverstation.DriverStationData;
 import frc.taurus.drivetrain.Drivetrain;
-import frc.taurus.joystick.ControllerManager;
-import frc.taurus.joystick.XboxController;
+import frc.taurus.hal.ControllerHAL;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,19 +30,18 @@ import frc.taurus.joystick.XboxController;
 public class Robot extends TimedRobot {
 
   // Get the ChannelManager instance for fetching the various queues
-  ChannelManager channelManager = ChannelManager.getInstance();
-  DriverStationData driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
+  ChannelManager channelManager;
+  DriverStationData driverStationData;
   
   // User-Controls (joysticks & button boards)
-  // TODO: allow selection of user drive control scheme
-  ControllerManager controllerManager = new ControllerManager();
-  DriverControlsXboxExample driverControls = new DriverControlsXboxExample(channelManager);
-  SuperstructureControlsExample superstructureControls = new SuperstructureControlsExample(channelManager, (XboxController)driverControls.getControllersList().get(0));
+  ControllerHAL controllerHAL;
+  DriverControlsXboxExample driverControls;
+  SuperstructureControlsExample superstructureControls;
 
-  Drivetrain drivetrain = new Drivetrain(channelManager);
+  Drivetrain drivetrain;
   
-  DrivetrainHAL drivetrainHAL = new DrivetrainHAL(channelManager);
-  SuperstructureHAL superstructureHAL = new SuperstructureHAL();
+  DrivetrainHAL drivetrainHAL;
+  SuperstructureHAL superstructureHAL;
 
 
   /**
@@ -52,11 +50,24 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    channelManager = ChannelManager.getInstance();
+    driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
+
+    // TODO: allow selection of user drive control scheme
+    Joystick driverJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);
+    Joystick operatorJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort);
+    driverControls = new DriverControlsXboxExample(channelManager, driverJoystick);
+    superstructureControls = new SuperstructureControlsExample(channelManager, operatorJoystick, driverControls.getController());
+
     // Register all physical controllers with ControllerManager
-    controllerManager.register(driverControls.getControllersList());
-    controllerManager.register(superstructureControls.getControllersList());   
+    controllerHAL = new ControllerHAL(channelManager);
+    controllerHAL.register(driverJoystick);
+    controllerHAL.register(operatorJoystick);   
     
-    channelManager.fetch(Config.DRIVETRAIN_GOAL).subscribe(drivetrain);
+    drivetrain = new Drivetrain(channelManager);
+
+    drivetrainHAL = new DrivetrainHAL(channelManager);
+    superstructureHAL = new SuperstructureHAL(channelManager);
   }
 
   /**
@@ -96,18 +107,19 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    drivetrainHAL.readSensors();
-    superstructureHAL.readSensors();
+    controllerHAL.readSensors();          // read joystick inputs
+    drivetrainHAL.readSensors();          // read encoders and gyro
+    superstructureHAL.readSensors();      
 
-    driverStationData.update();   // get driverstation inputs
-    controllerManager.update();   // get joystick inputs
+    driverStationData.update();           // get driverstation inputs
 
-    driverControls.update();          // generates DrivetrainGoal message
-    superstructureControls.update();  // generate ... messages
+    driverControls.update();              // generates DrivetrainGoal message
+    superstructureControls.update();      // generate ... messages
 
-    drivetrain.update();
+    drivetrain.update();    
 
-    drivetrainHAL.writeActuators();
+    controllerHAL.readSensors();          // joystick rumble
+    drivetrainHAL.writeActuators();       // set motors, shifter
     superstructureHAL.writeActuators();
 
   }

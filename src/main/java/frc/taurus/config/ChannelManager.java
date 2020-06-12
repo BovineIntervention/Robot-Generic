@@ -44,6 +44,28 @@ public class ChannelManager {
     return channelMap.get(channel);
   }
 
+  public MessageQueue<ByteBuffer> fetchJoystickStatusQueue(int port) {
+    switch (port) {
+      case 1:   return fetch(Config.JOYSTICK_PORT_1_STATUS);
+      case 2:   return fetch(Config.JOYSTICK_PORT_2_STATUS); 
+      case 3:   return fetch(Config.JOYSTICK_PORT_3_STATUS); 
+      case 4:   return fetch(Config.JOYSTICK_PORT_4_STATUS); 
+      default:
+        throw new IllegalArgumentException("Joystick port must be 1-4");
+    }
+  }
+
+  public MessageQueue<ByteBuffer> fetchJoystickGoalQueue(int port) {
+    switch (port) {
+      case 1:   return fetch(Config.JOYSTICK_PORT_1_GOAL);
+      case 2:   return fetch(Config.JOYSTICK_PORT_2_GOAL); 
+      case 3:   return fetch(Config.JOYSTICK_PORT_3_GOAL); 
+      case 4:   return fetch(Config.JOYSTICK_PORT_4_GOAL); 
+      default:
+        throw new IllegalArgumentException("Joystick port must be 1-4");
+    }
+  }  
+
   private void register(ChannelIntf channel) {
     // add the new channel to our list
     if (!channelMap.keySet().contains(channel)) {

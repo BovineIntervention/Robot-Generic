@@ -29,6 +29,7 @@ import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.drivetrain.generated.DrivetrainInput;
 import frc.taurus.drivetrain.generated.DrivetrainOutput;
 import frc.taurus.drivetrain.generated.TalonControlMode;
+import frc.taurus.hal.IHAL;
 import frc.taurus.messages.MessageQueue;
 
 /**

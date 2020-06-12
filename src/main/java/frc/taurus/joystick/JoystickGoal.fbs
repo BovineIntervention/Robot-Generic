@@ -1,8 +1,15 @@
 namespace frc.taurus.joystick.generated;
 
+enum RumbleSide:byte {
+  LEFT_RUMBLE=0,
+  RIGHT_RUMBLE
+}
+
 table JoystickGoal {
-  timestamp : double;
-  rumble : bool;
+  timestamp:double;
+
+  rumble_side:RumbleSide;
+  rumble_value:float;
 }
 
 root_type JoystickGoal;

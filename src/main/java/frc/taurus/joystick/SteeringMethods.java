@@ -185,16 +185,10 @@ public class SteeringMethods {
 
 
   static double applyDeadband(double _in, double _deadband) {
-    double sign = Math.signum(_in); // get sign
-    double mag = Math.abs(_in); // get magnitude
-    double out;
-    if (mag < _deadband) {
-      out = 0.0; // zero out controls less than deadband
-    } else {
-      out = 1.0 / (1.0 - _deadband) * mag - _deadband; // inputs from _deadband to 1.0 are scaled to outputs from 0 to 1
+    double out = _in;
+    if (Math.abs(_in) < _deadband) {
+      out = 0.0;
     }
-    out = sign * out; // reapply the sign
-    out = Util.limit(out, 1.0); // limit to maximum of +/-1
     return out;
   }
 
