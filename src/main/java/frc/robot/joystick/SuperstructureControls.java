@@ -12,7 +12,7 @@ import frc.taurus.joystick.XboxController;
  * new game.
  */
 
-public class SuperstructureControlsExample implements ISuperstructureControls {
+public class SuperstructureControls implements ISuperstructureControls {
 
   private final Controller.Button shootButton;
   private final Controller.Button autoAimButton;
@@ -23,7 +23,7 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
   private final Controller.PovButton turnSouthPovButton;
   private final Controller.AxisButton intakeAxisButton;
 
-  public SuperstructureControlsExample(ChannelManager channelManager, Joystick joystick, Controller driverController) {
+  public SuperstructureControls(ChannelManager channelManager, Joystick joystick, Controller driverController) {
 
     // do not create another XboxController for the driver -- it is only here to make buttons
     buttonBoard = new ButtonBoardController(channelManager.fetchJoystickStatusQueue(joystick.getPort()),
