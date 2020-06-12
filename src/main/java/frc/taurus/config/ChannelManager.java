@@ -6,24 +6,15 @@ import java.util.HashMap;
 import frc.taurus.logger.LoggerManager;
 import frc.taurus.messages.MessageQueue;
 
-// TODO: see if we can avoid making ChannelManager a singleton, since we are passing it to lots of classes in RobotInit()
 
 public class ChannelManager {
-  // singleton pattern
-  private static ChannelManager instance = null;
-  public static ChannelManager getInstance() {
-    if (instance == null) {
-      instance = new ChannelManager();
-    }
-    return instance;
-  }
 
   // HashMap has high performance contains() and get(), needed by fetch()
   HashMap<ChannelIntf, MessageQueue<ByteBuffer>> channelMap = new HashMap<ChannelIntf, MessageQueue<ByteBuffer>>();
   LoggerManager loggerManager;
 
-  private ChannelManager() {
-    loggerManager = LoggerManager.getInstance();    
+  public ChannelManager() {
+    loggerManager = new LoggerManager(this);    
   }
 
   /**

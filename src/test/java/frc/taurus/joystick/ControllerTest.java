@@ -26,7 +26,7 @@ public class ControllerTest {
 
   @Test
   public void addButtonTest() {
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     int port = 1;
     Controller controller = new Controller(channelManager.fetchJoystickStatusQueue(port),
         channelManager.fetchJoystickGoalQueue(port));

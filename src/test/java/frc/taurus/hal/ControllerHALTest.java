@@ -29,7 +29,7 @@ public class ControllerHALTest {
 
   @Test
   public void registerTest() {
-    final ControllerHAL controllerHAL = new ControllerHAL(ChannelManager.getInstance());
+    final ControllerHAL controllerHAL = new ControllerHAL(new ChannelManager());
 
     final Joystick joystick1 = new Joystick(1);
     final Joystick joystick2 = new Joystick(2);
@@ -84,15 +84,16 @@ public class ControllerHALTest {
     when(mockJoystick1.getPOV(0)).thenReturn(pov1);
     when(mockJoystick2.getPOV(0)).thenReturn(pov2);
 
-    final ControllerHAL controllerHAL = new ControllerHAL(ChannelManager.getInstance());
+    final ChannelManager channelManager = new ChannelManager();
+    final ControllerHAL controllerHAL = new ControllerHAL(channelManager);
     controllerHAL.register(mockJoystick1);
     controllerHAL.register(mockJoystick2);
 
     controllerHAL.readSensors(); // creates JoystickStatus messages
 
     // check that JoystickStatus messages are correct
-    final var reader1 = ChannelManager.getInstance().fetchJoystickStatusQueue(mockJoystick1.getPort()).makeReader();
-    final var reader2 = ChannelManager.getInstance().fetchJoystickStatusQueue(mockJoystick2.getPort()).makeReader();
+    final var reader1 = channelManager.fetchJoystickStatusQueue(mockJoystick1.getPort()).makeReader();
+    final var reader2 = channelManager.fetchJoystickStatusQueue(mockJoystick2.getPort()).makeReader();
 
     final Optional<ByteBuffer> obb1 = reader1.readLast();
     final Optional<ByteBuffer> obb2 = reader2.readLast();
@@ -130,7 +131,8 @@ public class ControllerHALTest {
     when(mockJoystick1.getPort()).thenReturn(port1);
     when(mockJoystick2.getPort()).thenReturn(port2);
 
-    final ControllerHAL controllerHAL = new ControllerHAL(ChannelManager.getInstance());
+    final ChannelManager channelManager = new ChannelManager();
+    final ControllerHAL controllerHAL = new ControllerHAL(channelManager);
     controllerHAL.register(mockJoystick1);
     controllerHAL.register(mockJoystick2);
 
@@ -145,7 +147,7 @@ public class ControllerHALTest {
 
     JoystickGoal.finishJoystickGoalBuffer(builder1, offset);
     ByteBuffer bb = builder1.dataBuffer();
-    ChannelManager.getInstance().fetchJoystickGoalQueue(mockJoystick1.getPort()).write(bb);
+    channelManager.fetchJoystickGoalQueue(mockJoystick1.getPort()).write(bb);
 
     final FlatBufferBuilder builder2 = new FlatBufferBuilder(0);
 
@@ -158,7 +160,7 @@ public class ControllerHALTest {
 
     JoystickGoal.finishJoystickGoalBuffer(builder2, offset);
     bb = builder2.dataBuffer();
-    ChannelManager.getInstance().fetchJoystickGoalQueue(mockJoystick2.getPort()).write(bb);
+    channelManager.fetchJoystickGoalQueue(mockJoystick2.getPort()).write(bb);
 
 
 
