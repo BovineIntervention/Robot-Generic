@@ -20,14 +20,8 @@ import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.messages.MessageQueue;
 
 public class LoggerManager {
-  // singleton pattern
-  private static LoggerManager instance = null;
-  public static LoggerManager getInstance() {
-    if (instance == null) {
-      instance = new LoggerManager();
-    }
-    return instance;
-  }
+
+  ChannelManager channelManager;
 
   // synchronized methods in this class to protect channelList and loggerMap
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
@@ -59,7 +53,8 @@ public class LoggerManager {
     }
   }
 
-  private LoggerManager() {
+  public LoggerManager(ChannelManager channelManager) {
+    this.channelManager = channelManager;
     notifier = new Notifier(runnable);
     running = false;
   }
@@ -80,7 +75,7 @@ public class LoggerManager {
     if (!filename.isEmpty()) {
       // if filename has not been seen before, create a logger for that file
       if (!loggerMap.containsKey(filename)) {
-        loggerMap.put(filename, new FlatBuffersLogger(filename, this::getFileHeader));
+        loggerMap.put(filename, new FlatBuffersLogger(channelManager, filename, this::getFileHeader));
       }
       FlatBuffersLogger logger = loggerMap.get(filename);
       logger.register(channel);
@@ -122,7 +117,7 @@ public class LoggerManager {
   boolean testLast = false;
 
   public void updateLogFolderTimestamp() {
-    MessageQueue<ByteBuffer> driverStationStatusQueue = ChannelManager.getInstance().fetch(Config.DRIVER_STATION_STATUS);
+    MessageQueue<ByteBuffer> driverStationStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     Optional<ByteBuffer> obb = driverStationStatusQueue.readLast();
     if (obb.isPresent()) {
       DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());

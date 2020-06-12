@@ -27,7 +27,7 @@ public class FlatBuffersLoggerTest {
   @Test
   public void writeOneMessageTest() {
 
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
@@ -77,7 +77,7 @@ public class FlatBuffersLoggerTest {
   @Test
   public void writeTwoMessagesTest() {
 
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
@@ -154,7 +154,7 @@ public class FlatBuffersLoggerTest {
 
     final int numMessages = 1000;
 
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
@@ -233,7 +233,7 @@ public class FlatBuffersLoggerTest {
   @Test
   public void queueSizeTest() {
 
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);

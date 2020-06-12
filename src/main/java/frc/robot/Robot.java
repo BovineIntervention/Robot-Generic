@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    channelManager = ChannelManager.getInstance();
+    channelManager = new ChannelManager();
     driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
 
     // TODO: allow selection of user drive control scheme
