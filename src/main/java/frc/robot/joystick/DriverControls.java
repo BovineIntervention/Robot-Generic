@@ -17,19 +17,20 @@ import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.SteeringMethods;
 import frc.taurus.joystick.XboxController;
 import frc.taurus.messages.MessageQueue;
+import io.github.oblarg.oblog.annotations.Log;
 
 /**
  * This file defines the user controls / button mappings
  */
 
-public class DriverControlsXboxExample {
+public class DriverControls {
 
   final XboxController driverController;
   final SteeringMethods steeringMethods;
   final MessageQueue<ByteBuffer> drivetrainGoalQueue;
   SteeringMethods.LeftRightMotor lrMotor;
 
-  public DriverControlsXboxExample(ChannelManager channelManager, Joystick joystick) {
+  public DriverControls(ChannelManager channelManager, Joystick joystick) {
 
     driverController = new XboxController(channelManager.fetchJoystickStatusQueue(joystick.getPort()),
                                           channelManager.fetchJoystickGoalQueue(joystick.getPort()));  
@@ -63,15 +64,22 @@ public class DriverControlsXboxExample {
     driverController.setRumble(rumbleType, rumbleValue); 
   }
 
+
+  @Log.NumberBar(name = "Left Motor")
+  float lMotor;
+  @Log.NumberBar(name = "Right Motor")
+  float rMotor;
+  boolean quickTurn;
+  boolean lowGear;  
   
   int bufferSize = 0;
 
   public void writeDrivetrainGoalMessage() {
     // send a DrivetrainGoal message
-    float lMotor = (float)getLeft();
-    float rMotor = (float)getRight();
-    boolean quickTurn = getQuickTurn();
-    boolean lowGear = getLowGear();    
+    lMotor = (float)getLeft();
+    rMotor = (float)getRight();
+    quickTurn = getQuickTurn();
+    lowGear = getLowGear();    
 
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
     int teleopGoalOffset = TeleopGoal.createTeleopGoal(builder, lMotor, rMotor);

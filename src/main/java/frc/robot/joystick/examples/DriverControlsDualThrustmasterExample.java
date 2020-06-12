@@ -1,4 +1,4 @@
-package frc.robot.joystick;
+package frc.robot.joystick.examples;
 
 import java.nio.ByteBuffer;
 

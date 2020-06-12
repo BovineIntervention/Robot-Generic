@@ -7,18 +7,19 @@
 
 package frc.robot;
 
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.hal.DrivetrainHAL;
 import frc.robot.hal.SuperstructureHAL;
-import frc.robot.joystick.DriverControlsXboxExample;
-import frc.robot.joystick.SuperstructureControlsExample;
+import frc.robot.joystick.DriverControls;
+import frc.robot.joystick.SuperstructureControls;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.driverstation.DriverStationData;
 import frc.taurus.drivetrain.Drivetrain;
 import frc.taurus.hal.ControllerHAL;
+
+import io.github.oblarg.oblog.Logger;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -35,8 +36,8 @@ public class Robot extends TimedRobot {
   
   // User-Controls (joysticks & button boards)
   ControllerHAL controllerHAL;
-  DriverControlsXboxExample driverControls;
-  SuperstructureControlsExample superstructureControls;
+  DriverControls driverControls;
+  SuperstructureControls superstructureControls;
 
   Drivetrain drivetrain;
   
@@ -53,11 +54,10 @@ public class Robot extends TimedRobot {
     channelManager = new ChannelManager();
     driverStationData = new DriverStationData(DriverStation.getInstance(), channelManager);
 
-    // TODO: allow selection of user drive control scheme
-    Joystick driverJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);
+    Joystick driverJoystick   = new Joystick(Constants.ControllerConstants.ControllerConfig1.kDriveControllerPort);
     Joystick operatorJoystick = new Joystick(Constants.ControllerConstants.ControllerConfig1.kOperatorControllerPort);
-    driverControls = new DriverControlsXboxExample(channelManager, driverJoystick);
-    superstructureControls = new SuperstructureControlsExample(channelManager, operatorJoystick, driverControls.getController());
+    driverControls = new DriverControls(channelManager, driverJoystick);
+    superstructureControls = new SuperstructureControls(channelManager, operatorJoystick, driverControls.getController());
 
     // Register all physical controllers with ControllerManager
     controllerHAL = new ControllerHAL(channelManager);
@@ -68,6 +68,8 @@ public class Robot extends TimedRobot {
 
     drivetrainHAL = new DrivetrainHAL(channelManager);
     superstructureHAL = new SuperstructureHAL(channelManager);
+
+    Logger.configureLoggingAndConfig(this, false);
   }
 
   /**
@@ -79,6 +81,7 @@ public class Robot extends TimedRobot {
    * LiveWindow and SmartDashboard integrated updating.
    */@Override
   public void robotPeriodic() {
+    Logger.updateEntries();
   }
 
   /**

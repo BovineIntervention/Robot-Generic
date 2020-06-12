@@ -23,7 +23,7 @@ import frc.taurus.messages.MessageQueue;
 
 public class Controller {
 
-  final MessageQueue<ByteBuffer>.QueueReader reader;
+  final MessageQueue<ByteBuffer>.QueueReader joystickStatusQueueReader;
   final MessageQueue<ByteBuffer> rumbleQueue; 
 
   public static final int maxNumAxes = 6;
@@ -43,7 +43,7 @@ public class Controller {
    * @return new Controller
    */
   public Controller(final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> rumbleQueue) {
-    this.reader = statusQueue.makeReader();
+    this.joystickStatusQueueReader = statusQueue.makeReader();
     this.rumbleQueue = rumbleQueue;
     buttons = new ArrayList<>();
   }
@@ -81,8 +81,19 @@ public class Controller {
 
   public void update() {
     
+    // read values from JoystickStatus queue into local member variables
+    readJoystickStatusQueue();
+    
+    // update button pressed / released for all buttons
+    // including PovButtons and AxisButtons
+    for (var button : buttons) {
+      button.update();
+    }
+  }
+
+  public void readJoystickStatusQueue() {
     // first read raw axes & buttons from queue
-    Optional<ByteBuffer> obb = reader.readLast();
+    Optional<ByteBuffer> obb = joystickStatusQueueReader.readLast();
     if (obb.isPresent()) {
       JoystickStatus status = JoystickStatus.getRootAsJoystickStatus(obb.get());
 
@@ -98,14 +109,7 @@ public class Controller {
 
       rawPov[0] = status.pov();      
     }
-    
-    // update button pressed / released for all buttons
-    // including PovButtons and AxisButtons
-    for (var button : buttons) {
-      button.update();
-    }
   }
-
 
   public double getAxis(int axisId) {
     return rawAxis[axisId];
