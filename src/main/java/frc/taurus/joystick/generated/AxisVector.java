@@ -12,12 +12,12 @@ public final class AxisVector extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public AxisVector __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public float axes(int j) { return bb.getFloat(bb_pos + 0 + j * 4); }
+  public float axis(int j) { return bb.getFloat(bb_pos + 0 + j * 4); }
 
-  public static int createAxisVector(FlatBufferBuilder builder, float[] axes) {
+  public static int createAxisVector(FlatBufferBuilder builder, float[] axis) {
     builder.prep(4, 24);
     for (int _idx0 = 6; _idx0 > 0; _idx0--) {
-      builder.putFloat(axes[_idx0-1]);
+      builder.putFloat(axis[_idx0-1]);
     }
     return builder.offset();
   }

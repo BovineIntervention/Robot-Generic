@@ -77,12 +77,12 @@ public class JoystickStatusTest {
 
       AxisVector axesVector = status.axes();
       for (int k = 0; k < axes.length; k++) {
-        assertEquals(axes[k], axesVector.axes(k), eps);
+        assertEquals(axes[k], axesVector.axis(k), eps);
       }
 
       ButtonVector buttonVector = status.buttons();
       for (int k = 0; k < buttons.length; k++) {
-        assertEquals(buttons[k], buttonVector.buttons(k));
+        assertEquals(buttons[k], buttonVector.button(k));
       }
 
       assertEquals(pov, status.pov());

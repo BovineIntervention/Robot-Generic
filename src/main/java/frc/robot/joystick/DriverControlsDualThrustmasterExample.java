@@ -1,11 +1,11 @@
 package frc.robot.joystick;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.ControllerConstants.ControllerConfig2;
 import frc.taurus.config.ChannelManager;
@@ -13,6 +13,7 @@ import frc.taurus.config.Config;
 import frc.taurus.drivetrain.generated.DrivetrainGoal;
 import frc.taurus.drivetrain.generated.GoalType;
 import frc.taurus.drivetrain.generated.TeleopGoal;
+import frc.taurus.joystick.Controller;
 import frc.taurus.joystick.SteeringMethods;
 import frc.taurus.joystick.ThrustmasterController;
 import frc.taurus.messages.MessageQueue;
@@ -23,31 +24,21 @@ import frc.taurus.messages.MessageQueue;
 
 public class DriverControlsDualThrustmasterExample {
 
-  final ArrayList<Integer> portList;
   final ThrustmasterController leftController;
   final ThrustmasterController rightController;
   final SteeringMethods steeringMethods;
   final MessageQueue<ByteBuffer> drivetrainGoalQueue;
   SteeringMethods.LeftRightMotor lrMotor;
 
-  public DriverControlsDualThrustmasterExample(ChannelManager channelManager) {
-    portList = new ArrayList<>();
-    int lPort = ControllerConfig2.kDriverLeftControllerPort;
-    int rPort = ControllerConfig2.kDriverRightControllerPort;
-    portList.add(lPort);
-    portList.add(rPort);
+  public DriverControlsDualThrustmasterExample(ChannelManager channelManager, Joystick lJoystick, Joystick rJoystick) {
 
-     leftController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(lPort),
-                                                 channelManager.fetchJoystickGoalQueue(lPort));   
-    rightController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(rPort),
-                                                 channelManager.fetchJoystickGoalQueue(rPort));   
+     leftController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(lJoystick.getPort()),
+                                                 channelManager.fetchJoystickGoalQueue(lJoystick.getPort()));   
+    rightController = new ThrustmasterController(channelManager.fetchJoystickStatusQueue(rJoystick.getPort()),
+                                                 channelManager.fetchJoystickGoalQueue(rJoystick.getPort()));   
     steeringMethods = new SteeringMethods(ControllerConfig2.kDriveDeadband, ControllerConfig2.kDriveNonLinearity,
                                           ControllerConfig2.kDriveDeadband, ControllerConfig2.kDriveNonLinearity);
     drivetrainGoalQueue = channelManager.fetch(Config.DRIVETRAIN_GOAL);
-  }
-
-  public ArrayList<Integer> getControllerPorts() {
-    return portList;
   }
 
   public void update() {
@@ -68,6 +59,14 @@ public class DriverControlsDualThrustmasterExample {
   // most controls (even if they are mapped to the driver's joystick) should be in
   // SuperstructureControls
 
+  // for SuperstructureControls
+  public Controller getLeftController() {
+    return leftController;
+  }
+  // for SuperstructureControls
+  public Controller getDriverController() {
+    return rightController;
+  }
 
   public void setRumble(RumbleType rumbleType, double rumbleValue) { 
      leftController.setRumble(rumbleType, rumbleValue); 

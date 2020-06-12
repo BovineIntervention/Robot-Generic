@@ -12,12 +12,12 @@ public final class ButtonVector extends Struct {
   public void __init(int _i, ByteBuffer _bb) { __reset(_i, _bb); }
   public ButtonVector __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public boolean buttons(int j) { return 0!=bb.get(bb_pos + 0 + j * 1); }
+  public boolean button(int j) { return 0!=bb.get(bb_pos + 0 + j * 1); }
 
-  public static int createButtonVector(FlatBufferBuilder builder, boolean[] buttons) {
+  public static int createButtonVector(FlatBufferBuilder builder, boolean[] button) {
     builder.prep(1, 16);
     for (int _idx0 = 16; _idx0 > 0; _idx0--) {
-      builder.putBoolean(buttons[_idx0-1]);
+      builder.putBoolean(button[_idx0-1]);
     }
     return builder.offset();
   }

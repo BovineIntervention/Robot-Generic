@@ -1,9 +1,7 @@
 package frc.robot.joystick;
 
-import java.util.ArrayList;
-
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import frc.robot.Constants.ControllerConstants.ControllerConfig1;
+import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.config.ChannelManager;
 import frc.taurus.joystick.ButtonBoardController;
 import frc.taurus.joystick.Controller;
@@ -16,8 +14,6 @@ import frc.taurus.joystick.XboxController;
 
 public class SuperstructureControlsExample implements ISuperstructureControls {
 
-  final ArrayList<Integer> portList;
-
   private final Controller.Button shootButton;
   private final Controller.Button autoAimButton;
 
@@ -27,17 +23,11 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
   private final Controller.PovButton turnSouthPovButton;
   private final Controller.AxisButton intakeAxisButton;
 
-  public SuperstructureControlsExample(ChannelManager channelManager, XboxController driverController) {
-    // use Controller.addController() to add controllers to this control method
-    portList = new ArrayList<>();
-    int driverPort = ControllerConfig1.kOperatorControllerPort;
-    int operatorPort = ControllerConfig1.kOperatorControllerPort;
-    portList.add(driverPort);       
-    portList.add(operatorPort); 
+  public SuperstructureControlsExample(ChannelManager channelManager, Joystick joystick, Controller driverController) {
 
     // do not create another XboxController for the driver -- it is only here to make buttons
-    buttonBoard = new ButtonBoardController(channelManager.fetchJoystickStatusQueue(operatorPort),
-                                            channelManager.fetchJoystickGoalQueue(operatorPort));
+    buttonBoard = new ButtonBoardController(channelManager.fetchJoystickStatusQueue(joystick.getPort()),
+                                            channelManager.fetchJoystickGoalQueue(joystick.getPort()));
 
     shootButton = driverController.addButton(XboxController.Button.X.id);
     autoAimButton = driverController.addButton(XboxController.Button.Y.id);
@@ -46,11 +36,6 @@ public class SuperstructureControlsExample implements ISuperstructureControls {
     climbButton = buttonBoard.addButton(ButtonBoardController.Button.SR.id);
     turnNorthPovButton = buttonBoard.addPovButton(0, -45, 45);
     turnSouthPovButton = buttonBoard.addPovButton(0, 135, 215);
-  }
-
-
-  public ArrayList<Integer> getControllerPorts() {
-    return portList;
   }
 
   // Driver has control of Intaking, Aiming and Shooting

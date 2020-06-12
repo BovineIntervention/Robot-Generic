@@ -88,12 +88,12 @@ public class Controller {
 
       AxisVector axesVector = status.axes();
       for (int k = 0; k < Controller.maxNumAxes; k++) {
-        rawAxis[k] = axesVector.axes(k);
+        rawAxis[k] = axesVector.axis(k);
       }
 
       ButtonVector buttonVector = status.buttons();
       for (int k = 0; k < 16; k++) {
-        rawButton[k] = buttonVector.buttons(k);
+        rawButton[k] = buttonVector.button(k);
       }
 
       rawPov[0] = status.pov();      
@@ -113,7 +113,7 @@ public class Controller {
 
   public boolean getButton(int buttonId) {
     // called only from Button.update();
-    return rawButton[buttonId];
+    return rawButton[buttonId-1];   // buttonIds start at index 1
   }
 
   /**
@@ -150,10 +150,6 @@ public class Controller {
     rumbleQueue.write(bb);
 
     bufferSize = Math.max(bufferSize, bb.remaining());
-  }
-
-  public static double applyDeadband(double value, double deadband) {
-    return (Math.abs(value) > Math.abs(deadband)) ? value : 0;
   }
 
 

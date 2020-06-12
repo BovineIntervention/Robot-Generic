@@ -22,7 +22,7 @@ import frc.taurus.messages.MessageQueue;
 public class ControllerHAL implements IHAL {
 
   HashSet<Integer> registeredPortList = new HashSet<>();
-  ArrayList<JoystickStatusWriter> joystickList = new ArrayList<>();
+  public ArrayList<JoystickStatusWriter> joystickList = new ArrayList<>();
   final ChannelManager channelManager;
 
   /**
@@ -37,21 +37,13 @@ public class ControllerHAL implements IHAL {
   public int size() { return joystickList.size(); }
 
   /**
-   * Register all physical controllers used by driver and operator control schemes
-   * Usage:
-   *   controllerHAL.register( driverControls.getControllerPorts() );
-   *   controllerHAL.register( superstructureControls.getControllerPorts() );
-   * @param controllers ArrayList of all controller ports used by user control scheme
+   * Register all joysticks used by driver and operator control schemes
    */
-  public void register(ArrayList<Integer> ports) {
-    for (var port : ports) {
-      register(port.intValue());
-    }
-  }
-  
-  public void register(int port) {
+  public void register(Joystick joystick) {
+    int port = joystick.getPort();
     if (!registeredPortList.contains(port)) {
-      joystickList.add(new JoystickStatusWriter(channelManager, port));
+      registeredPortList.add(port);
+      joystickList.add(new JoystickStatusWriter(channelManager, joystick));
     }
   }
 
@@ -83,17 +75,15 @@ public class ControllerHAL implements IHAL {
 
 
   public class JoystickStatusWriter {
-    int port;
     Joystick joystick;
     MessageQueue<ByteBuffer> statusQueue;
     MessageQueue<ByteBuffer>.QueueReader rumbleReader;
     float rumbleLast[] = {0.0f, 0.0f};
 
-    JoystickStatusWriter(ChannelManager channelManager, int port) {
-      this.port = port;
-      this.joystick = new Joystick(port);
-      this.statusQueue = channelManager.fetchJoystickStatusQueue(port);
-      this.rumbleReader = channelManager.fetchJoystickGoalQueue(port).makeReader();
+    JoystickStatusWriter(ChannelManager channelManager, Joystick joystick) {
+      this.joystick = joystick;
+      this.statusQueue = channelManager.fetchJoystickStatusQueue(joystick.getPort());
+      this.rumbleReader = channelManager.fetchJoystickGoalQueue(joystick.getPort()).makeReader();
     }
 
     int bufferSize = 0;
@@ -112,7 +102,7 @@ public class ControllerHAL implements IHAL {
       FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
       JoystickStatus.startJoystickStatus(builder);
       JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
-      JoystickStatus.addPort(builder, port);
+      JoystickStatus.addPort(builder, joystick.getPort());
       JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
       JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
       JoystickStatus.addPov(builder, joystick.getPOV(0));

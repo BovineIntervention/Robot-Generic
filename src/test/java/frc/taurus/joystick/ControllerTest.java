@@ -3,339 +3,393 @@ package frc.taurus.joystick;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.nio.ByteBuffer;
 
+import com.google.flatbuffers.FlatBufferBuilder;
+
 import org.junit.Test;
 
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
+import frc.taurus.config.ChannelManager;
 import frc.taurus.joystick.Controller.AxisButton;
 import frc.taurus.joystick.Controller.Button;
 import frc.taurus.joystick.Controller.PovButton;
+import frc.taurus.joystick.generated.AxisVector;
+import frc.taurus.joystick.generated.ButtonVector;
+import frc.taurus.joystick.generated.JoystickStatus;
 import frc.taurus.messages.MessageQueue;
 
 public class ControllerTest {
 
-    double eps = 1e-6;  // using floats for joystick axes
+  double eps = 1e-6; // using floats for joystick axes
 
-    @Test
-    public void addButtonTest() {
-        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
-        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-        Controller controller = new Controller(dummyStatusQueue, dummyGoalQueue);
-        Button button = controller.addButton(2);
-        button.update();
-        assertEquals(1, controller.buttons.size());
-    }
+  @Test
+  public void addButtonTest() {
+    ChannelManager channelManager = ChannelManager.getInstance();
+    int port = 1;
+    Controller controller = new Controller(channelManager.fetchJoystickStatusQueue(port),
+        channelManager.fetchJoystickGoalQueue(port));
 
-    @Test 
-    public void handleDeadbandTest() {
+    Button button = controller.addButton(2);
+    button.update();
+    assertEquals(1, controller.buttons.size());
+  }
 
-        assertEquals( 0.5, Controller.applyDeadband( 0.5,  0.05), eps);
-        assertEquals(-0.5, Controller.applyDeadband(-0.5,  0.05), eps);
-        assertEquals( 0.0, Controller.applyDeadband( 0.02, 0.05), eps);
-        assertEquals( 0.0, Controller.applyDeadband(-0.03, 0.05), eps);
-        assertEquals( 0.0, Controller.applyDeadband( 0.0,  0.05), eps);
+  int bufferSize = 0;
 
-        assertEquals( 0.5,  Controller.applyDeadband( 0.5,  0.025), eps);
-        assertEquals(-0.5,  Controller.applyDeadband(-0.5,  0.025), eps);
-        assertEquals( 0.0,  Controller.applyDeadband( 0.02, 0.025), eps);
-        assertEquals(-0.03, Controller.applyDeadband(-0.03, 0.025), eps);
-        assertEquals( 0.0,  Controller.applyDeadband( 0.0,  0.025), eps);        
-    }
+  public void sendJoystickStatusMessage(int port, float[] axes, boolean[] buttons, int pov,
+      MessageQueue<ByteBuffer> statusQueue) {
 
-    @Test 
-    public void buttonTest() {
+    FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
+    JoystickStatus.startJoystickStatus(builder);
+    JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
+    JoystickStatus.addPort(builder, port);
+    JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
+    JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
+    JoystickStatus.addPov(builder, pov);
+    int offset = JoystickStatus.endJoystickStatus(builder);
 
-        Joystick mockJoystick = mock(Joystick.class);
-        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
-        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
-        
-        Button button0 = controller.addButton(0);
-        Button button1 = controller.addButton(1);
+    JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+    ByteBuffer bb = builder.dataBuffer();
+    bufferSize = Math.max(bufferSize, bb.remaining()); // correct buffer size for next time
 
-        // initially not pressed
-        when(mockJoystick.getRawButton(0)).thenReturn(false);
-        when(mockJoystick.getRawButton(1)).thenReturn(false);  
-        controller.update();     
-        assertFalse( button0.isPressed() );
-        assertFalse( button0.posEdge() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button1.isPressed() );
+    statusQueue.write(bb);
+  }
 
-        when(mockJoystick.getRawButton(0)).thenReturn(false);
-        controller.update();   
-        assertFalse( button0.isPressed() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button1.isPressed() );
-        
-        // press button 0
-        when(mockJoystick.getRawButton(0)).thenReturn(true);
-        controller.update();   
-        assertTrue( button0.isPressed() );
-        assertTrue( button0.posEdge() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button1.isPressed() );
-        
-        when(mockJoystick.getRawButton(0)).thenReturn(true);
-        controller.update();   
-        assertTrue( button0.isPressed() );
-        assertFalse( button0.posEdge() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button1.isPressed() );
-        
-        // release
-        when(mockJoystick.getRawButton(0)).thenReturn(false);
-        controller.update();   
-        assertFalse( button0.isPressed() );
-        assertFalse( button0.posEdge() );
-        assertTrue( button0.negEdge() );
-        assertFalse( button1.isPressed() );
-        
-        when(mockJoystick.getRawButton(0)).thenReturn(false);
-        controller.update();   
-        assertFalse( button0.isPressed() );
-        assertFalse( button0.posEdge() );
-        assertFalse( button0.negEdge() );
-        assertFalse( button1.isPressed() );
-        
-        // press button 1
-        when(mockJoystick.getRawButton(1)).thenReturn(true);     
-        controller.update();   
-        assertFalse( button0.isPressed() );
-        assertTrue( button1.isPressed() );        
-    }   
-    
-    @Test 
-    public void axisButtonTest() {
+  @Test
+  public void buttonTest() {
 
-        Joystick mockJoystick = mock(Joystick.class);
-        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
-        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
-        int id = 0;
-        AxisButton axisButton = controller.addAxisButton(id, 0.5);
+    int port = 1;
+    float[] axes = new float[Controller.maxNumAxes];
+    boolean[] buttons = new boolean[Controller.maxNumButtons];
+    int pov = -1;
 
-        // use the when().thenReturn() functions to have the mock controller
-        // return fake axis values
-        when(mockJoystick.getRawAxis(id)).thenReturn(0.1);
-        controller.update();
-        assertFalse( axisButton.isPressed() );
-        assertFalse( axisButton.posEdge() );
-        assertFalse( axisButton.negEdge() );
+    var statusQueue = new MessageQueue<ByteBuffer>();
+    var goalQueue = new MessageQueue<ByteBuffer>();
 
-        when(mockJoystick.getRawAxis(id)).thenReturn(0.4);
-        controller.update();
-        assertFalse( axisButton.isPressed() );
-        assertFalse( axisButton.negEdge() );
-        assertFalse( axisButton.negEdge() );
+    Controller controller = new Controller(statusQueue, goalQueue);
 
-        // press
-        when(mockJoystick.getRawAxis(id)).thenReturn(0.6);
-        controller.update();
-        assertTrue( axisButton.isPressed() );
-        assertTrue( axisButton.posEdge() );
-        assertFalse( axisButton.negEdge() );
+    Button button1 = controller.addButton(1);
+    Button button2 = controller.addButton(2);
 
-        when(mockJoystick.getRawAxis(id)).thenReturn(1.0);
-        controller.update();        
-        assertTrue( axisButton.isPressed() );
-        assertFalse( axisButton.posEdge() );
-        assertFalse( axisButton.negEdge() );
+    // initially not pressed
+    buttons[0] = false;
+    buttons[1] = false;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(button1.isPressed());
+    assertFalse(button1.posEdge());
+    assertFalse(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-        // release
-        when(mockJoystick.getRawAxis(id)).thenReturn(0.3);
-        controller.update();
-        assertFalse( axisButton.isPressed() );
-        assertFalse( axisButton.posEdge() );
-        assertTrue( axisButton.negEdge() );
+    buttons[0] = false;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(button1.isPressed());
+    assertFalse(button1.negEdge());
+    assertFalse(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-        when(mockJoystick.getRawAxis(id)).thenReturn(0.3);
-        controller.update();
-        assertFalse( axisButton.isPressed() );
-        assertFalse( axisButton.posEdge() );
-        assertFalse( axisButton.negEdge() );             
-    }    
+    // press button 0
+    buttons[0] = true;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertTrue(button1.isPressed());
+    assertTrue(button1.posEdge());
+    assertFalse(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-    @Test 
-    public void povButtonTest() {
+    buttons[0] = true;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertTrue(button1.isPressed());
+    assertFalse(button1.posEdge());
+    assertFalse(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-        Joystick mockJoystick = mock(Joystick.class);
-        var dummyStatusQueue = new MessageQueue<ByteBuffer>();
-        var dummyGoalQueue = new MessageQueue<ByteBuffer>();
-        Controller controller = new Controller(mockJoystick, dummyStatusQueue, dummyGoalQueue);
+    // release
+    buttons[0] = false;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(button1.isPressed());
+    assertFalse(button1.posEdge());
+    assertTrue(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-        int id = 0;
-        PovButton povButtonNorth = controller.addPovButton(id, -45, 45);
-        PovButton povButtonEast  = controller.addPovButton(id, 90, 90);
-        PovButton povButtonSouth = controller.addPovButton(id, 135, 225);
-        PovButton povButtonWest  = controller.addPovButton(id, 270, 270);
+    buttons[0] = false;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(button1.isPressed());
+    assertFalse(button1.posEdge());
+    assertFalse(button1.negEdge());
+    assertFalse(button2.isPressed());
 
-        // use the when().thenReturn() functions to have the mock controller
-        // return fake POV values
+    // press button 1
+    buttons[1] = true;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(button1.isPressed());
+    assertTrue(button2.isPressed());
+  }
 
-        // not pressed
-        when(mockJoystick.getPOV(id)).thenReturn(-1);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );
+  @Test
+  public void axisButtonTest() {
 
-        // North
-        when(mockJoystick.getPOV(id)).thenReturn(0);
-        controller.update();
-        assertTrue( povButtonNorth.isPressed() );
-        assertTrue( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );
+    int port = 1;
+    float[] axes = new float[Controller.maxNumAxes];
+    boolean[] buttons = new boolean[Controller.maxNumButtons];
+    int pov = -1;
 
-        // Northeast
-        when(mockJoystick.getPOV(id)).thenReturn(45);
-        controller.update();
-        assertTrue( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );
+    var statusQueue = new MessageQueue<ByteBuffer>();
+    var goalQueue = new MessageQueue<ByteBuffer>();
 
-        // East
-        when(mockJoystick.getPOV(id)).thenReturn(90);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertTrue( povButtonNorth.negEdge() );
-        assertTrue( povButtonEast.isPressed() );
-        assertTrue( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );        
+    Controller controller = new Controller(statusQueue, goalQueue);
+    int id = 0;
+    AxisButton axisButton = controller.addAxisButton(id, 0.5);
 
-        // Southeast
-        when(mockJoystick.getPOV(id)).thenReturn(135);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertTrue( povButtonEast.negEdge() );
-        assertTrue( povButtonSouth.isPressed() );
-        assertTrue( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );             
+    axes[id] = 0.1f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(axisButton.isPressed());
+    assertFalse(axisButton.posEdge());
+    assertFalse(axisButton.negEdge());
 
-        // South
-        when(mockJoystick.getPOV(id)).thenReturn(180);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertTrue( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );             
-        
-        // Southwest
-        when(mockJoystick.getPOV(id)).thenReturn(225);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertTrue( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );             
+    axes[id] = 0.4f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(axisButton.isPressed());
+    assertFalse(axisButton.negEdge());
+    assertFalse(axisButton.negEdge());
 
-        // West
-        when(mockJoystick.getPOV(id)).thenReturn(270);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertTrue( povButtonSouth.negEdge() );
-        assertTrue( povButtonWest.isPressed() );
-        assertTrue( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );   
-        
-        // Northwest
-        when(mockJoystick.getPOV(id)).thenReturn(315);
-        controller.update();
-        assertTrue( povButtonNorth.isPressed() );
-        assertTrue( povButtonNorth.posEdge() );
-        assertFalse( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertTrue( povButtonWest.negEdge() );      
-        
-        // Unpressed
-        when(mockJoystick.getPOV(id)).thenReturn(-1);
-        controller.update();
-        assertFalse( povButtonNorth.isPressed() );
-        assertFalse( povButtonNorth.posEdge() );
-        assertTrue( povButtonNorth.negEdge() );
-        assertFalse( povButtonEast.isPressed() );
-        assertFalse( povButtonEast.posEdge() );
-        assertFalse( povButtonEast.negEdge() );
-        assertFalse( povButtonSouth.isPressed() );
-        assertFalse( povButtonSouth.posEdge() );
-        assertFalse( povButtonSouth.negEdge() );
-        assertFalse( povButtonWest.isPressed() );
-        assertFalse( povButtonWest.posEdge() );
-        assertFalse( povButtonWest.negEdge() );         
-    }    
+    // press
+    axes[id] = 0.6f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertTrue(axisButton.isPressed());
+    assertTrue(axisButton.posEdge());
+    assertFalse(axisButton.negEdge());
+
+    axes[id] = 1.0f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertTrue(axisButton.isPressed());
+    assertFalse(axisButton.posEdge());
+    assertFalse(axisButton.negEdge());
+
+    // release
+    axes[id] = 0.3f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(axisButton.isPressed());
+    assertFalse(axisButton.posEdge());
+    assertTrue(axisButton.negEdge());
+
+    axes[id] = 0.3f;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(axisButton.isPressed());
+    assertFalse(axisButton.posEdge());
+    assertFalse(axisButton.negEdge());
+  }
+
+  @Test
+  public void povButtonTest() {
+
+    int port = 1;
+    float[] axes = new float[Controller.maxNumAxes];
+    boolean[] buttons = new boolean[Controller.maxNumButtons];
+    int pov = -1;
+
+    var statusQueue = new MessageQueue<ByteBuffer>();
+    var goalQueue = new MessageQueue<ByteBuffer>();
+
+    Controller controller = new Controller(statusQueue, goalQueue);
+
+    int id = 0;
+    PovButton povButtonNorth = controller.addPovButton(id, -45, 45);
+    PovButton povButtonEast = controller.addPovButton(id, 90, 90);
+    PovButton povButtonSouth = controller.addPovButton(id, 135, 225);
+    PovButton povButtonWest = controller.addPovButton(id, 270, 270);
+
+    // use the when().thenReturn() functions to have the mock controller
+    // return fake POV values
+
+    // not pressed
+    pov = -1;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // North
+    pov = 0;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+
+    controller.update();
+    assertTrue(povButtonNorth.isPressed());
+    assertTrue(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // Northeast
+    pov = 45;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+
+    controller.update();
+    assertTrue(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // East
+    pov = 90;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertTrue(povButtonNorth.negEdge());
+    assertTrue(povButtonEast.isPressed());
+    assertTrue(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // Southeast
+    pov = 135;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertTrue(povButtonEast.negEdge());
+    assertTrue(povButtonSouth.isPressed());
+    assertTrue(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // South
+    pov = 180;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertTrue(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // Southwest
+    pov = 225;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertTrue(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // West
+    pov = 270;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertTrue(povButtonSouth.negEdge());
+    assertTrue(povButtonWest.isPressed());
+    assertTrue(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+
+    // Northwest
+    pov = 315;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertTrue(povButtonNorth.isPressed());
+    assertTrue(povButtonNorth.posEdge());
+    assertFalse(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertTrue(povButtonWest.negEdge());
+
+    // Unpressed
+    pov = -1;
+    sendJoystickStatusMessage(port, axes, buttons, pov, statusQueue);
+    controller.update();
+    assertFalse(povButtonNorth.isPressed());
+    assertFalse(povButtonNorth.posEdge());
+    assertTrue(povButtonNorth.negEdge());
+    assertFalse(povButtonEast.isPressed());
+    assertFalse(povButtonEast.posEdge());
+    assertFalse(povButtonEast.negEdge());
+    assertFalse(povButtonSouth.isPressed());
+    assertFalse(povButtonSouth.posEdge());
+    assertFalse(povButtonSouth.negEdge());
+    assertFalse(povButtonWest.isPressed());
+    assertFalse(povButtonWest.posEdge());
+    assertFalse(povButtonWest.negEdge());
+  }
+
+  // TODO: add setRumbleTest
+  // create Controller with a given goalQueue
+  // call setRumble()
+  // check goalQueue message exists, and has correct rumble settings
 }
