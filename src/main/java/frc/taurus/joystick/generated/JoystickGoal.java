@@ -17,20 +17,24 @@ public final class JoystickGoal extends Table {
   public JoystickGoal __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public double timestamp() { int o = __offset(4); return o != 0 ? bb.getDouble(o + bb_pos) : 0.0; }
-  public boolean rumble() { int o = __offset(6); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
+  public byte rumbleSide() { int o = __offset(6); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  public float rumbleValue() { int o = __offset(8); return o != 0 ? bb.getFloat(o + bb_pos) : 0.0f; }
 
   public static int createJoystickGoal(FlatBufferBuilder builder,
       double timestamp,
-      boolean rumble) {
-    builder.startTable(2);
+      byte rumble_side,
+      float rumble_value) {
+    builder.startTable(3);
     JoystickGoal.addTimestamp(builder, timestamp);
-    JoystickGoal.addRumble(builder, rumble);
+    JoystickGoal.addRumbleValue(builder, rumble_value);
+    JoystickGoal.addRumbleSide(builder, rumble_side);
     return JoystickGoal.endJoystickGoal(builder);
   }
 
-  public static void startJoystickGoal(FlatBufferBuilder builder) { builder.startTable(2); }
+  public static void startJoystickGoal(FlatBufferBuilder builder) { builder.startTable(3); }
   public static void addTimestamp(FlatBufferBuilder builder, double timestamp) { builder.addDouble(0, timestamp, 0.0); }
-  public static void addRumble(FlatBufferBuilder builder, boolean rumble) { builder.addBoolean(1, rumble, false); }
+  public static void addRumbleSide(FlatBufferBuilder builder, byte rumbleSide) { builder.addByte(1, rumbleSide, 0); }
+  public static void addRumbleValue(FlatBufferBuilder builder, float rumbleValue) { builder.addFloat(2, rumbleValue, 0.0f); }
   public static int endJoystickGoal(FlatBufferBuilder builder) {
     int o = builder.endTable();
     return o;

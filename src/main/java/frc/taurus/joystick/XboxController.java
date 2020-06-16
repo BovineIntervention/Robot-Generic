@@ -2,13 +2,10 @@ package frc.taurus.joystick;
 
 import java.nio.ByteBuffer;
 
-import edu.wpi.first.wpilibj.Joystick;
 import frc.taurus.messages.MessageQueue;
 
 public class XboxController extends Controller
 {
-    public final double mDeadband;
-    
     public enum Axis {
         L_STICK_X_AXIS(0), L_STICK_Y_AXIS(1), L_TRIGGER_AXIS(2), 
         R_STICK_X_AXIS(4), R_STICK_Y_AXIS(5), R_TRIGGER_AXIS(3);  
@@ -28,11 +25,9 @@ public class XboxController extends Controller
         }
     }
 
-    public XboxController(Joystick joystick, double deadband, 
-                          MessageQueue<ByteBuffer> joystickStausQueue,
-                          MessageQueue<ByteBuffer> joystickGoalQueue) {
-        super(joystick, joystickStausQueue, joystickGoalQueue);
-        mDeadband = deadband;
+    public XboxController(final MessageQueue<ByteBuffer> joystickStatusQueue, 
+                          final MessageQueue<ByteBuffer> joystickGoalQueue) {
+        super(joystickStatusQueue, joystickGoalQueue);
 
         // add all enumerated buttons to button list
         for (Button button : Button.values()) {
@@ -45,12 +40,12 @@ public class XboxController extends Controller
          // invert the y-axis
         boolean invert = (axis == Axis.L_STICK_Y_AXIS) || (axis == Axis.R_STICK_Y_AXIS);
         double value = (invert ? -1 : 1) * getAxis(axis.id);
-        return applyDeadband(value, mDeadband);
+        return value;
     }
 
     public int getPOV() {
         return super.getPOV(0);
     }
 
-    // setRumble(boolean) available from base class
+    // setRumble(RumbleType, double) available from base class
 }

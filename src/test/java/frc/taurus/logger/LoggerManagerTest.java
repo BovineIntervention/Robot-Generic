@@ -14,7 +14,6 @@ import org.junit.Test;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
-import frc.taurus.config.Config;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
@@ -38,7 +37,7 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
 
@@ -87,7 +86,7 @@ public class LoggerManagerTest {
     DriverStation mockDriverStation = mock(DriverStation.class);
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
@@ -171,7 +170,7 @@ public class LoggerManagerTest {
     when(mockDriverStation.isEnabled()).thenReturn(true);
     
     // configure channels
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
@@ -330,13 +329,12 @@ public class LoggerManagerTest {
     when(mockDriverStation.getGameSpecificMessage()).thenReturn("");
     when(mockDriverStation.getMatchTime()).thenReturn(123.0);
 
-    ChannelManager channelManager = ChannelManager.getInstance();
+    ChannelManager channelManager = new ChannelManager();
     channelManager.reset();   // reset at the start of every unit test
 
     MessageQueue<ByteBuffer> testQueue = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
-    MessageQueue<ByteBuffer> dsStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     
-    DriverStationData driverStationData = new DriverStationData(mockDriverStation, dsStatusQueue);
+    DriverStationData driverStationData = new DriverStationData(mockDriverStation, channelManager);
 
     FlatBufferBuilder builder = new FlatBufferBuilder(64);
     int offset = TestMessage1.createTestMessage1(builder, 001);

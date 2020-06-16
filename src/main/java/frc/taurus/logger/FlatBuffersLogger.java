@@ -21,6 +21,7 @@ import frc.taurus.messages.MessageQueue;
 
 public class FlatBuffersLogger {
 
+  ChannelManager channelManager;
   String filename;
   final Supplier<ByteBuffer> getFileHeaderCallback;
   SortedMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader> channelReaderMap = new TreeMap<ChannelIntf, MessageQueue<ByteBuffer>.QueueReader>();
@@ -29,7 +30,8 @@ public class FlatBuffersLogger {
   int maxHeaderSize = 0;
   long packetCount = 0;
 
-  public FlatBuffersLogger(final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
+  public FlatBuffersLogger(ChannelManager channelManager, final String filename, final Supplier<ByteBuffer> getFileHeaderCallback) {
+    this.channelManager = channelManager;
     this.filename = filename;  
     this.getFileHeaderCallback = getFileHeaderCallback;
     writer = new BinaryLogFileWriter(filename);
@@ -46,7 +48,7 @@ public class FlatBuffersLogger {
   }
 
   public void register(ChannelIntf channel) {
-    MessageQueue<ByteBuffer> queue = ChannelManager.getInstance().fetch(channel);
+    MessageQueue<ByteBuffer> queue = channelManager.fetch(channel);
     MessageQueue<ByteBuffer>.QueueReader reader = queue.makeReader();
     channelReaderMap.put(channel, reader);
   }
@@ -60,7 +62,7 @@ public class FlatBuffersLogger {
       var channelType = channel.getNum();
       var reader = channelReaderMap.get(channel);
       while (!reader.isEmpty()) {
-        short queueSize = (short)reader.size();
+        byte queueSize = (byte)reader.size();
         ByteBuffer bb = reader.read().get(); // we know Optional::isPresent() is true because of earlier !isEmpty()
         writePacket(channelType, queueSize, bb); // write to file
       }
@@ -68,7 +70,7 @@ public class FlatBuffersLogger {
     // writer.flush();
   }
 
-  public void writePacket(final short channelType, final short queueSize, final ByteBuffer bbPayload) {
+  public void writePacket(final byte channelType, final byte queueSize, final ByteBuffer bbPayload) {
     int payloadSize = bbPayload.remaining();
 
     FlatBufferBuilder builder = new FlatBufferBuilder(maxHeaderSize + payloadSize);

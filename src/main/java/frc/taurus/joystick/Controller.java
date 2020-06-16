@@ -7,12 +7,12 @@ import java.util.Optional;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.joystick.generated.AxisVector;
 import frc.taurus.joystick.generated.ButtonVector;
 import frc.taurus.joystick.generated.JoystickGoal;
 import frc.taurus.joystick.generated.JoystickStatus;
+import frc.taurus.joystick.generated.RumbleSide;
 import frc.taurus.messages.MessageQueue;
 
 /**
@@ -23,29 +23,29 @@ import frc.taurus.messages.MessageQueue;
 
 public class Controller {
 
-  Joystick wpilibJoystick;
+  final MessageQueue<ByteBuffer>.QueueReader joystickStatusQueueReader;
+  final MessageQueue<ByteBuffer> rumbleQueue; 
+
+  public static final int maxNumAxes = 6;
+  public static final int maxNumButtons = 16; 
+
+  double[] rawAxis = new double[Controller.maxNumAxes];
+  boolean[] rawButton = new boolean[Controller.maxNumButtons];
+  int[] rawPov = {-1, -1, -1, -1};
+
   ArrayList<Button> buttons;
 
-  MessageQueue<ByteBuffer> statusQueue; 
-  MessageQueue<ByteBuffer> goalQueue;    
-  MessageQueue<ByteBuffer>.QueueReader mGoalReader;    // for rumble commands
 
   /**
    * Controller wraps WPILib Joystick class  
    * and connects them with JoystickStatus and JoystickGoal queues
-   * @param joystick wpilibj.Joystick() at the correct port
-   * @param statusQueue queue where axis and button values will be sent
-   * @param goalQueue queue where rumble commands will be read
+   * @param statusQueue queue where axis and button values will be read from
    * @return new Controller
    */
-  public Controller(final Joystick joystick, 
-    final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> goalQueue) {
-
-    this.wpilibJoystick = joystick;
+  public Controller(final MessageQueue<ByteBuffer> statusQueue, final MessageQueue<ByteBuffer> rumbleQueue) {
+    this.joystickStatusQueueReader = statusQueue.makeReader();
+    this.rumbleQueue = rumbleQueue;
     buttons = new ArrayList<>();
-    this.statusQueue = statusQueue;
-    this.goalQueue = goalQueue;
-    mGoalReader = goalQueue.makeReader();
   }
 
   public Button addButton(int buttonId) {
@@ -79,33 +79,45 @@ public class Controller {
     }
   }
 
-  // update button pressed / released for all buttons
-  // including PovButtons and AxisButtons
   public void update() {
+    
+    // read values from JoystickStatus queue into local member variables
+    readJoystickStatusQueue();
+    
+    // update button pressed / released for all buttons
+    // including PovButtons and AxisButtons
     for (var button : buttons) {
       button.update();
     }
+  }
 
-    sendStatus();
-
-    Optional<ByteBuffer> obb = mGoalReader.readLast();
+  public void readJoystickStatusQueue() {
+    // first read raw axes & buttons from queue
+    Optional<ByteBuffer> obb = joystickStatusQueueReader.readLast();
     if (obb.isPresent()) {
-      JoystickGoal joystickGoal = JoystickGoal.getRootAsJoystickGoal(obb.get());
-      setRumble(joystickGoal.rumble());
+      JoystickStatus status = JoystickStatus.getRootAsJoystickStatus(obb.get());
+
+      AxisVector axesVector = status.axes();
+      for (int k = 0; k < Controller.maxNumAxes; k++) {
+        rawAxis[k] = axesVector.axis(k);
+      }
+
+      ButtonVector buttonVector = status.buttons();
+      for (int k = 0; k < 16; k++) {
+        rawButton[k] = buttonVector.button(k);
+      }
+
+      rawPov[0] = status.pov();      
     }
   }
 
-  public int getPort() {
-    return wpilibJoystick.getPort();
-  }
-
   public double getAxis(int axisId) {
-    return wpilibJoystick.getRawAxis(axisId);
+    return rawAxis[axisId];
   }
 
   public boolean getButton(int buttonId) {
     // called only from Button.update();
-    return wpilibJoystick.getRawButton(buttonId);
+    return rawButton[buttonId-1];   // buttonIds start at index 1
   }
 
   /**
@@ -118,56 +130,30 @@ public class Controller {
    * @return the angle of the POV in degrees, or -1 if the POV is not pressed.
    */
   public int getPOV(int povId) {
-    return wpilibJoystick.getPOV(povId);
+    return rawPov[povId];
   }
 
-  public void setRumble(boolean on) {
-    wpilibJoystick.setRumble(RumbleType.kRightRumble, on ? 1 : 0);
-  }
 
-  public static double applyDeadband(double value, double deadband) {
-    return (Math.abs(value) > Math.abs(deadband)) ? value : 0;
-  }
-
-  public void sendStatus() {
-    writeStatusQueue();
-    writeSmartDashboard();
-  }
-
-  final int maxNumAxes = 6;
-  final int maxNumButtons = 16;
   int bufferSize = 0;
-  public void writeStatusQueue() {
-
-    float[] axes = new float[maxNumAxes];
-    for (int k = 0; k < axes.length; k++) {
-      axes[k] = (float) getAxis(k);   // axis IDs are base 0
-    }
-
-    boolean[] buttons = new boolean[maxNumButtons];
-    for (int k = 0; k < buttons.length; k++) {
-      buttons[k] = getButton(k + 1);  // button IDs are base 1, not base 0
-    }
-
+  /**
+   * Write rumble message to JoystickGoal queue
+   * @param rumbleType RumbleType.kLeftRumble or RumbleType.kRightRumble
+   * @param rumbleValue between 0.0 and 1.0
+   */
+  public void setRumble(final RumbleType rumbleType, final double rumbleValue) {
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
-    JoystickStatus.startJoystickStatus(builder);
-    JoystickStatus.addTimestamp(builder, Timer.getFPGATimestamp());
-    JoystickStatus.addPort(builder, getPort());
-    JoystickStatus.addAxes(builder, AxisVector.createAxisVector(builder, axes));
-    JoystickStatus.addButtons(builder, ButtonVector.createButtonVector(builder, buttons));
-    JoystickStatus.addPov(builder, getPOV(0));
-    int offset = JoystickStatus.endJoystickStatus(builder);
 
-    JoystickStatus.finishJoystickStatusBuffer(builder, offset);
+    JoystickGoal.startJoystickGoal(builder);
+    JoystickGoal.addTimestamp(builder, Timer.getFPGATimestamp());
+    JoystickGoal.addRumbleSide(builder, rumbleType==RumbleType.kLeftRumble ? RumbleSide.LEFT_RUMBLE : RumbleSide.RIGHT_RUMBLE);    
+    JoystickGoal.addRumbleValue(builder, (float)rumbleValue);
+    int offset = JoystickGoal.endJoystickGoal(builder);
+
+    JoystickGoal.finishJoystickGoalBuffer(builder, offset);
     ByteBuffer bb = builder.dataBuffer();
-    bufferSize = Math.max(bufferSize, bb.remaining()); // correct buffer size for next time
+    rumbleQueue.write(bb);
 
-    statusQueue.write(bb);
-  }
-
-
-  public void writeSmartDashboard() {
-    // SmartDashboard.putNumber()
+    bufferSize = Math.max(bufferSize, bb.remaining());
   }
 
 

@@ -2,12 +2,12 @@ namespace frc.taurus.joystick.generated;
 
 // up to 6 axes
 struct AxisVector {
-  axes : [float:6];
+  axis : [float:6];
 }
 
 // up to 16 buttons
 struct ButtonVector {
-  buttons : [bool:16];
+  button : [bool:16];
 }
 
 table JoystickStatus {
@@ -17,7 +17,7 @@ table JoystickStatus {
   port : int;
   axes : AxisVector (required);
   buttons : ButtonVector (required);
-  pov : int;
+  pov:int = -1;
 }
 
 root_type JoystickStatus;

@@ -17,8 +17,8 @@ public final class Packet extends Table {
   public Packet __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public long packetCount() { int o = __offset(4); return o != 0 ? (long)bb.getInt(o + bb_pos) & 0xFFFFFFFFL : 0L; }
-  public short channelType() { int o = __offset(6); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
-  public short queueSize() { int o = __offset(8); return o != 0 ? bb.getShort(o + bb_pos) : 0; }
+  public byte channelType() { int o = __offset(6); return o != 0 ? bb.get(o + bb_pos) : 0; }
+  public int queueSize() { int o = __offset(8); return o != 0 ? bb.get(o + bb_pos) & 0xFF : 0; }
   public int payload(int j) { int o = __offset(10); return o != 0 ? bb.get(__vector(o) + j * 1) & 0xFF : 0; }
   public int payloadLength() { int o = __offset(10); return o != 0 ? __vector_len(o) : 0; }
   public ByteVector payloadVector() { return payloadVector(new ByteVector()); }
@@ -28,8 +28,8 @@ public final class Packet extends Table {
 
   public static int createPacket(FlatBufferBuilder builder,
       long packet_count,
-      short channel_type,
-      short queue_size,
+      byte channel_type,
+      int queue_size,
       int payloadOffset) {
     builder.startTable(4);
     Packet.addPayload(builder, payloadOffset);
@@ -41,8 +41,8 @@ public final class Packet extends Table {
 
   public static void startPacket(FlatBufferBuilder builder) { builder.startTable(4); }
   public static void addPacketCount(FlatBufferBuilder builder, long packetCount) { builder.addInt(0, (int)packetCount, (int)0L); }
-  public static void addChannelType(FlatBufferBuilder builder, short channelType) { builder.addShort(1, channelType, 0); }
-  public static void addQueueSize(FlatBufferBuilder builder, short queueSize) { builder.addShort(2, queueSize, 0); }
+  public static void addChannelType(FlatBufferBuilder builder, byte channelType) { builder.addByte(1, channelType, 0); }
+  public static void addQueueSize(FlatBufferBuilder builder, int queueSize) { builder.addByte(2, (byte)queueSize, (byte)0); }
   public static void addPayload(FlatBufferBuilder builder, int payloadOffset) { builder.addOffset(3, payloadOffset, 0); }
   public static int createPayloadVector(FlatBufferBuilder builder, byte[] data) { return builder.createByteVector(data); }
   public static int createPayloadVector(FlatBufferBuilder builder, ByteBuffer data) { return builder.createByteVector(data); }

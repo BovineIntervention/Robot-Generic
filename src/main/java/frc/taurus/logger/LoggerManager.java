@@ -20,22 +20,15 @@ import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.messages.MessageQueue;
 
 public class LoggerManager {
-  // singleton pattern
-  private static LoggerManager instance = null;
-  public static LoggerManager getInstance() {
-    if (instance == null) {
-      instance = new LoggerManager();
-    }
-    return instance;
-  }
+
+  ChannelManager channelManager;
 
   // synchronized methods in this class to protect channelList and loggerMap
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
   HashMap<String, FlatBuffersLogger> loggerMap = new HashMap<>();
 
-  private final Notifier notifier;  // notifier will execute run() with a period of kPeriod
+  private final Notifier notifier;  // notifier will execute run() with a period of kLoopDt
   private boolean running;
-  public final double kPeriod = Constants.kLoopDt;
 
   private final Runnable runnable = new Runnable() {
     @Override
@@ -49,7 +42,7 @@ public class LoggerManager {
   public synchronized void start() {
     if (!running) {
       running = true;
-      notifier.startPeriodic(kPeriod);
+      notifier.startPeriodic(Constants.kLoopDt);
     }
   }
 
@@ -60,7 +53,8 @@ public class LoggerManager {
     }
   }
 
-  private LoggerManager() {
+  public LoggerManager(ChannelManager channelManager) {
+    this.channelManager = channelManager;
     notifier = new Notifier(runnable);
     running = false;
   }
@@ -81,7 +75,7 @@ public class LoggerManager {
     if (!filename.isEmpty()) {
       // if filename has not been seen before, create a logger for that file
       if (!loggerMap.containsKey(filename)) {
-        loggerMap.put(filename, new FlatBuffersLogger(filename, this::getFileHeader));
+        loggerMap.put(filename, new FlatBuffersLogger(channelManager, filename, this::getFileHeader));
       }
       FlatBuffersLogger logger = loggerMap.get(filename);
       logger.register(channel);
@@ -123,7 +117,7 @@ public class LoggerManager {
   boolean testLast = false;
 
   public void updateLogFolderTimestamp() {
-    MessageQueue<ByteBuffer> driverStationStatusQueue = ChannelManager.getInstance().fetch(Config.DRIVER_STATION_STATUS);
+    MessageQueue<ByteBuffer> driverStationStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
     Optional<ByteBuffer> obb = driverStationStatusQueue.readLast();
     if (obb.isPresent()) {
       DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
