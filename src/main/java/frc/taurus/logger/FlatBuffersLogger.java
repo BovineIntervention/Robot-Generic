@@ -1,5 +1,6 @@
 package frc.taurus.logger;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -45,6 +46,7 @@ public class FlatBuffersLogger {
     packetCount = 0;    // make sure new file writes a header
     LogFileWriterBase.updateLogFolderTimestamp(suffix);    
     writer = new BinaryLogFileWriter(filename);
+System.out.println("FBLogger: relocate " + LogFileWriterBase.logPath() + File.separator + filename + ".  packet count = " + packetCount);    
   }
 
   public void register(ChannelIntf channel) {
@@ -86,6 +88,8 @@ public class FlatBuffersLogger {
     ByteBuffer bb_packet = builder.dataBuffer();
 
     maxHeaderSize = Math.max(maxHeaderSize, bb_packet.remaining() - payloadSize);
+
+System.out.println("FBLogger: wrote " + writer.filename + ", packet count = " + (packetCount-1));
 
     // write Packet to file
     writer.write(bb_packet);

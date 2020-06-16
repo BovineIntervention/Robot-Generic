@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import com.google.flatbuffers.FlatBufferBuilder;
 
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants;
 import frc.taurus.config.ChannelIntf;
@@ -22,41 +21,57 @@ import frc.taurus.messages.MessageQueue;
 public class LoggerManager {
 
   ChannelManager channelManager;
+  MessageQueue<ByteBuffer>.QueueReader driverStationStatusReader;
 
   // synchronized methods in this class to protect channelList and loggerMap
   ArrayList<ChannelIntf> channelList = new ArrayList<ChannelIntf>();
   HashMap<String, FlatBuffersLogger> loggerMap = new HashMap<>();
+  boolean unitTest = false;
 
-  private final Notifier notifier;  // notifier will execute run() with a period of kLoopDt
+  // Create our own thread instead of using a Notifier() so that we can
+  // lower the thread priority of the logger so it never interferes
+  // with real-time processes
+  private Thread thread;
   private boolean running;
 
-  private final Runnable runnable = new Runnable() {
-    @Override
+  class LoggerThread extends Thread {
     public void run() {
-      if (running) {
-        update();
+      while (true) {
+        if (running) {
+          update();
+  
+          // sleep for 1/2 of the normal loop period
+          // hopefully this is fast enough to keep up with the logging
+          // but not enough to reduce performance
+          try {
+            Thread.sleep((long)(Constants.kLoopDt*1000/2));
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
       }
     }
-  };
-
-  public synchronized void start() {
-    if (!running) {
-      running = true;
-      notifier.startPeriodic(Constants.kLoopDt);
-    }
   }
 
-  public synchronized void stop() {
-    if (running) {
-      notifier.stop();
-      running = false;
-    }
+  private void start() {
+    running = true;
   }
+
+  @SuppressWarnings("unused")
+  private void stop() {
+    running = false;
+  }
+
+
 
   public LoggerManager(ChannelManager channelManager) {
     this.channelManager = channelManager;
-    notifier = new Notifier(runnable);
-    running = false;
+
+    thread = new LoggerThread();
+    thread.setName("LoggerThread");
+    thread.setPriority(3);  // lower than the default priority of 5
+    thread.start();
+    start();
   }
 
   // called when ChannelManager.fetch() is called by robot code
@@ -67,7 +82,7 @@ public class LoggerManager {
     }
   }
 
-  private void openLogger(ChannelIntf channel) {
+  private synchronized void openLogger(ChannelIntf channel) {
     // get the filename listed in Config
     String filename = channel.getLogFilename();
 
@@ -83,13 +98,13 @@ public class LoggerManager {
   }
 
   // called when we switch folders between auto/teleop/test
-  private void relocateLoggers(final String suffix) {
+  private synchronized void relocateLoggers(final String suffix) {
     for (var logger : loggerMap.values()) {
       logger.relocate(suffix);
     }
   }  
 
-  public synchronized void update() {
+  private synchronized void update() {
     updateLogFolderTimestamp();
 
     for (var logger : loggerMap.values()) {
@@ -98,51 +113,83 @@ public class LoggerManager {
   }
 
  
-  public synchronized void close() {
+  private synchronized void close() {
     for (var logger : loggerMap.values()) {
       logger.close();
     }
   }
 
-  public synchronized void reset() {
-    close();
-    channelList.clear();
-    loggerMap.clear();
+  public void setUnitTest() {
+    unitTest = true;
   }
 
 
-  boolean enabledLast = true; // set so that we will immediately detect being disabled
+
+  boolean enabledLast = false;
   boolean autoLast = false;
   boolean teleopLast = false;
   boolean testLast = false;
 
-  public void updateLogFolderTimestamp() {
-    MessageQueue<ByteBuffer> driverStationStatusQueue = channelManager.fetch(Config.DRIVER_STATION_STATUS);
-    Optional<ByteBuffer> obb = driverStationStatusQueue.readLast();
-    if (obb.isPresent()) {
-      DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
-  
-      boolean enabled = dsStatus.enabled();
-      boolean auto = dsStatus.autonomous();
-      boolean teleop = dsStatus.teleop();
-      boolean test = dsStatus.test();
 
-      // if we start autonomous, teleop, or test, create a new folder
-      if (!enabled && enabledLast) {
-        close();
-        relocateLoggers("");
-      } else if (auto && !autoLast) {
-        relocateLoggers("auto");
-      } else if (teleop && !teleopLast) {
-        relocateLoggers("teleop");
-      } else if (test && !testLast) {
-        relocateLoggers("test");
+  private void updateLogFolderTimestamp() {
+
+    // can't put this in the constructor because channelManager hasn't finsished contructing yet
+    if (driverStationStatusReader == null) {
+      driverStationStatusReader = channelManager.fetch(Config.DRIVER_STATION_STATUS).makeReader();
+    }
+
+    while (!driverStationStatusReader.isEmpty()) {
+System.out.println("LoggerManager: DS Status Queue Size = " + driverStationStatusReader.size());        
+      Optional<ByteBuffer> obb = driverStationStatusReader.read();
+      if (obb.isPresent()) {
+        DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
+    
+        boolean enabled = dsStatus.enabled();
+        boolean auto    = dsStatus.autonomous();
+        boolean teleop  = dsStatus.teleop();
+        boolean test    = dsStatus.test();
+
+
+        // if we start autonomous, teleop, or test, create a new folder    
+        if (auto && !autoLast) {
+          if (unitTest) {
+            relocateLoggers("unit_test_auto");
+          } else {
+            relocateLoggers("auto");
+          }
+        }
+        
+        if (teleop && !teleopLast) {
+          if (unitTest) {
+            relocateLoggers("unit_test_teleop");
+          } else {
+            relocateLoggers("teleop");
+          }
+        }
+        
+        if (test && !testLast) {
+          if (unitTest) {
+            relocateLoggers("unit_test_test");
+          } else {
+            relocateLoggers("test");
+          }
+        }
+
+        if (unitTest && !enabledLast && enabled && !auto && !teleop && !test) {
+System.out.println("LoggerManager: DS Enabled / Unit Test");          
+          relocateLoggers("unit_test");
+        }        
+
+        if (!enabled && enabledLast) {
+System.out.println("LoggerManager: DS Disabled / Closed");          
+          close();
+        }
+
+        enabledLast = enabled;
+        autoLast = auto;
+        teleopLast = teleop;
+        testLast = test;
       }
-
-      enabledLast = enabled;
-      autoLast = auto;
-      teleopLast = teleop;
-      testLast = test;
     }
   }
 
@@ -150,6 +197,7 @@ public class LoggerManager {
 
   int bufferSize = 0;
 
+  // synchronized to protect channelList
   public synchronized ByteBuffer getFileHeader() {
   
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);

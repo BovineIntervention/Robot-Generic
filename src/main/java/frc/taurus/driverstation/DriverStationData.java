@@ -25,13 +25,13 @@ public class DriverStationData {
 
   
   public void update() {
-    log();
+    writeDriverStationStatusMessage();
   }
   
 
   int bufferSize = 0;
 
-  public void log() {
+  private void writeDriverStationStatusMessage() {
     FlatBufferBuilder builder = new FlatBufferBuilder(bufferSize);
 
     int gameSpecificMessageOffset = builder.createString(ds.getGameSpecificMessage());

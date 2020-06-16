@@ -1,3 +1,17 @@
+# What are FlatBuffers and why are we using them?
+
+See the architecture document for reasons why the code is architected to pass messages between modules.
+We'd like to be able to record all messages being sent to assist us in debugging the code.  So we'd like
+our messages to be as small as possible, and we'd also like the writing and reading of these messages 
+to be as fast as possible.  [FlatBuffers](https://google.github.io/flatbuffers/) is a library that does this.
+It was started by Google for game developers on mobile platforms who require this kind of high performance.
+
+It is slightly difficult to use, but there are plenty of examples to follow
+The [Tutorial](https://google.github.io/flatbuffers/flatbuffers_guide_tutorial.html) and
+[JavaTest code](https://github.com/google/flatbuffers/blob/master/tests/JavaTest.java) are good places to start
+if you can't find a similar message in our own code.
+
+
 # Installing the FlatBuffers Compiler
 
 To use FlatBuffers, you'll first need the executable so you can compile the schema files into Java.
