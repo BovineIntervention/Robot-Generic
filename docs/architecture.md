@@ -11,7 +11,7 @@ Our architecture has a few main goals:
 * Have clearly defined ownership
   * We want it to be clear what parts of our code have access to what other parts.
 * Allow all controllers to be realtime, while being able to communicate with non-realtime threads
-  * We want all of the controllers in our code to run in a bounded amount of time. However, there are some things that cannot (and don't need to) complete in a bounded amount of time, such as reading things from the network, or getting joystick values. Because of this, we need a good way to pass things between threads, so that the realtime threads can access values that they need from the non-realtime threads
+  * We want all of the controllers in our code to run in a bounded amount of time. However, there are some things that cannot (and don't need to) complete in a bounded amount of time, such as reading things from the network, or getting joystick values. Because of this, we need a good way to pass things between threads, so that the realtime threads can access values that they need from the 0non-realtime threads
 
 ## Subsystems
 

@@ -8,11 +8,13 @@ public class MessageQueue<T> extends QueueManager {
   private int capacity; // capacity (size of buffer)
   private int back = 0; // index of last (youngest) element in array
 
+  private static final int defaultQueueSize = 512;
+
   /**
-   * Constructor that creates a queue with the default size of 128.
+   * Constructor that creates a queue with the default size .
    */
   public MessageQueue() {
-    this(128);
+    this(defaultQueueSize);
   }
 
   /**

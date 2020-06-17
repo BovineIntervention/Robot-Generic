@@ -17,15 +17,12 @@ public class ChannelManager {
     loggerManager = new LoggerManager(this);    
   }
 
-  /**
-   * Call reset at the beginning of every Unit Test to make sure stale data
-   * from the previous test causes problems with the current test
-   */
-  public void reset() {
-    channelMap.clear();
-    loggerManager.reset();
+  private void register(ChannelIntf channel) {
+    // add the new channel to our list
+    if (!channelMap.keySet().contains(channel)) {
+      this.channelMap.put(channel, new MessageQueue<ByteBuffer>());
+    }
   }
-
 
   public MessageQueue<ByteBuffer> fetch(ChannelIntf channel) {
     if (!channelMap.keySet().contains(channel)) {
@@ -57,19 +54,8 @@ public class ChannelManager {
     }
   }  
 
-  private void register(ChannelIntf channel) {
-    // add the new channel to our list
-    if (!channelMap.keySet().contains(channel)) {
-      this.channelMap.put(channel, new MessageQueue<ByteBuffer>());
-    }
-  }
-  
-  public void update() {
-    loggerManager.update();
-  }
-
-  public void close() {
-    loggerManager.close();
+  public void setUnitTest() {
+    loggerManager.setUnitTest();
   }
 
 }
