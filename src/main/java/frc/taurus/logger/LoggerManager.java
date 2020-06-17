@@ -139,7 +139,6 @@ public class LoggerManager {
     }
 
     while (!driverStationStatusReader.isEmpty()) {
-System.out.println("LoggerManager: DS Status Queue Size = " + driverStationStatusReader.size());        
       Optional<ByteBuffer> obb = driverStationStatusReader.read();
       if (obb.isPresent()) {
         DriverStationStatus dsStatus = DriverStationStatus.getRootAsDriverStationStatus(obb.get());
@@ -176,12 +175,10 @@ System.out.println("LoggerManager: DS Status Queue Size = " + driverStationStatu
         }
 
         if (unitTest && !enabledLast && enabled && !auto && !teleop && !test) {
-System.out.println("LoggerManager: DS Enabled / Unit Test");          
           relocateLoggers("unit_test");
         }        
 
         if (!enabled && enabledLast) {
-System.out.println("LoggerManager: DS Disabled / Closed");          
           close();
         }
 

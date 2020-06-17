@@ -33,6 +33,7 @@ public class LoggerManagerTest {
   static double eps = 1e-9;
 
   private void driverstationEnable(ChannelManager channelManager, boolean enabled) {
+    
     waitABit();   // wait for message to be logged to file
 
     FlatBufferBuilder builder = new FlatBufferBuilder(0);
@@ -54,7 +55,6 @@ public class LoggerManagerTest {
     ByteBuffer bb = builder.dataBuffer();
 
     channelManager.fetch(Config.DRIVER_STATION_STATUS).write(bb);
-System.out.println("LoggerManagerTest: DS Enable = " + enabled);    
 
     waitABit();   // wait for log file to be closed
   }
@@ -80,16 +80,13 @@ System.out.println("LoggerManagerTest: DS Enable = " + enabled);
     int offset1 = TestMessage1.createTestMessage1(builder1, 686);
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
     queue1.write(builder1.dataBuffer());
-    System.out.println("LoggerManagerTest: wrote TestMessage1");    
     
     // disable driver station so that we close the logger files
-
     driverstationEnable(channelManager, false);
     
     // Read log file and check its contents
     FlatBuffersLogReader reader = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
     ByteBuffer bb = reader.getNextTable();
-System.out.println("LoggerManagerTest: reading test12.log");
 
     LogFileHeader logFileHdr = LogFileHeader.getRootAsLogFileHeader(bb);
     assertEquals(logFileHdr.timestamp(), Timer.getFPGATimestamp(), 100); // we should read the file back within 100

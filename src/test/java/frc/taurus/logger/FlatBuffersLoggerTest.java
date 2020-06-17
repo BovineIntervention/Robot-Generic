@@ -10,9 +10,11 @@ import org.junit.Test;
 
 import edu.wpi.first.wpilibj.Timer;
 import frc.taurus.config.ChannelManager;
+import frc.taurus.config.Config;
 import frc.taurus.config.TestConfig;
 import frc.taurus.config.generated.Channel;
 import frc.taurus.config.generated.Configuration;
+import frc.taurus.driverstation.generated.DriverStationStatus;
 import frc.taurus.logger.generated.LogFileHeader;
 import frc.taurus.logger.generated.Packet;
 import frc.taurus.messages.MessageQueue;
@@ -23,11 +25,47 @@ public class FlatBuffersLoggerTest {
 
   static double eps = 1e-9;
 
+  private void driverstationEnable(ChannelManager channelManager, boolean enabled) {
+    
+    waitABit();   // wait for message to be logged to file
+
+    FlatBufferBuilder builder = new FlatBufferBuilder(0);
+
+    int gameSpecificMessageOffset = builder.createString("");
+
+    DriverStationStatus.startDriverStationStatus(builder);
+    DriverStationStatus.addTimestamp(builder, Timer.getFPGATimestamp());
+    DriverStationStatus.addEnabled(builder, enabled);
+    DriverStationStatus.addAutonomous(builder, false);
+    DriverStationStatus.addTeleop(builder, false);
+    DriverStationStatus.addTest(builder, false);
+    DriverStationStatus.addDsAttached(builder, false);
+    DriverStationStatus.addFmsAttached(builder, false);
+    DriverStationStatus.addGameSpecificMessage(builder, gameSpecificMessageOffset);
+    DriverStationStatus.addMatchTime(builder, 0);
+    int offset = DriverStationStatus.endDriverStationStatus(builder);
+    DriverStationStatus.finishDriverStationStatusBuffer(builder, offset);
+    ByteBuffer bb = builder.dataBuffer();
+
+    channelManager.fetch(Config.DRIVER_STATION_STATUS).write(bb);
+
+    waitABit();   // wait for log file to be closed
+  }
+
+  public void waitABit() {
+    try {
+      Thread.sleep(20);  // give it a little time to close down the file
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+  }
 
   @Test
   public void writeOneMessageTest() {
 
     ChannelManager channelManager = new ChannelManager();
+    channelManager.setUnitTest();               // log to "unit_test" folder
+    driverstationEnable(channelManager, true);  // we only log when enabled, so we must mock enable during unit tests
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     FlatBuffersLogReader reader1 = new FlatBuffersLogReader(TestConfig.TEST_MESSAGE_1.getLogFilename());
@@ -39,9 +77,8 @@ public class FlatBuffersLoggerTest {
     TestMessage1.finishTestMessage1Buffer(builder1, offset1);
     queue1.write(builder1.dataBuffer());
 
-    // log data
-    channelManager.update(); // write to file
-    channelManager.close(); // close file so we can read it
+    // disable driver station so that we close the logger files
+    driverstationEnable(channelManager, false);
 
 
     // Read log file and check its contents
@@ -54,7 +91,7 @@ public class FlatBuffersLoggerTest {
     Configuration configuration = logFileHdr.configuration();
     assertEquals(1+1, configuration.channelsLength());
 
-    int k = 0;
+    int k = 1;
     Channel channel = configuration.channels(k);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
@@ -77,6 +114,8 @@ public class FlatBuffersLoggerTest {
   public void writeTwoMessagesTest() {
 
     ChannelManager channelManager = new ChannelManager();
+    channelManager.setUnitTest();               // log to "unit_test" folder
+    driverstationEnable(channelManager, true);  // we only log when enabled, so we must mock enable during unit tests
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
@@ -93,8 +132,8 @@ public class FlatBuffersLoggerTest {
     TestMessage2.finishTestMessage2Buffer(builder2, offset2);
     queue2.write(builder2.dataBuffer());
 
-    channelManager.update(); // write to file
-    channelManager.close(); // close file so we can read it
+    // disable driver station so that we close the logger files
+    driverstationEnable(channelManager, false);
 
     // Read log file and check its contents
     ByteBuffer bb = reader12.getNextTable();
@@ -108,13 +147,13 @@ public class FlatBuffersLoggerTest {
     assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
-    Channel channel = configuration.channels(0);
+    Channel channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
     // 2nd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(1);
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -150,9 +189,11 @@ public class FlatBuffersLoggerTest {
   @Test
   public void twoChannelsLongInterleavedFileTest() {
 
-    final int numMessages = 1000;
+    final int numMessages = 100;
 
     ChannelManager channelManager = new ChannelManager();
+    channelManager.setUnitTest();               // log to "unit_test" folder
+    driverstationEnable(channelManager, true);  // we only log when enabled, so we must mock enable during unit tests
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
@@ -170,9 +211,10 @@ public class FlatBuffersLoggerTest {
       TestMessage2.finishTestMessage2Buffer(builder2, offset2);
       queue2.write(builder2.dataBuffer());
 
-      channelManager.update(); // write to file
+      waitABit();
     }
-    channelManager.close(); // close file so we can read it
+    // disable driver station so that we close the logger files
+    driverstationEnable(channelManager, false);
 
     // Read log file and check its contents
     ByteBuffer bb = reader12.getNextTable();
@@ -186,13 +228,13 @@ public class FlatBuffersLoggerTest {
     assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
-    Channel channel = configuration.channels(0);
+    Channel channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
     // 2nd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(1);
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
@@ -231,6 +273,8 @@ public class FlatBuffersLoggerTest {
   public void queueSizeTest() {
 
     ChannelManager channelManager = new ChannelManager();
+    channelManager.setUnitTest();               // log to "unit_test" folder
+    driverstationEnable(channelManager, true);  // we only log when enabled, so we must mock enable during unit tests
 
     MessageQueue<ByteBuffer> queue1 = channelManager.fetch(TestConfig.TEST_MESSAGE_1);
     MessageQueue<ByteBuffer> queue2 = channelManager.fetch(TestConfig.TEST_MESSAGE_2);
@@ -252,7 +296,7 @@ public class FlatBuffersLoggerTest {
       queue2.write(builder2.dataBuffer());
     }
 
-    channelManager.update(); // write to file
+    waitABit();
 
     // sent data over queue
     FlatBufferBuilder builder1 = new FlatBufferBuilder(64);
@@ -265,8 +309,8 @@ public class FlatBuffersLoggerTest {
     TestMessage2.finishTestMessage2Buffer(builder2, offset2);
     queue2.write(builder2.dataBuffer());
 
-    channelManager.update(); // write to file
-    channelManager.close(); // close file so we can read it
+    // disable driver station so that we close the logger files
+    driverstationEnable(channelManager, false);
 
     // Read log file and check its contents
     ByteBuffer bb = reader12.getNextTable();
@@ -280,13 +324,13 @@ public class FlatBuffersLoggerTest {
     assertEquals(2+1, configuration.channelsLength());
 
     // 1st channel in configuration is TEST_MESSAGE_1
-    Channel channel = configuration.channels(0);
+    Channel channel = configuration.channels(1);
     assertEquals(TestConfig.TEST_MESSAGE_1.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_1.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
 
     // 2nd channel in configuration is TEST_MESSAGE_2
-    channel = configuration.channels(1);
+    channel = configuration.channels(2);
     assertEquals(TestConfig.TEST_MESSAGE_2.getNum(), channel.channelType());
     assertEquals(TestConfig.TEST_MESSAGE_2.getName(), channel.name());
     assertEquals(TestConfig.TEST_MESSAGE_1.getLogFilename(), channel.logFilename());
